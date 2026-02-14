@@ -16,6 +16,9 @@ namespace WeaponPaints
         {
             if (!Config.Additional.SkinEnabled)
                 return;
+            // Guard: validate weapon is still valid before any work
+            if (weapon == null || !weapon.IsValid)
+                return;
             if (!GPlayerWeaponsInfo.TryGetValue(player.Slot, out _))
                 return;
             // Ensure player is on a valid team before accessing player.Team
@@ -955,8 +958,8 @@ namespace WeaponPaints
             CCSPlayer_ItemServices itemServices
         )
         {
-            var pawn = itemServices.Pawn.Value;
-            if (!pawn.IsValid || !pawn.Controller.IsValid || pawn.Controller.Value == null)
+            var pawn = itemServices?.Pawn?.Value;
+            if (pawn == null || !pawn.IsValid || !pawn.Controller.IsValid || pawn.Controller.Value == null)
                 return null;
             var player = new CCSPlayerController(pawn.Controller.Value.Handle);
             return !Utility.IsPlayerValid(player) ? null : player;

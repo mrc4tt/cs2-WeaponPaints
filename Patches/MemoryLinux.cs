@@ -1,3 +1,9 @@
+// DISABLED: P/Invoke declarations cause TypeLoadException on Linux .NET 8
+// PerformPatch is now a no-op on Linux (see Patch.cs)
+// Remove #if false / #endif to re-enable if the .NET runtime issue is resolved
+
+#if false
+
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -219,3 +225,5 @@ public static class MemoryLinux
     #pragma warning restore CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
     #pragma warning restore CS0649 // Field is never assigned to, and will always have its default value
 }
+
+#endif

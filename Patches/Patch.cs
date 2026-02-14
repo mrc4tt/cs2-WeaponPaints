@@ -33,7 +33,8 @@ public static class Patch
         
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            MemoryLinux.PatchBytesAtAddress(address, bytes.ToArray(), patchSize);
+            // No-op on Linux: MemoryLinux P/Invoke causes TypeLoadException on .NET 8
+            return;
         }
         else
         {

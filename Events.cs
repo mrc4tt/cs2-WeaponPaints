@@ -40,30 +40,11 @@ namespace WeaponPaints
             try
             {
                 _ = Task.Run(async () => await WeaponSync.GetPlayerData(playerInfo));
-                /*
-                if (Config.Additional.SkinEnabled)
-                {
-                    _ = Task.Run(async () => await weaponSync.GetWeaponPaintsFromDatabase(playerInfo));
-                }
-                if (Config.Additional.KnifeEnabled)
-                {
-                    _ = Task.Run(async () => await weaponSync.GetKnifeFromDatabase(playerInfo));
-                }
-                if (Config.Additional.GloveEnabled)
-                {
-                    _ = Task.Run(async () => await weaponSync.GetGloveFromDatabase(playerInfo));
-                }
-                if (Config.Additional.AgentEnabled)
-                {
-                    _ = Task.Run(async () => await weaponSync.GetAgentFromDatabase(playerInfo));
-                }
-                if (Config.Additional.MusicEnabled)
-                {
-                    _ = Task.Run(async () => await weaponSync.GetMusicFromDatabase(playerInfo));
-                }
-                */
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[OnClientFullConnect] Error loading player data: {ex.Message}");
+            }
 
             Players.Add(player);
             PlayersBySteamId[player.SteamID] = player;
@@ -89,16 +70,23 @@ namespace WeaponPaints
                 IpAddress = player.IpAddress?.Split(":")[0],
             };
 
-            Task.Run(async () =>
+            try
             {
-                if (WeaponSync != null)
-                    await WeaponSync.SyncStatTrakToDatabase(playerInfo);
-
-                if (Config.Additional.SkinEnabled)
+                Task.Run(async () =>
                 {
-                    GPlayerWeaponsInfo.TryRemove(player.Slot, out _);
-                }
-            });
+                    if (WeaponSync != null)
+                        await WeaponSync.SyncStatTrakToDatabase(playerInfo);
+
+                    if (Config.Additional.SkinEnabled)
+                    {
+                        GPlayerWeaponsInfo.TryRemove(player.Slot, out _);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[OnPlayerDisconnect] Error syncing StatTrak: {ex.Message}");
+            }
 
             if (Config.Additional.KnifeEnabled)
             {
@@ -231,6 +219,11 @@ namespace WeaponPaints
             {
                 var itemServices = hook.GetParam<CCSPlayer_ItemServices>(0);
                 var weapon = hook.GetReturn<CBasePlayerWeapon>();
+
+                // Guard: weapon can be null or invalid if entity was destroyed between frames
+                if (weapon == null || !weapon.IsValid)
+                    return HookResult.Continue;
+
                 if (!weapon.DesignerName.Contains("weapon"))
                     return HookResult.Continue;
 
@@ -240,7 +233,10 @@ namespace WeaponPaints
                     GivePlayerWeaponSkin(player, weapon);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[OnGiveNamedItemPost] Exception: {ex.Message}");
+            }
 
             return HookResult.Continue;
         }
@@ -251,10 +247,22 @@ namespace WeaponPaints
 
             if (designerName.Contains("weapon"))
             {
+                // Capture handle before NextWorldUpdate — entity reference may be invalid later
+                var entityHandle = entity.Handle;
+
                 Server.NextWorldUpdate(() =>
                 {
-                    var weapon = new CBasePlayerWeapon(entity.Handle);
-                    if (!weapon.IsValid)
+                    CBasePlayerWeapon? weapon = null;
+                    try
+                    {
+                        weapon = new CBasePlayerWeapon(entityHandle);
+                    }
+                    catch (Exception)
+                    {
+                        return; // Entity was destroyed between frames
+                    }
+
+                    if (weapon == null || !weapon.IsValid)
                         return;
 
                     try
@@ -268,7 +276,7 @@ namespace WeaponPaints
                         if (weapon.OriginalOwnerXuidLow > 0)
                             steamid = new SteamID(weapon.OriginalOwnerXuidLow);
 
-                        CCSPlayerController? player;
+                        CCSPlayerController? player = null;
 
                         if (steamid != null && steamid.IsValid())
                         {
@@ -278,25 +286,36 @@ namespace WeaponPaints
                         }
                         else
                         {
-                            // Safe owner entity access - check validity before accessing native pointers
-                            if (!weapon.OwnerEntity.IsValid || weapon.OwnerEntity.Index == 0)
-                                return;
-
-                            player = Utilities.GetPlayerFromIndex((int)weapon.OwnerEntity.Index);
-
-                            if (player == null)
+                            // Separated try/catch — OwnerEntity access can throw if entity is invalid
+                            try
                             {
-                                CCSWeaponBaseGun gun = weapon.As<CCSWeaponBaseGun>();
-                                if (gun.OwnerEntity.IsValid && gun.OwnerEntity.Value != null)
+                                if (!weapon.OwnerEntity.IsValid || weapon.OwnerEntity.Index == 0)
+                                    return;
+
+                                player = Utilities.GetPlayerFromIndex((int)weapon.OwnerEntity.Index);
+
+                                if (player == null)
                                 {
-                                    player = Utilities.GetPlayerFromIndex((int)gun.OwnerEntity.Value.Index);
+                                    CCSWeaponBaseGun gun = weapon.As<CCSWeaponBaseGun>();
+                                    if (gun.OwnerEntity.IsValid && gun.OwnerEntity.Value != null)
+                                    {
+                                        player = Utilities.GetPlayerFromIndex((int)gun.OwnerEntity.Value.Index);
+                                    }
                                 }
+                            }
+                            catch (Exception)
+                            {
+                                return; // OwnerEntity became invalid
                             }
                         }
 
                         if (string.IsNullOrEmpty(player?.PlayerName))
                             return;
                         if (!Utility.IsPlayerValid(player))
+                            return;
+
+                        // Re-validate weapon — it may have been destroyed during player lookups
+                        if (!weapon.IsValid)
                             return;
 
                         GivePlayerWeaponSkin(player, weapon);
