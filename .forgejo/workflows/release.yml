@@ -67,14 +67,11 @@ jobs:
 
       - name: Prepare release structure
         run: |
-          # Create the target folder structure: addons/counterstrikesharp/plugins/WeaponPaints
           PLUGIN_DIR="staging/addons/counterstrikesharp/plugins/${{ env.PROJECT_NAME }}"
           mkdir -p "$PLUGIN_DIR"
 
-          # Copy built plugin files
           cp -r ${{ env.OUTPUT_PATH }}/* "$PLUGIN_DIR/"
 
-          # Copy gamedata if it exists
           if [ -d "gamedata" ]; then
             cp -r gamedata staging/addons/counterstrikesharp/
           fi
@@ -86,17 +83,21 @@ jobs:
           cd ..
 
       - name: Create Forgejo release
-        uses: https://code.forgejo.org/actions/forgejo-release@v2
-        with:
-          direction: upload
-          url: ${{ github.server_url }}
-          repo: ${{ github.repository }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: "build-${{ env.BUILD_NUMBER }}"
-          title: "Build ${{ env.BUILD_NUMBER }}"
-          release-notes: |
-            Extract into `game/csgo/` — plugin lands in `addons/counterstrikesharp/plugins/${{ env.PROJECT_NAME }}`
-          release-dir: .
-          release-notes-assistant: ""
-          override: true
-          prerelease: false
+        run: |
+          RELEASE_ID=$(curl -s -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "tag_name": "build-${{ env.BUILD_NUMBER }}",
+              "name": "Build ${{ env.BUILD_NUMBER }}",
+              "body": "Extract into game/csgo/ — plugin lands in addons/counterstrikesharp/plugins/${{ env.PROJECT_NAME }}"
+            }' \
+            "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/releases" | jq -r '.id')
+
+          echo "Created release ID: $RELEASE_ID"
+
+          curl -s -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @"${{ env.PROJECT_NAME }}.zip" \
+            "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/releases/${RELEASE_ID}/assets?name=${{ env.PROJECT_NAME }}.zip"
