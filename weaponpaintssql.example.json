@@ -1,0 +1,7 @@
+{
+  "DatabaseHost": "localhost",
+  "DatabasePort": 3306,
+  "DatabaseUser": "root",
+  "DatabasePassword": "",
+  "DatabaseName": "weaponpaints"
+}

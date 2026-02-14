@@ -1,0 +1,102 @@
+name: Build
+
+on:
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - "**/README.md"
+      - "**/.gitignore"
+      - "**/LICENSE"
+  pull_request:
+    branches: ["main"]
+    paths-ignore:
+      - "**/README.md"
+      - "**/.gitignore"
+      - "**/LICENSE"
+
+env:
+  BUILD_NUMBER: ${{ github.run_number }}
+  PROJECT_PATH: "WeaponPaints.csproj"
+  PROJECT_NAME: "WeaponPaints"
+  OUTPUT_PATH: "./WeaponPaints"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build ${{ env.PROJECT_PATH }} -c Release -o ${{ env.OUTPUT_PATH }}
+
+  publish:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build ${{ env.PROJECT_PATH }} -c Release -o ${{ env.OUTPUT_PATH }}
+
+      - name: Clean CounterStrikeSharp references
+        run: |
+          rm -f \
+            ${{ env.OUTPUT_PATH }}/CounterStrikeSharp.API.dll \
+            ${{ env.OUTPUT_PATH }}/McMaster.NETCore.Plugins.dll \
+            ${{ env.OUTPUT_PATH }}/Microsoft.DotNet.PlatformAbstractions.dll \
+            ${{ env.OUTPUT_PATH }}/Microsoft.Extensions.DependencyModel.dll
+
+      - name: Prepare release structure
+        run: |
+          # Create the target folder structure: addons/counterstrikesharp/plugins/WeaponPaints
+          PLUGIN_DIR="staging/addons/counterstrikesharp/plugins/${{ env.PROJECT_NAME }}"
+          mkdir -p "$PLUGIN_DIR"
+
+          # Copy built plugin files
+          cp -r ${{ env.OUTPUT_PATH }}/* "$PLUGIN_DIR/"
+
+          # Copy gamedata if it exists
+          if [ -d "gamedata" ]; then
+            cp -r gamedata staging/addons/counterstrikesharp/
+          fi
+
+      - name: Create release zip
+        run: |
+          cd staging
+          zip -r "../${{ env.PROJECT_NAME }}.zip" .
+          cd ..
+
+      - name: Create Forgejo release
+        uses: https://code.forgejo.org/actions/forgejo-release@v2
+        with:
+          direction: upload
+          url: ${{ github.server_url }}
+          repo: ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: "build-${{ env.BUILD_NUMBER }}"
+          title: "Build ${{ env.BUILD_NUMBER }}"
+          release-notes: |
+            Extract into `game/csgo/` — plugin lands in `addons/counterstrikesharp/plugins/${{ env.PROJECT_NAME }}`
+          release-dir: .
+          release-notes-assistant: ""
+          override: true
+          prerelease: false
