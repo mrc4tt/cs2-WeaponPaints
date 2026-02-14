@@ -70,6 +70,9 @@ jobs:
           PLUGIN_DIR="staging/addons/counterstrikesharp/plugins/${{ env.PROJECT_NAME }}"
           mkdir -p "$PLUGIN_DIR"
 
+          # Remove gamedata from build output so it doesn't end up in plugin folder
+          rm -rf ${{ env.OUTPUT_PATH }}/gamedata
+
           cp -r ${{ env.OUTPUT_PATH }}/* "$PLUGIN_DIR/"
 
           if [ -d "gamedata" ]; then
