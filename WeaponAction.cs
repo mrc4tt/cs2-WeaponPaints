@@ -68,16 +68,37 @@ namespace WeaponPaints
                     weapon.AttributeManager.Item.NetworkedDynamicAttributes.Attributes.RemoveAll();
 
                     // SubclassChange uses AcceptInput("ChangeSubclass") which is processed
-                    // asynchronously by the engine. If we set paint attributes now, the engine
-                    // wipes them when it processes the subclass change on the next tick.
-                    // Defer paint application to NextFrame so the subclass change is complete.
-                    Server.NextFrame(() =>
+                    // asynchronously by the engine. NextFrame is too early — the engine may not
+                    // have finished processing the subclass change yet, wiping any attributes
+                    // we set. Use a short timer to ensure the subclass change is fully complete.
+                    var weaponHandle = weapon.Handle;
+                    var playerSlot = player.Slot;
+                    AddTimer(0.12f, () =>
                     {
-                        if (weapon == null || !weapon.IsValid)
+                        CBasePlayerWeapon? w;
+                        try
+                        {
+                            w = new CBasePlayerWeapon(weaponHandle);
+                        }
+                        catch (Exception)
+                        {
                             return;
-                        if (player == null || !player.IsValid)
+                        }
+                        if (w == null || !w.IsValid)
                             return;
-                        ApplyWeaponPaintAttributes(player, weapon, isKnife: true);
+
+                        var p = Utilities.GetPlayerFromSlot(playerSlot);
+                        if (p == null || !p.IsValid)
+                            return;
+
+                        // Re-set ItemDefinitionIndex and EntityQuality — SubclassChange may have reset them
+                        if (w.AttributeManager?.Item != null)
+                        {
+                            w.AttributeManager.Item.ItemDefinitionIndex = (ushort)newDefIndex.Key;
+                            w.AttributeManager.Item.EntityQuality = 3;
+                        }
+
+                        ApplyWeaponPaintAttributes(p, w, isKnife: true);
                     });
                     return;
                 }
