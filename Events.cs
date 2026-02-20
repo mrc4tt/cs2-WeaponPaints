@@ -243,7 +243,16 @@ namespace WeaponPaints
 
         private void OnEntityCreated(CEntityInstance entity)
         {
-            var designerName = entity.DesignerName;
+            string designerName;
+            try
+            {
+                designerName = entity.DesignerName;
+            }
+            catch (Exception)
+            {
+                // Entity system may not be initialized yet during early server startup
+                return;
+            }
 
             if (designerName.Contains("weapon"))
             {

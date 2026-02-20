@@ -115,13 +115,18 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         // ModuleDirectory = .../addons/counterstrikesharp/plugins/WeaponPaints
         // We need: .../addons/counterstrikesharp/configs/plugins/WeaponPaints
         var cssharpDir = Path.GetDirectoryName(Path.GetDirectoryName(ModuleDirectory))!; // .../addons/counterstrikesharp
-        var sqlConfigPath = Path.Combine(
-            cssharpDir,
-            "configs",
-            "plugins",
-            "WeaponPaints",
-            "WeaponPaintsSQL.json"
-        );
+        var sqlConfigDir = Path.Combine(cssharpDir, "configs", "plugins", "WeaponPaints");
+
+        // Check for alternative lowercase filename first (e.g. FSHOST uses weaponpaintssql.json)
+        var sqlConfigPathLower = Path.Combine(sqlConfigDir, "weaponpaintssql.json");
+        var sqlConfigPathDefault = Path.Combine(sqlConfigDir, "WeaponPaintsSQL.json");
+
+        // Use whichever exists — prefer lowercase variant to avoid creating duplicates
+        string sqlConfigPath;
+        if (File.Exists(sqlConfigPathLower))
+            sqlConfigPath = sqlConfigPathLower;
+        else
+            sqlConfigPath = sqlConfigPathDefault;
 
         if (!File.Exists(sqlConfigPath))
         {

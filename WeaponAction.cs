@@ -66,18 +66,39 @@ namespace WeaponPaints
 
                     weapon.AttributeManager.Item.AttributeList.Attributes.RemoveAll();
                     weapon.AttributeManager.Item.NetworkedDynamicAttributes.Attributes.RemoveAll();
-                    // Don't return; continue to apply knife skins if available
-                    break;
+
+                    // SubclassChange uses AcceptInput("ChangeSubclass") which is processed
+                    // asynchronously by the engine. If we set paint attributes now, the engine
+                    // wipes them when it processes the subclass change on the next tick.
+                    // Defer paint application to NextFrame so the subclass change is complete.
+                    Server.NextFrame(() =>
+                    {
+                        if (weapon == null || !weapon.IsValid)
+                            return;
+                        if (player == null || !player.IsValid)
+                            return;
+                        ApplyWeaponPaintAttributes(player, weapon, isKnife: true);
+                    });
+                    return;
                 }
                 default:
                     weapon.AttributeManager.Item.EntityQuality = 0;
                     break;
             }
 
+            ApplyWeaponPaintAttributes(player, weapon, isKnife: false);
+        }
+
+        private void ApplyWeaponPaintAttributes(CCSPlayerController player, CBasePlayerWeapon weapon, bool isKnife)
+        {
+            if (weapon == null || !weapon.IsValid)
+                return;
+            if (weapon.AttributeManager?.Item == null)
+                return;
+
             UpdatePlayerEconItemId(weapon.AttributeManager.Item);
 
-            // Update weaponDefIndex in case it changed (for knives)
-            weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
+            int weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
             int fallbackPaintKit;
 
             weapon.AttributeManager.Item.AccountID = (uint)player.SteamID;
@@ -149,7 +170,6 @@ namespace WeaponPaints
             {
                 return;
             }
-            //Log($"Apply on {weapon.DesignerName}({weapon.AttributeManager.Item.ItemDefinitionIndex}) paint {gPlayerWeaponPaints[steamId.SteamId64][weapon.AttributeManager.Item.ItemDefinitionIndex]} seed {gPlayerWeaponSeed[steamId.SteamId64][weapon.AttributeManager.Item.ItemDefinitionIndex]} wear {gPlayerWeaponWear[steamId.SteamId64][weapon.AttributeManager.Item.ItemDefinitionIndex]}");
 
             weapon.AttributeManager.Item.AttributeList.Attributes.RemoveAll();
             weapon.AttributeManager.Item.NetworkedDynamicAttributes.Attributes.RemoveAll();
@@ -164,12 +184,11 @@ namespace WeaponPaints
                 : weaponInfo.Seed;
 
             weapon.FallbackWear = weaponInfo.Wear;
-            if (isKnife) { }
-            else
+
+            if (isKnife)
             {
-                var logName = WeaponDefindex.TryGetValue(weaponDefIndex, out var mappedName)
-                    ? mappedName
-                    : weapon.DesignerName;
+                // Re-apply EntityQuality for knife (may have been reset by SubclassChange)
+                weapon.AttributeManager.Item.EntityQuality = weaponInfo.StatTrak ? 9 : 3;
             }
 
             if (weaponInfo.StatTrak)
