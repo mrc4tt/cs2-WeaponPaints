@@ -1,4 +1,4 @@
-﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Entities;
@@ -39,7 +39,37 @@ namespace WeaponPaints
 
             try
             {
-                _ = Task.Run(async () => await WeaponSync.GetPlayerData(playerInfo));
+                _ = Task.Run(async () =>
+                {
+                    await WeaponSync.GetPlayerData(playerInfo);
+
+                    // After DB data is loaded, schedule a knife skin refresh on the main thread.
+                    // On quick reconnect, the player may have already spawned and received a
+                    // vanilla knife before GetPlayerData completed (race condition).
+                    Server.NextWorldUpdate(() =>
+                    {
+                        if (player == null || !player.IsValid || !player.PawnIsAlive)
+                            return;
+                        if (player.PlayerPawn.Value?.WeaponServices == null)
+                            return;
+                        if (!Config.Additional.KnifeEnabled)
+                            return;
+
+                        // Find the player's current knife and re-apply skin
+                        foreach (var weaponHandle in player.PlayerPawn.Value.WeaponServices.MyWeapons)
+                        {
+                            if (!weaponHandle.IsValid || weaponHandle.Value == null || !weaponHandle.Value.IsValid)
+                                continue;
+
+                            var designerName = weaponHandle.Value.DesignerName;
+                            if (designerName.Contains("knife") || designerName.Contains("bayonet"))
+                            {
+                                GivePlayerWeaponSkin(player, weaponHandle.Value);
+                                break;
+                            }
+                        }
+                    });
+                });
             }
             catch (Exception ex)
             {
