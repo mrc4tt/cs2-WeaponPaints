@@ -23,7 +23,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
     public override string ModuleDescription =>
         "Skin, gloves, agents and knife selector, standalone and web-based";
     public override string ModuleName => "WeaponPaints";
-    public override string ModuleVersion => "3.2a";
+    public override string ModuleVersion => "3.3a";
 
     public override void Load(bool hotReload)
     {
@@ -111,7 +111,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         Config = config;
         _config = config;
 
-        // Load SQL config from separate file (configs/plugins/WeaponPaints/weaponpaintssql.json)
+        // Load SQL config from separate file (configs/plugins/WeaponPaints/WeaponPaintsSQL.json)
         // ModuleDirectory = .../addons/counterstrikesharp/plugins/WeaponPaints
         // We need: .../addons/counterstrikesharp/configs/plugins/WeaponPaints
         var cssharpDir = Path.GetDirectoryName(Path.GetDirectoryName(ModuleDirectory))!; // .../addons/counterstrikesharp
@@ -120,7 +120,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             "configs",
             "plugins",
             "WeaponPaints",
-            "weaponpaintssql.json"
+            "WeaponPaintsSQL.json"
         );
 
         if (!File.Exists(sqlConfigPath))
