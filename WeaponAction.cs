@@ -57,69 +57,35 @@ namespace WeaponPaints
                     if (newDefIndex.Key == 0)
                         return;
 
-                    // Always call SubclassChange - fixes bug where switching back to a
-                    // previously used knife would result in default knife appearing
-                    SubclassChange(weapon, (ushort)newDefIndex.Key);
+                    // Only call SubclassChange if the knife type actually needs to change.
+                    // Both OnGiveNamedItemPost and OnEntityCreated fire for the same knife
+                    // entity, causing GivePlayerWeaponSkin to be called twice. Each call to
+                    // SubclassChange queues an async engine operation that wipes paint attributes
+                    // when processed. By skipping SubclassChange when the defindex already
+                    // matches, the second call (from OnEntityCreated's NextWorldUpdate) applies
+                    // paint without a pending SubclassChange to wipe it.
+                    if (weapon.AttributeManager.Item.ItemDefinitionIndex != (ushort)newDefIndex.Key)
+                    {
+                        SubclassChange(weapon, (ushort)newDefIndex.Key);
+                        weapon.AttributeManager.Item.ItemDefinitionIndex = (ushort)newDefIndex.Key;
+                    }
 
-                    weapon.AttributeManager.Item.ItemDefinitionIndex = (ushort)newDefIndex.Key;
                     weapon.AttributeManager.Item.EntityQuality = 3;
 
                     weapon.AttributeManager.Item.AttributeList.Attributes.RemoveAll();
                     weapon.AttributeManager.Item.NetworkedDynamicAttributes.Attributes.RemoveAll();
-
-                    // SubclassChange uses AcceptInput("ChangeSubclass") which is processed
-                    // asynchronously by the engine. NextFrame is too early — the engine may not
-                    // have finished processing the subclass change yet, wiping any attributes
-                    // we set. Use a short timer to ensure the subclass change is fully complete.
-                    var weaponHandle = weapon.Handle;
-                    var playerSlot = player.Slot;
-                    AddTimer(0.12f, () =>
-                    {
-                        CBasePlayerWeapon? w;
-                        try
-                        {
-                            w = new CBasePlayerWeapon(weaponHandle);
-                        }
-                        catch (Exception)
-                        {
-                            return;
-                        }
-                        if (w == null || !w.IsValid)
-                            return;
-
-                        var p = Utilities.GetPlayerFromSlot(playerSlot);
-                        if (p == null || !p.IsValid)
-                            return;
-
-                        // Re-set ItemDefinitionIndex and EntityQuality — SubclassChange may have reset them
-                        if (w.AttributeManager?.Item != null)
-                        {
-                            w.AttributeManager.Item.ItemDefinitionIndex = (ushort)newDefIndex.Key;
-                            w.AttributeManager.Item.EntityQuality = 3;
-                        }
-
-                        ApplyWeaponPaintAttributes(p, w, isKnife: true);
-                    });
-                    return;
+                    // Don't return; continue to apply knife skins if available
+                    break;
                 }
                 default:
                     weapon.AttributeManager.Item.EntityQuality = 0;
                     break;
             }
 
-            ApplyWeaponPaintAttributes(player, weapon, isKnife: false);
-        }
-
-        private void ApplyWeaponPaintAttributes(CCSPlayerController player, CBasePlayerWeapon weapon, bool isKnife)
-        {
-            if (weapon == null || !weapon.IsValid)
-                return;
-            if (weapon.AttributeManager?.Item == null)
-                return;
-
             UpdatePlayerEconItemId(weapon.AttributeManager.Item);
 
-            int weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
+            // Update weaponDefIndex in case it changed (for knives)
+            weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
             int fallbackPaintKit;
 
             weapon.AttributeManager.Item.AccountID = (uint)player.SteamID;
@@ -191,6 +157,7 @@ namespace WeaponPaints
             {
                 return;
             }
+            //Log($"Apply on {weapon.DesignerName}({weapon.AttributeManager.Item.ItemDefinitionIndex}) paint {gPlayerWeaponPaints[steamId.SteamId64][weapon.AttributeManager.Item.ItemDefinitionIndex]} seed {gPlayerWeaponSeed[steamId.SteamId64][weapon.AttributeManager.Item.ItemDefinitionIndex]} wear {gPlayerWeaponWear[steamId.SteamId64][weapon.AttributeManager.Item.ItemDefinitionIndex]}");
 
             weapon.AttributeManager.Item.AttributeList.Attributes.RemoveAll();
             weapon.AttributeManager.Item.NetworkedDynamicAttributes.Attributes.RemoveAll();
@@ -205,11 +172,12 @@ namespace WeaponPaints
                 : weaponInfo.Seed;
 
             weapon.FallbackWear = weaponInfo.Wear;
-
-            if (isKnife)
+            if (isKnife) { }
+            else
             {
-                // Re-apply EntityQuality for knife (may have been reset by SubclassChange)
-                weapon.AttributeManager.Item.EntityQuality = weaponInfo.StatTrak ? 9 : 3;
+                var logName = WeaponDefindex.TryGetValue(weaponDefIndex, out var mappedName)
+                    ? mappedName
+                    : weapon.DesignerName;
             }
 
             if (weaponInfo.StatTrak)

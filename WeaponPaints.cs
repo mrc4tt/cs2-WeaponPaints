@@ -47,39 +47,50 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             GPlayersMusic.Clear();
             PlayersBySteamId.Clear();
 
-            foreach (
-                var player in Enumerable
-                    .OfType<CCSPlayerController>(
-                        Utilities.GetPlayers().TakeWhile(_ => WeaponSync != null)
-                    )
-                    .Where(player =>
-                        player.IsValid
-                        && !string.IsNullOrEmpty(player.IpAddress)
-                        && player
-                            is { IsBot: false, Connected: PlayerConnectedState.PlayerConnected }
-                    )
-            )
+            // Defer player enumeration — entity system may not be initialized yet during Load()
+            Server.NextWorldUpdate(() =>
             {
-                var playerInfo = new PlayerInfo
+                try
                 {
-                    UserId = player.UserId,
-                    Slot = player.Slot,
-                    Index = (int)player.Index,
-                    SteamId = player?.SteamID.ToString(),
-                    Name = player?.PlayerName,
-                    IpAddress = player?.IpAddress?.Split(":")[0],
-                };
+                    foreach (
+                        var player in Enumerable
+                            .OfType<CCSPlayerController>(
+                                Utilities.GetPlayers().TakeWhile(_ => WeaponSync != null)
+                            )
+                            .Where(player =>
+                                player.IsValid
+                                && !string.IsNullOrEmpty(player.IpAddress)
+                                && player
+                                    is { IsBot: false, Connected: PlayerConnectedState.PlayerConnected }
+                            )
+                    )
+                    {
+                        var playerInfo = new PlayerInfo
+                        {
+                            UserId = player.UserId,
+                            Slot = player.Slot,
+                            Index = (int)player.Index,
+                            SteamId = player?.SteamID.ToString(),
+                            Name = player?.PlayerName,
+                            IpAddress = player?.IpAddress?.Split(":")[0],
+                        };
 
-                _ = Task.Run(async () =>
+                        _ = Task.Run(async () =>
+                        {
+                            if (WeaponSync != null)
+                                await WeaponSync.GetPlayerData(playerInfo);
+                        });
+
+                        // Rebuild SteamID cache
+                        if (player != null)
+                            PlayersBySteamId[player.SteamID] = player;
+                    }
+                }
+                catch (Exception ex)
                 {
-                    if (WeaponSync != null)
-                        await WeaponSync.GetPlayerData(playerInfo);
-                });
-
-                // Rebuild SteamID cache
-                if (player != null)
-                    PlayersBySteamId[player.SteamID] = player;
-            }
+                    Logger.LogError($"[HotReload] Error enumerating players: {ex.Message}");
+                }
+            });
         }
 
         Utility.LoadSkinsFromFile(
@@ -111,32 +122,35 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         Config = config;
         _config = config;
 
-        // Load SQL config from separate file (configs/plugins/WeaponPaints/WeaponPaintsSQL.json)
-        // ModuleDirectory = .../addons/counterstrikesharp/plugins/WeaponPaints
-        // We need: .../addons/counterstrikesharp/configs/plugins/WeaponPaints
-        var cssharpDir = Path.GetDirectoryName(Path.GetDirectoryName(ModuleDirectory))!; // .../addons/counterstrikesharp
+        // Load SQL config from separate file (configs/plugins/WeaponPaints/)
+        // Priority: weaponpaintssql.json > WeaponPaintsSQL.json
+        var cssharpDir = Path.GetDirectoryName(Path.GetDirectoryName(ModuleDirectory))!;
         var sqlConfigDir = Path.Combine(cssharpDir, "configs", "plugins", "WeaponPaints");
 
-        // Check for alternative lowercase filename first (e.g. FSHOST uses weaponpaintssql.json)
         var sqlConfigPathLower = Path.Combine(sqlConfigDir, "weaponpaintssql.json");
-        var sqlConfigPathDefault = Path.Combine(sqlConfigDir, "WeaponPaintsSQL.json");
+        var sqlConfigPathOriginal = Path.Combine(sqlConfigDir, "WeaponPaintsSQL.json");
 
-        // Use whichever exists — prefer lowercase variant to avoid creating duplicates
         string sqlConfigPath;
         if (File.Exists(sqlConfigPathLower))
-            sqlConfigPath = sqlConfigPathLower;
-        else
-            sqlConfigPath = sqlConfigPathDefault;
-
-        if (!File.Exists(sqlConfigPath))
         {
-            // Create default SQL config file
+            sqlConfigPath = sqlConfigPathLower;
+            Logger.LogInformation($"Using SQL config: weaponpaintssql.json");
+        }
+        else if (File.Exists(sqlConfigPathOriginal))
+        {
+            sqlConfigPath = sqlConfigPathOriginal;
+            Logger.LogInformation($"Using SQL config: WeaponPaintsSQL.json");
+        }
+        else
+        {
+            // Neither file exists — create default with lowercase name
+            sqlConfigPath = sqlConfigPathLower;
             SqlConfig = new WeaponPaintsSqlConfig();
             var defaultJson = JsonSerializer.Serialize(
                 SqlConfig,
                 new JsonSerializerOptions { WriteIndented = true }
             );
-            Directory.CreateDirectory(Path.GetDirectoryName(sqlConfigPath)!);
+            Directory.CreateDirectory(sqlConfigDir);
             File.WriteAllText(sqlConfigPath, defaultJson);
             Logger.LogError(
                 $"SQL config file created at \"{sqlConfigPath}\". Please configure your database credentials!"
@@ -190,7 +204,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             Database = SqlConfig.DatabaseName,
             Port = (uint)SqlConfig.DatabasePort,
             Pooling = true,
-            MaximumPoolSize = 16, // Was 640 — a CS2 server has max 64 players, 16 connections is plenty
+            MaximumPoolSize = 16,
         };
 
         Database = new Database(builder.ConnectionString);

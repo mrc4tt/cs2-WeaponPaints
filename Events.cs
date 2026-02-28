@@ -2,6 +2,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Entities;
+using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -43,9 +44,12 @@ namespace WeaponPaints
                 {
                     await WeaponSync.GetPlayerData(playerInfo);
 
-                    // After DB data is loaded, schedule a knife skin refresh on the main thread.
+                    // After DB data is loaded, schedule a knife refresh on the main thread.
                     // On quick reconnect, the player may have already spawned and received a
                     // vanilla knife before GetPlayerData completed (race condition).
+                    // We kill the existing knife and regive it so that both OnGiveNamedItemPost
+                    // and OnEntityCreated fire naturally — the dual-event mechanism ensures
+                    // SubclassChange happens on the first call and paint sticks on the second.
                     Server.NextWorldUpdate(() =>
                     {
                         if (player == null || !player.IsValid || !player.PawnIsAlive)
@@ -54,8 +58,20 @@ namespace WeaponPaints
                             return;
                         if (!Config.Additional.KnifeEnabled)
                             return;
+                        if (!HasChangedKnife(player, out _))
+                            return;
 
-                        // Find the player's current knife and re-apply skin
+                        // Check if the knife already has the correct type applied (normal connect)
+                        // Only kill+regive if it's still a default knife (reconnect race condition)
+                        var desiredDefIndex = WeaponDefindex.FirstOrDefault(x =>
+                            x.Value == GPlayersKnife[player.Slot][player.Team]
+                        );
+                        if (desiredDefIndex.Key == 0)
+                            return;
+
+                        bool needsRefresh = false;
+
+                        // Find and kill the player's current knife
                         foreach (var weaponHandle in player.PlayerPawn.Value.WeaponServices.MyWeapons)
                         {
                             if (!weaponHandle.IsValid || weaponHandle.Value == null || !weaponHandle.Value.IsValid)
@@ -64,9 +80,26 @@ namespace WeaponPaints
                             var designerName = weaponHandle.Value.DesignerName;
                             if (designerName.Contains("knife") || designerName.Contains("bayonet"))
                             {
-                                GivePlayerWeaponSkin(player, weaponHandle.Value);
+                                // If defindex already matches desired knife, skin was applied normally
+                                if (weaponHandle.Value.AttributeManager?.Item != null &&
+                                    weaponHandle.Value.AttributeManager.Item.ItemDefinitionIndex == (ushort)desiredDefIndex.Key)
+                                    break;
+
+                                needsRefresh = true;
+                                weaponHandle.Value.AddEntityIOEvent("Kill", weaponHandle.Value, null, "", 0.01f);
                                 break;
                             }
+                        }
+
+                        // Give a new knife — OnGiveNamedItemPost + OnEntityCreated will handle skin
+                        if (needsRefresh)
+                        {
+                            AddTimer(0.1f, () =>
+                            {
+                                if (player == null || !player.IsValid || !player.PawnIsAlive)
+                                    return;
+                                player.GiveNamedItem(CsItem.Knife);
+                            });
                         }
                     });
                 });
