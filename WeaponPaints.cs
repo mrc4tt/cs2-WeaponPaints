@@ -123,17 +123,17 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         _config = config;
 
         // Load SQL config from separate file (configs/plugins/WeaponPaints/)
-        // Priority: weaponpaintssql.json > WeaponPaintsSQL.json
+        // Priority: weaponpaintssql.json > weaponpaintssql
         var cssharpDir = Path.GetDirectoryName(Path.GetDirectoryName(ModuleDirectory))!;
         var sqlConfigDir = Path.Combine(cssharpDir, "configs", "plugins", "WeaponPaints");
 
-        var sqlConfigPathOriginal = Path.Combine(sqlConfigDir, "WeaponPaintsSQL.json");
+        var sqlConfigPathOriginal = Path.Combine(sqlConfigDir, "weaponpaintssql.json");
 
         string sqlConfigPath;
         if (File.Exists(sqlConfigPathOriginal))
         {
             sqlConfigPath = sqlConfigPathOriginal;
-            Logger.LogInformation($"Using SQL config: WeaponPaintsSQL.json");
+            Logger.LogInformation($"Using SQL config: weaponpaintssql.json");
         }
         else
         {
