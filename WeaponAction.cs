@@ -44,15 +44,19 @@ namespace WeaponPaints
                     return;
             }
 
+            // Capture knife value once to avoid race condition with background GetPlayerData task
+            // which can TryRemove the key between HasChangedKnife check and direct indexer access
+            bool playerHasChangedKnife = HasChangedKnife(player, out var playerKnifeValue);
+
             switch (isKnife)
             {
-                case true when !HasChangedKnife(player, out var _):
+                case true when !playerHasChangedKnife:
                     return;
 
                 case true:
                 {
                     var newDefIndex = WeaponDefindex.FirstOrDefault(x =>
-                        x.Value == GPlayersKnife[player.Slot][player.Team]
+                        x.Value == playerKnifeValue
                     );
                     if (newDefIndex.Key == 0)
                         return;
@@ -864,19 +868,23 @@ namespace WeaponPaints
             if (!GPlayersAgent.TryGetValue(player.Slot, out var value))
                 return;
 
+            if (player.Team is CsTeam.None or CsTeam.Spectator)
+                return;
+
             var model = player.TeamNum == 3 ? value.CT : value.T;
             if (string.IsNullOrEmpty(model))
                 return;
 
-            if (player.PlayerPawn.Value == null)
+            if (player.PlayerPawn.Value == null || !player.PlayerPawn.Value.IsValid)
+                return;
+
+            // Ensure native body/scene node is fully initialized before SetModel
+            if (player.PlayerPawn.Value.CBodyComponent?.SceneNode == null)
                 return;
 
             try
             {
-                Server.NextFrame(() =>
-                {
-                    player.PlayerPawn.Value.SetModel($"characters/models/{model}.vmdl");
-                });
+                player.PlayerPawn.Value.SetModel($"characters/models/{model}.vmdl");
             }
             catch (Exception) { }
         }

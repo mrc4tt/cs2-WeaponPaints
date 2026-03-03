@@ -6,6 +6,7 @@ using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
+using CounterStrikeSharp.API.Modules.Timers;
 using Microsoft.Extensions.Logging;
 
 namespace WeaponPaints
@@ -58,13 +59,13 @@ namespace WeaponPaints
                             return;
                         if (!Config.Additional.KnifeEnabled)
                             return;
-                        if (!HasChangedKnife(player, out _))
+                        if (!HasChangedKnife(player, out var knifeValue))
                             return;
 
                         // Check if the knife already has the correct type applied (normal connect)
                         // Only kill+regive if it's still a default knife (reconnect race condition)
                         var desiredDefIndex = WeaponDefindex.FirstOrDefault(x =>
-                            x.Value == GPlayersKnife[player.Slot][player.Team]
+                            x.Value == knifeValue
                         );
                         if (desiredDefIndex.Key == 0)
                             return;
@@ -203,22 +204,31 @@ namespace WeaponPaints
             if (
                 player is null
                 || !player.IsValid
+                || player.IsBot
                 || Config.Additional is { KnifeEnabled: false, GloveEnabled: false }
             )
                 return HookResult.Continue;
 
-            CCSPlayerPawn? pawn = player.PlayerPawn.Value;
-
-            if (pawn == null || !pawn.IsValid)
-                return HookResult.Continue;
-
-            GivePlayerMusicKit(player);
-            GivePlayerAgent(player);
-            Server.NextFrame(() =>
+            // Defer ALL cosmetic application — OnPlayerSpawn fires during team assignment
+            // when the pawn's native scene node, body component, and model infrastructure
+            // are not yet fully initialized. Applying cosmetics synchronously or even on
+            // NextFrame crashes in native SetModel/SetBodygroup calls.
+            AddTimer(0.15f, () =>
             {
+                if (player == null || !player.IsValid || !player.PawnIsAlive)
+                    return;
+                if (player.Team is CsTeam.None or CsTeam.Spectator)
+                    return;
+
+                CCSPlayerPawn? pawn = player.PlayerPawn.Value;
+                if (pawn == null || !pawn.IsValid)
+                    return;
+
+                GivePlayerMusicKit(player);
+                GivePlayerAgent(player);
                 GivePlayerGloves(player);
-            });
-            GivePlayerPin(player);
+                GivePlayerPin(player);
+            }, TimerFlags.STOP_ON_MAPCHANGE);
 
             return HookResult.Continue;
         }
