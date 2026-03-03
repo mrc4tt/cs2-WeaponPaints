@@ -127,16 +127,10 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         var cssharpDir = Path.GetDirectoryName(Path.GetDirectoryName(ModuleDirectory))!;
         var sqlConfigDir = Path.Combine(cssharpDir, "configs", "plugins", "WeaponPaints");
 
-        var sqlConfigPathLower = Path.Combine(sqlConfigDir, "weaponpaintssql.json");
         var sqlConfigPathOriginal = Path.Combine(sqlConfigDir, "WeaponPaintsSQL.json");
 
         string sqlConfigPath;
-        if (File.Exists(sqlConfigPathLower))
-        {
-            sqlConfigPath = sqlConfigPathLower;
-            Logger.LogInformation($"Using SQL config: weaponpaintssql.json");
-        }
-        else if (File.Exists(sqlConfigPathOriginal))
+        if (File.Exists(sqlConfigPathOriginal))
         {
             sqlConfigPath = sqlConfigPathOriginal;
             Logger.LogInformation($"Using SQL config: WeaponPaintsSQL.json");
@@ -144,7 +138,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         else
         {
             // Neither file exists — create default with lowercase name
-            sqlConfigPath = sqlConfigPathLower;
+            sqlConfigPath = sqlConfigPathOriginal;
             SqlConfig = new WeaponPaintsSqlConfig();
             var defaultJson = JsonSerializer.Serialize(
                 SqlConfig,
