@@ -329,20 +329,18 @@ namespace WeaponPaints
 
             if (designerName.Contains("weapon"))
             {
-                // Capture handle before NextWorldUpdate — entity reference may be invalid later
-                var entityHandle = entity.Handle;
+                // Capture entity index (a plain int) instead of the raw Handle pointer.
+                // Handle is an IntPtr into native CS2 memory — by the time NextWorldUpdate
+                // fires, that memory may already be freed. Reading a stale pointer throws
+                // AccessViolationException, which is a Corrupted State Exception in .NET
+                // and CANNOT be caught by a normal try/catch, so it crashes the server.
+                // Entity index is just a number; re-resolving it returns null if the entity
+                // is gone, giving us a safe early-out instead of a fatal crash.
+                var entityIndex = entity.Index;
 
                 Server.NextWorldUpdate(() =>
                 {
-                    CBasePlayerWeapon? weapon = null;
-                    try
-                    {
-                        weapon = new CBasePlayerWeapon(entityHandle);
-                    }
-                    catch (Exception)
-                    {
-                        return; // Entity was destroyed between frames
-                    }
+                    CBasePlayerWeapon? weapon = Utilities.GetEntityFromIndex<CBasePlayerWeapon>((int)entityIndex);
 
                     if (weapon == null || !weapon.IsValid)
                         return;
