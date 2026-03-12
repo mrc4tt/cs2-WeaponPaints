@@ -716,12 +716,18 @@ namespace WeaponPaints
                     pawn.SetModel(model);
                 }
 
-                CEconItemView item = pawn.EconGloves;
-                if (item == null || item.Handle == IntPtr.Zero)
-                    return;
-
-                item.NetworkedDynamicAttributes.Attributes.RemoveAll();
-                item.AttributeList.Attributes.RemoveAll();
+                // Do NOT capture pawn.EconGloves here — CEconItemView is a direct reference
+                // into native CS2 memory. If the pawn is re-initialized or the model is reset
+                // between now and when the timer fires, the pointer becomes stale and reading
+                // its Handle throws AccessViolationException (a Corrupted State Exception that
+                // cannot be caught by try/catch). Re-fetch it inside the callback instead.
+                {
+                    CEconItemView earlyItem = pawn.EconGloves;
+                    if (earlyItem == null || earlyItem.Handle == IntPtr.Zero)
+                        return;
+                    earlyItem.NetworkedDynamicAttributes.Attributes.RemoveAll();
+                    earlyItem.AttributeList.Attributes.RemoveAll();
+                }
 
             Instance.AddTimer(
                 0.08f,
@@ -740,24 +746,23 @@ namespace WeaponPaints
                             return;
 
                         if (!GPlayersGlove.TryGetValue(player.Slot, out var gloveInfo))
-                        {
                             return;
-                        }
                         if (!gloveInfo.TryGetValue(player.Team, out var gloveId))
-                        {
                             return;
-                        }
                         if (gloveId == 0)
-                        {
                             return;
-                        }
-                        if (
-                            !HasChangedPaint(player, gloveId, out var weaponInfo)
-                            || weaponInfo == null
-                        )
-                        {
+                        if (!HasChangedPaint(player, gloveId, out var weaponInfo) || weaponInfo == null)
                             return;
-                        }
+
+                        // Re-fetch the pawn and EconGloves fresh — do not use any pointer
+                        // captured from the outer scope, as it may have been freed by now.
+                        CCSPlayerPawn? timerPawn = player.PlayerPawn.Value;
+                        if (timerPawn == null || !timerPawn.IsValid)
+                            return;
+
+                        CEconItemView item = timerPawn.EconGloves;
+                        if (item == null || item.Handle == IntPtr.Zero)
+                            return;
 
                         item.ItemDefinitionIndex = gloveId;
 
@@ -799,7 +804,7 @@ namespace WeaponPaints
 
                         item.Initialized = true;
 
-                        SetBodygroup(pawn, "default_gloves", 1);
+                        SetBodygroup(timerPawn, "default_gloves", 1);
                     }
                     catch (Exception)
                     {
@@ -841,15 +846,25 @@ namespace WeaponPaints
 
         public static void SetBodygroup(CCSPlayerPawn pawn, string group, int value)
         {
+            // IsValid check before AcceptInput — native call, AccessViolationException
+            // cannot be caught by try/catch.
+            if (pawn == null || !pawn.IsValid)
+                return;
             pawn.AcceptInput("SetBodygroup", value: $"{group},{value}");
         }
 
         private void UpdateWeaponMeshGroupMask(CBaseEntity weapon, bool isLegacy = false)
         {
+            // IsValid must be checked before CBodyComponent access AND before AcceptInput.
+            // SceneNode != null only verifies the managed wrapper — it does not guarantee
+            // the underlying native pointer is still live. AcceptInput is a native call
+            // and AccessViolationException on a freed weapon cannot be caught by try/catch.
+            if (weapon == null || !weapon.IsValid)
+                return;
             if (weapon.CBodyComponent?.SceneNode == null)
                 return;
-            //var skeleton = weapon.CBodyComponent.SceneNode.GetSkeletonInstance();
-            // skeleton.ModelState.MeshGroupMask = isLegacy ? 2UL : 1UL;
+            if (!weapon.IsValid)
+                return;
 
             weapon.AcceptInput("SetBodygroup", value: $"body,{(isLegacy ? 1 : 0)}");
         }
@@ -875,18 +890,28 @@ namespace WeaponPaints
             if (string.IsNullOrEmpty(model))
                 return;
 
-            if (player.PlayerPawn.Value == null || !player.PlayerPawn.Value.IsValid)
+            // Store pawn in a local — do NOT dereference player.PlayerPawn.Value multiple
+            // times. Each dereference re-reads native memory; the pawn pointer can change
+            // between reads (e.g. model reset during spawn), and the second read can return
+            // a stale or null value even though the first read looked valid.
+            CCSPlayerPawn? pawn = player.PlayerPawn.Value;
+            if (pawn == null || !pawn.IsValid)
                 return;
 
-            // Ensure native body/scene node is fully initialized before SetModel
-            if (player.PlayerPawn.Value.CBodyComponent?.SceneNode == null)
+            // SceneNode null-check ensures the native body component exists, but is not
+            // sufficient on its own — SetModel is a native call and AccessViolationException
+            // cannot be caught by try/catch (it is a Corrupted State Exception in .NET).
+            // Re-validate pawn.IsValid immediately before the call as the last gate.
+            if (pawn.CBodyComponent?.SceneNode == null)
                 return;
 
-            try
-            {
-                player.PlayerPawn.Value.SetModel($"characters/models/{model}.vmdl");
-            }
-            catch (Exception) { }
+            // Final IsValid re-check directly before the native SetModel call.
+            // The window between the SceneNode check above and here is tiny, but CS2 can
+            // free the pawn in between on a fast disconnect/reconnect.
+            if (!pawn.IsValid)
+                return;
+
+            pawn.SetModel($"characters/models/{model}.vmdl");
         }
 
         private static void GivePlayerMusicKit(CCSPlayerController player)
