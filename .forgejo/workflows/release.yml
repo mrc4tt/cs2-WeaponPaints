@@ -93,7 +93,7 @@ jobs:
             -d '{
               "tag_name": "build-${{ env.BUILD_NUMBER }}",
               "name": "Build ${{ env.BUILD_NUMBER }}",
-              "body": "Extract into game/csgo/ — plugin lands in addons/counterstrikesharp/plugins/${{ env.PROJECT_NAME }}"
+              "body": "Extract into game/csgo/ - plugin lands in addons/counterstrikesharp/plugins/${{ env.PROJECT_NAME }}"
             }' \
             "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/releases" | jq -r '.id')
 
