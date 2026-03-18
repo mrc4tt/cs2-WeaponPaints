@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
@@ -749,6 +750,17 @@ public partial class WeaponPaints
     {
         if (player == null || !player.IsValid)
             return;
+
+        if (!_gBCommandsAllowed)
+            return;
+
+        // Prevent double-call from chat/console trigger
+        if (
+            LastCommandTime.TryGetValue(player.Slot, out var lastTime)
+            && (DateTime.UtcNow - lastTime).TotalMilliseconds < 100
+        )
+            return;
+        LastCommandTime[player.Slot] = DateTime.UtcNow;
 
         var weapon = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
 
