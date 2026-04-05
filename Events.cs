@@ -330,17 +330,28 @@ namespace WeaponPaints
             if (designerName.Contains("weapon"))
             {
                 // Capture entity index (a plain int) instead of the raw Handle pointer.
-                // Handle is an IntPtr into native CS2 memory — by the time NextWorldUpdate
+                // Handle is an IntPtr into native CS2 memory — by the time the callback
                 // fires, that memory may already be freed. Reading a stale pointer throws
                 // AccessViolationException, which is a Corrupted State Exception in .NET
                 // and CANNOT be caught by a normal try/catch, so it crashes the server.
-                // Entity index is just a number; re-resolving it returns null if the entity
-                // is gone, giving us a safe early-out instead of a fatal crash.
-                var entityIndex = entity.Index;
+                //
+                // Using AddTimer instead of NextWorldUpdate to add a small delay — this
+                // gives the entity system time to fully clean up destroyed entities before
+                // we try to re-resolve the index. NextWorldUpdate (next tick) is often too
+                // fast and the entity pointer table can still hold dangling pointers.
+                var entityIndex = (int)entity.Index;
 
-                Server.NextWorldUpdate(() =>
+                AddTimer(0.1f, () =>
                 {
-                    CBasePlayerWeapon? weapon = Utilities.GetEntityFromIndex<CBasePlayerWeapon>((int)entityIndex);
+                    CBasePlayerWeapon? weapon;
+                    try
+                    {
+                        weapon = Utilities.GetEntityFromIndex<CBasePlayerWeapon>(entityIndex);
+                    }
+                    catch (Exception)
+                    {
+                        return; // Entity system in bad state, bail out safely
+                    }
 
                     if (weapon == null || !weapon.IsValid)
                         return;
