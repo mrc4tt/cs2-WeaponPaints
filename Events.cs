@@ -339,19 +339,11 @@ namespace WeaponPaints
                 // gives the entity system time to fully clean up destroyed entities before
                 // we try to re-resolve the index. NextWorldUpdate (next tick) is often too
                 // fast and the entity pointer table can still hold dangling pointers.
-                var entityIndex = (int)entity.Index;
+                var entityIndex = entity.Index;
 
-                AddTimer(0.1f, () =>
+                Server.NextWorldUpdate(() =>
                 {
-                    CBasePlayerWeapon? weapon;
-                    try
-                    {
-                        weapon = Utilities.GetEntityFromIndex<CBasePlayerWeapon>(entityIndex);
-                    }
-                    catch (Exception)
-                    {
-                        return; // Entity system in bad state, bail out safely
-                    }
+                    CBasePlayerWeapon? weapon = Utilities.GetEntityFromIndex<CBasePlayerWeapon>((int)entityIndex);
 
                     if (weapon == null || !weapon.IsValid)
                         return;
