@@ -32,8 +32,10 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Install zip
-        run: apt-get update && apt-get install -y zip
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y p7zip-full jq curl wget
 
       - name: Restore
         run: dotnet restore
