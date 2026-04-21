@@ -90,35 +90,34 @@ jobs:
           # This creates ${{ env.PROJECT_NAME }}.zip from the contents of the staging folder
 
       - name: Create Release and Upload Asset
-        uses: https://github.com/actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const projectName = "${{ env.PROJECT_NAME }}";
-            const buildNumber = "${{ env.BUILD_NUMBER }}";
+        env:
+          FORGEJO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
 
-            // 1. Create the release
-            const release = await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: `build-${buildNumber}`,
-              name: `Build ${buildNumber}`,
-              body: `Extract into game/csgo/ - plugin lands in addons/counterstrikesharp/plugins/${projectName}`,
-            });
+          API="${GITHUB_SERVER_URL}/api/v1/repos/${GITHUB_REPOSITORY}"
+          TAG="build-${BUILD_NUMBER}"
+          ZIP="./${PROJECT_NAME}.zip"
 
-            // 2. Upload the zip file
-            const filePath = `./${projectName}.zip`;
-            const stats = fs.statSync(filePath);
-            
-            await github.rest.repos.uploadReleaseAsset({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: release.data.id,
-              name: `${projectName}.zip`,
-              data: fs.readFileSync(filePath),
-              headers: {
-                'content-type': 'application/zip',
-                'content-length': stats.size
-              }
-            });
+          RELEASE_RESPONSE=$(curl -sS -X POST \
+            -H "Authorization: token ${FORGEJO_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg tag "$TAG" \
+              --arg name "Build ${BUILD_NUMBER}" \
+              --arg body "Extract into game/csgo/ - plugin lands in addons/counterstrikesharp/plugins/${PROJECT_NAME}" \
+              --arg target "${GITHUB_SHA}" \
+              '{tag_name:$tag, name:$name, body:$body, target_commitish:$target}')" \
+            "${API}/releases")
+
+          RELEASE_ID=$(echo "$RELEASE_RESPONSE" | jq -r '.id')
+          if [ -z "$RELEASE_ID" ] || [ "$RELEASE_ID" = "null" ]; then
+            echo "Failed to create release:"
+            echo "$RELEASE_RESPONSE"
+            exit 1
+          fi
+
+          curl -sS -X POST \
+            -H "Authorization: token ${FORGEJO_TOKEN}" \
+            -F "attachment=@${ZIP}" \
+            "${API}/releases/${RELEASE_ID}/assets?name=${PROJECT_NAME}.zip"
