@@ -84,12 +84,10 @@ jobs:
             cp -r gamedata staging/addons/counterstrikesharp/
           fi
 
-      - name: Create release zip
-        uses: https://github.com/thedoctor0/zip-release@0.7.6
-        with:
-          type: 'zip'
-          filename: '${{ env.PROJECT_NAME }}.zip'
-          directory: 'staging'
+      - name: Create release zip (via Python)
+        run: |
+          python3 -c "import shutil; shutil.make_archive('${{ env.PROJECT_NAME }}', 'zip', 'staging')"
+          # This creates ${{ env.PROJECT_NAME }}.zip from the contents of the staging folder
 
       - name: Create Forgejo release
         run: |
