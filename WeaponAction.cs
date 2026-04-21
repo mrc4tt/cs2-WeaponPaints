@@ -707,15 +707,6 @@ namespace WeaponPaints
 
             try
             {
-                var model =
-                    pawn.CBodyComponent?.SceneNode?.GetSkeletonInstance()?.ModelState.ModelName
-                    ?? string.Empty;
-                if (!string.IsNullOrEmpty(model))
-                {
-                    pawn.SetModel("characters/models/tm_jumpsuit/tm_jumpsuit_varianta.vmdl");
-                    pawn.SetModel(model);
-                }
-
                 // Do NOT capture pawn.EconGloves here — CEconItemView is a direct reference
                 // into native CS2 memory. If the pawn is re-initialized or the model is reset
                 // between now and when the timer fires, the pointer becomes stale and reading
@@ -804,7 +795,8 @@ namespace WeaponPaints
 
                         item.Initialized = true;
 
-                        SetBodygroup(timerPawn, "default_gloves", 1);
+			SetBodygroup(pawn, "first_or_third_person", 0);
+			AddTimer(0.2f, () => SetBodygroup(pawn, "first_or_third_person", 1), TimerFlags.STOP_ON_MAPCHANGE);
                     }
                     catch (Exception)
                     {
@@ -911,7 +903,7 @@ namespace WeaponPaints
             if (!pawn.IsValid)
                 return;
 
-            pawn.SetModel($"characters/models/{model}.vmdl");
+            pawn.SetModel($"agents/models/{model}.vmdl");
         }
 
         private static void GivePlayerMusicKit(CCSPlayerController player)
