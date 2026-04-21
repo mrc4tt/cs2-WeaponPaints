@@ -89,22 +89,36 @@ jobs:
           python3 -c "import shutil; shutil.make_archive('${{ env.PROJECT_NAME }}', 'zip', 'staging')"
           # This creates ${{ env.PROJECT_NAME }}.zip from the contents of the staging folder
 
-      - name: Create Forgejo release
-        run: |
-          RELEASE_ID=$(curl -s -X POST \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "tag_name": "build-${{ env.BUILD_NUMBER }}",
-              "name": "Build ${{ env.BUILD_NUMBER }}",
-              "body": "Extract into game/csgo/ - plugin lands in addons/counterstrikesharp/plugins/${{ env.PROJECT_NAME }}"
-            }' \
-            "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/releases" | jq -r '.id')
+      - name: Create Release and Upload Asset
+        uses: https://github.com/actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const projectName = "${{ env.PROJECT_NAME }}";
+            const buildNumber = "${{ env.BUILD_NUMBER }}";
 
-          echo "Created release ID: $RELEASE_ID"
+            // 1. Create the release
+            const release = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `build-${buildNumber}`,
+              name: `Build ${buildNumber}`,
+              body: `Extract into game/csgo/ - plugin lands in addons/counterstrikesharp/plugins/${projectName}`,
+            });
 
-          curl -s -X POST \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Content-Type: application/octet-stream" \
-            --data-binary @"${{ env.PROJECT_NAME }}.zip" \
-            "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/releases/${RELEASE_ID}/assets?name=${{ env.PROJECT_NAME }}.zip"
+            // 2. Upload the zip file
+            const filePath = `./${projectName}.zip`;
+            const stats = fs.statSync(filePath);
+            
+            await github.rest.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: release.data.id,
+              name: `${projectName}.zip`,
+              data: fs.readFileSync(filePath),
+              headers: {
+                'content-type': 'application/zip',
+                'content-length': stats.size
+              }
+            });
