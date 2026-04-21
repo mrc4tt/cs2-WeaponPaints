@@ -85,10 +85,11 @@ jobs:
           fi
 
       - name: Create release zip
-        run: |
-          cd staging
-          zip -r "../${{ env.PROJECT_NAME }}.zip" .
-          cd ..
+        uses: https://github.com/thedoctor0/zip-release@0.7.6
+        with:
+          type: 'zip'
+          filename: '${{ env.PROJECT_NAME }}.zip'
+          directory: 'staging'
 
       - name: Create Forgejo release
         run: |
