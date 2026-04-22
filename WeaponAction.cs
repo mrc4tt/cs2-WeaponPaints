@@ -38,7 +38,7 @@ namespace WeaponPaints
             {
                 bool hasCustomSkin = HasChangedPaint(player, weaponDefIndex, out _);
                 bool giveRandomSkin = _config.Additional.GiveRandomSkin;
-                
+
                 // If player has no custom skin and random skins are disabled, preserve their inventory skin
                 if (!hasCustomSkin && !giveRandomSkin)
                     return;
@@ -720,90 +720,95 @@ namespace WeaponPaints
                     earlyItem.AttributeList.Attributes.RemoveAll();
                 }
 
-            Instance.AddTimer(
-                0.08f,
-                () =>
-                {
-                    try
+                Instance.AddTimer(
+                    0.08f,
+                    () =>
                     {
-                        if (!player.IsValid)
-                            return;
+                        try
+                        {
+                            if (!player.IsValid)
+                                return;
 
-                        if (!player.PawnIsAlive)
-                            return;
+                            if (!player.PawnIsAlive)
+                                return;
 
-                        // Ensure player is on a valid team
-                        if (player.Team is CsTeam.None or CsTeam.Spectator)
-                            return;
+                            // Ensure player is on a valid team
+                            if (player.Team is CsTeam.None or CsTeam.Spectator)
+                                return;
 
-                        if (!GPlayersGlove.TryGetValue(player.Slot, out var gloveInfo))
-                            return;
-                        if (!gloveInfo.TryGetValue(player.Team, out var gloveId))
-                            return;
-                        if (gloveId == 0)
-                            return;
-                        if (!HasChangedPaint(player, gloveId, out var weaponInfo) || weaponInfo == null)
-                            return;
+                            if (!GPlayersGlove.TryGetValue(player.Slot, out var gloveInfo))
+                                return;
+                            if (!gloveInfo.TryGetValue(player.Team, out var gloveId))
+                                return;
+                            if (gloveId == 0)
+                                return;
+                            if (
+                                !HasChangedPaint(player, gloveId, out var weaponInfo)
+                                || weaponInfo == null
+                            )
+                                return;
 
-                        // Re-fetch the pawn and EconGloves fresh — do not use any pointer
-                        // captured from the outer scope, as it may have been freed by now.
-                        CCSPlayerPawn? timerPawn = player.PlayerPawn.Value;
-                        if (timerPawn == null || !timerPawn.IsValid)
-                            return;
+                            // Re-fetch the pawn and EconGloves fresh — do not use any pointer
+                            // captured from the outer scope, as it may have been freed by now.
+                            CCSPlayerPawn? timerPawn = player.PlayerPawn.Value;
+                            if (timerPawn == null || !timerPawn.IsValid)
+                                return;
 
-                        CEconItemView item = timerPawn.EconGloves;
-                        if (item == null || item.Handle == IntPtr.Zero)
-                            return;
+                            CEconItemView item = timerPawn.EconGloves;
+                            if (item == null || item.Handle == IntPtr.Zero)
+                                return;
 
-                        item.ItemDefinitionIndex = gloveId;
+                            item.ItemDefinitionIndex = gloveId;
 
-                        UpdatePlayerEconItemId(item);
+                            UpdatePlayerEconItemId(item);
 
-                        item.NetworkedDynamicAttributes.Attributes.RemoveAll();
-                        CAttributeListSetOrAddAttributeValueByName.Invoke(
-                            item.NetworkedDynamicAttributes.Handle,
-                            "set item texture prefab",
-                            weaponInfo.Paint
-                        );
-                        CAttributeListSetOrAddAttributeValueByName.Invoke(
-                            item.NetworkedDynamicAttributes.Handle,
-                            "set item texture seed",
-                            weaponInfo.Seed
-                        );
-                        CAttributeListSetOrAddAttributeValueByName.Invoke(
-                            item.NetworkedDynamicAttributes.Handle,
-                            "set item texture wear",
-                            weaponInfo.Wear
-                        );
+                            item.NetworkedDynamicAttributes.Attributes.RemoveAll();
+                            CAttributeListSetOrAddAttributeValueByName.Invoke(
+                                item.NetworkedDynamicAttributes.Handle,
+                                "set item texture prefab",
+                                weaponInfo.Paint
+                            );
+                            CAttributeListSetOrAddAttributeValueByName.Invoke(
+                                item.NetworkedDynamicAttributes.Handle,
+                                "set item texture seed",
+                                weaponInfo.Seed
+                            );
+                            CAttributeListSetOrAddAttributeValueByName.Invoke(
+                                item.NetworkedDynamicAttributes.Handle,
+                                "set item texture wear",
+                                weaponInfo.Wear
+                            );
 
-                        item.AttributeList.Attributes.RemoveAll();
-                        CAttributeListSetOrAddAttributeValueByName.Invoke(
-                            item.AttributeList.Handle,
-                            "set item texture prefab",
-                            weaponInfo.Paint
-                        );
-                        CAttributeListSetOrAddAttributeValueByName.Invoke(
-                            item.AttributeList.Handle,
-                            "set item texture seed",
-                            weaponInfo.Seed
-                        );
-                        CAttributeListSetOrAddAttributeValueByName.Invoke(
-                            item.AttributeList.Handle,
-                            "set item texture wear",
-                            weaponInfo.Wear
-                        );
+                            item.AttributeList.Attributes.RemoveAll();
+                            CAttributeListSetOrAddAttributeValueByName.Invoke(
+                                item.AttributeList.Handle,
+                                "set item texture prefab",
+                                weaponInfo.Paint
+                            );
+                            CAttributeListSetOrAddAttributeValueByName.Invoke(
+                                item.AttributeList.Handle,
+                                "set item texture seed",
+                                weaponInfo.Seed
+                            );
+                            CAttributeListSetOrAddAttributeValueByName.Invoke(
+                                item.AttributeList.Handle,
+                                "set item texture wear",
+                                weaponInfo.Wear
+                            );
 
-                        item.Initialized = true;
+                            item.Initialized = true;
 
-			SetBodygroup(pawn, "first_or_third_person", 0);
-			AddTimer(0.2f, () => SetBodygroup(pawn, "first_or_third_person", 1), TimerFlags.STOP_ON_MAPCHANGE);
-                    }
-                    catch (Exception)
-                    {
-                    }
-                },
-                TimerFlags.STOP_ON_MAPCHANGE
-            );
+                            SetBodygroup(pawn, "first_or_third_person", 0);
+                            AddTimer(
+                                0.2f,
+                                () => SetBodygroup(pawn, "first_or_third_person", 1),
+                                TimerFlags.STOP_ON_MAPCHANGE
+                            );
+                        }
+                        catch (Exception) { }
+                    },
+                    TimerFlags.STOP_ON_MAPCHANGE
+                );
             }
             catch (Exception) { }
         }
@@ -875,35 +880,21 @@ namespace WeaponPaints
             if (!GPlayersAgent.TryGetValue(player.Slot, out var value))
                 return;
 
-            if (player.Team is CsTeam.None or CsTeam.Spectator)
-                return;
-
             var model = player.TeamNum == 3 ? value.CT : value.T;
             if (string.IsNullOrEmpty(model))
                 return;
 
-            // Store pawn in a local — do NOT dereference player.PlayerPawn.Value multiple
-            // times. Each dereference re-reads native memory; the pawn pointer can change
-            // between reads (e.g. model reset during spawn), and the second read can return
-            // a stale or null value even though the first read looked valid.
-            CCSPlayerPawn? pawn = player.PlayerPawn.Value;
-            if (pawn == null || !pawn.IsValid)
+            if (player.PlayerPawn.Value == null)
                 return;
 
-            // SceneNode null-check ensures the native body component exists, but is not
-            // sufficient on its own — SetModel is a native call and AccessViolationException
-            // cannot be caught by try/catch (it is a Corrupted State Exception in .NET).
-            // Re-validate pawn.IsValid immediately before the call as the last gate.
-            if (pawn.CBodyComponent?.SceneNode == null)
-                return;
-
-            // Final IsValid re-check directly before the native SetModel call.
-            // The window between the SceneNode check above and here is tiny, but CS2 can
-            // free the pawn in between on a fast disconnect/reconnect.
-            if (!pawn.IsValid)
-                return;
-
-            pawn.SetModel($"agents/models/{model}.vmdl");
+            try
+            {
+                Server.NextFrame(() =>
+                {
+                    player.PlayerPawn.Value.SetModel($"agents/models/{model}.vmdl");
+                });
+            }
+            catch (Exception) { }
         }
 
         private static void GivePlayerMusicKit(CCSPlayerController player)
@@ -964,7 +955,7 @@ namespace WeaponPaints
                 // Null safety check for weapon AttributeManager
                 if (weapon.AttributeManager?.Item == null)
                     continue;
-                    
+
                 if (myWeapons.Count == 1)
                 {
                     var newWeapon = new CBasePlayerWeapon(player.GiveNamedItem(CsItem.USP));
@@ -992,7 +983,12 @@ namespace WeaponPaints
         )
         {
             var pawn = itemServices?.Pawn?.Value;
-            if (pawn == null || !pawn.IsValid || !pawn.Controller.IsValid || pawn.Controller.Value == null)
+            if (
+                pawn == null
+                || !pawn.IsValid
+                || !pawn.Controller.IsValid
+                || pawn.Controller.Value == null
+            )
                 return null;
             var player = new CCSPlayerController(pawn.Controller.Value.Handle);
             return !Utility.IsPlayerValid(player) ? null : player;
