@@ -123,22 +123,58 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         _config = config;
 
         // Load SQL config from separate file (configs/plugins/WeaponPaints/)
-        // Priority: weaponpaintssql.json > weaponpaintssql
+        // Accept either casing; prefer whichever has filled DB credentials.
         var cssharpDir = Path.GetDirectoryName(Path.GetDirectoryName(ModuleDirectory))!;
         var sqlConfigDir = Path.Combine(cssharpDir, "configs", "plugins", "WeaponPaints");
 
-        var sqlConfigPathOriginal = Path.Combine(sqlConfigDir, "weaponpaintssql.json");
+        var candidateNames = new[] { "weaponpaintssql.json", "WeaponPaintsSQL.json", "WeaponPaints.json" };
+        var existingCandidates = new List<(string Path, WeaponPaintsSqlConfig? Cfg, bool Filled)>();
+
+        foreach (var name in candidateNames)
+        {
+            var path = Path.Combine(sqlConfigDir, name);
+            if (!File.Exists(path))
+                continue;
+
+            WeaponPaintsSqlConfig? parsed = null;
+            try
+            {
+                parsed = JsonSerializer.Deserialize<WeaponPaintsSqlConfig>(File.ReadAllText(path));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error reading SQL config \"{path}\": {ex.Message}");
+            }
+
+            var filled =
+                parsed is not null
+                && parsed.DatabaseHost.Length > 0
+                && parsed.DatabaseName.Length > 0
+                && parsed.DatabaseUser.Length > 0;
+
+            existingCandidates.Add((path, parsed, filled));
+        }
+
+        var chosen = existingCandidates.FirstOrDefault(c => c.Filled);
 
         string sqlConfigPath;
-        if (File.Exists(sqlConfigPathOriginal))
+        if (chosen.Path is not null)
         {
-            sqlConfigPath = sqlConfigPathOriginal;
-            Logger.LogInformation($"Using SQL config: weaponpaintssql.json");
+            sqlConfigPath = chosen.Path;
+            SqlConfig = chosen.Cfg!;
+            Logger.LogInformation($"Using SQL config: {Path.GetFileName(sqlConfigPath)}");
+        }
+        else if (existingCandidates.Count > 0)
+        {
+            var paths = string.Join(", ", existingCandidates.Select(c => $"\"{c.Path}\""));
+            Logger.LogError($"You need to setup Database credentials in {paths}!");
+            Unload(false);
+            return;
         }
         else
         {
             // Neither file exists — create default with lowercase name
-            sqlConfigPath = sqlConfigPathOriginal;
+            sqlConfigPath = Path.Combine(sqlConfigDir, candidateNames[0]);
             SqlConfig = new WeaponPaintsSqlConfig();
             var defaultJson = JsonSerializer.Serialize(
                 SqlConfig,
@@ -149,31 +185,6 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             Logger.LogError(
                 $"SQL config file created at \"{sqlConfigPath}\". Please configure your database credentials!"
             );
-            Unload(false);
-            return;
-        }
-
-        try
-        {
-            var sqlConfigJson = File.ReadAllText(sqlConfigPath);
-            SqlConfig =
-                JsonSerializer.Deserialize<WeaponPaintsSqlConfig>(sqlConfigJson)
-                ?? new WeaponPaintsSqlConfig();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Error reading SQL config: {ex.Message}");
-            Unload(false);
-            return;
-        }
-
-        if (
-            SqlConfig.DatabaseHost.Length < 1
-            || SqlConfig.DatabaseName.Length < 1
-            || SqlConfig.DatabaseUser.Length < 1
-        )
-        {
-            Logger.LogError($"You need to setup Database credentials in \"{sqlConfigPath}\"!");
             Unload(false);
             return;
         }
