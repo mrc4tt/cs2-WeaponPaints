@@ -45,15 +45,7 @@ public partial class WeaponPaints
         // 	return;
         // }
 
-        PlayerInfo? playerInfo = new PlayerInfo
-        {
-            UserId = player.UserId,
-            Slot = player.Slot,
-            Index = (int)player.Index,
-            SteamId = player.SteamID.ToString(),
-            Name = player.PlayerName,
-            IpAddress = player.IpAddress?.Split(":")[0],
-        };
+	PlayerInfo playerInfo = PlayerInfo.From(player);
 
         // Set cooldown immediately
         CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(
@@ -243,15 +235,7 @@ public partial class WeaponPaints
             tempWear.TryRemove(weaponDefIndex, out _);
         }
 
-        var playerInfo = new PlayerInfo
-        {
-            UserId = player.UserId,
-            Slot = player.Slot,
-            Index = (int)player.Index,
-            SteamId = player.SteamID.ToString(),
-            Name = player.PlayerName,
-            IpAddress = player.IpAddress?.Split(":")[0],
-        };
+        var playerInfo = PlayerInfo.From(player);
 
         // Refresh only this specific weapon; for knives, apply skin directly without kill/regive
         if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
@@ -364,15 +348,7 @@ public partial class WeaponPaints
             }
         }
 
-        var playerInfo = new PlayerInfo
-        {
-            UserId = player.UserId,
-            Slot = player.Slot,
-            Index = (int)player.Index,
-            SteamId = player.SteamID.ToString(),
-            Name = player.PlayerName,
-            IpAddress = player.IpAddress?.Split(":")[0],
-        };
+        var playerInfo = PlayerInfo.From(player);
 
         // Refresh only this specific weapon; for knives, apply skin directly without kill/regive
         if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
@@ -433,23 +409,44 @@ public partial class WeaponPaints
         string? selectedWeaponClassname = null;
         string? selectedWeaponName = null;
 
+        // Pass 1: exact match first so "bayonet" picks weapon_bayonet, not weapon_knife_m9_bayonet.
         foreach (var kvp in WeaponList)
         {
-            var className = kvp.Key.ToLower();
+            var classNameStripped = kvp.Key.ToLower().Replace("weapon_", "");
             var displayName = kvp.Value.ToLower();
+            var displayNameCompact = displayName.Replace("-", "").Replace(" ", "");
 
-            // Match by partial class name (e.g., "ak47" matches "weapon_ak47")
-            // or by partial display name (e.g., "ak" matches "AK-47")
             if (
-                className.Contains(weaponArg)
-                || className.Replace("weapon_", "").Contains(weaponArg)
-                || displayName.Contains(weaponArg)
-                || displayName.Replace("-", "").Replace(" ", "").Contains(weaponArg)
+                classNameStripped == weaponArg
+                || displayName == weaponArg
+                || displayNameCompact == weaponArg
             )
             {
                 selectedWeaponClassname = kvp.Key;
                 selectedWeaponName = kvp.Value;
                 break;
+            }
+        }
+
+        // Pass 2: fall back to substring match (e.g., "ak" → "AK-47", "m9" → "M9 Bayonet").
+        if (selectedWeaponClassname == null)
+        {
+            foreach (var kvp in WeaponList)
+            {
+                var className = kvp.Key.ToLower();
+                var displayName = kvp.Value.ToLower();
+
+                if (
+                    className.Contains(weaponArg)
+                    || className.Replace("weapon_", "").Contains(weaponArg)
+                    || displayName.Contains(weaponArg)
+                    || displayName.Replace("-", "").Replace(" ", "").Contains(weaponArg)
+                )
+                {
+                    selectedWeaponClassname = kvp.Key;
+                    selectedWeaponName = kvp.Value;
+                    break;
+                }
             }
         }
 
@@ -529,14 +526,8 @@ public partial class WeaponPaints
             if (!Utility.IsPlayerValid(p))
                 return;
 
-            var firstSkin = SkinsList.FirstOrDefault(skin =>
-            {
-                if (skin.TryGetValue("weapon_name", out var weaponName))
-                {
-                    return weaponName?.ToString() == weaponClassname;
-                }
-                return false;
-            });
+            SkinsByWeaponName.TryGetValue(weaponClassname, out var weaponSkins);
+            var firstSkin = weaponSkins?.FirstOrDefault();
 
             var selectedSkin = opt.Text;
             var selectedPaintId = selectedSkin[(selectedSkin.LastIndexOf('(') + 1)..].Trim(')');
@@ -551,11 +542,18 @@ public partial class WeaponPaints
             {
                 if (Config.Additional.ShowSkinImage)
                 {
-                    var foundSkin = SkinsList.FirstOrDefault(skin =>
-                        ((int?)skin["weapon_defindex"] ?? 0) == weaponDefIndex
-                        && ((int?)skin["paint"] ?? 0) == paintId
-                        && skin["image"] != null
-                    );
+                    JObject? foundSkin = null;
+                    if (weaponSkins != null)
+                    {
+                        foreach (var s in weaponSkins)
+                        {
+                            if (((int?)s["paint"] ?? 0) == paintId && s["image"] != null)
+                            {
+                                foundSkin = s;
+                                break;
+                            }
+                        }
+                    }
                     var image = foundSkin?["image"]?.ToString() ?? "";
                     _playerWeaponImage[p.Slot] = image;
                     AddTimer(
@@ -586,15 +584,7 @@ public partial class WeaponPaints
                     value.Seed = 0;
                 }
 
-                var playerInfo = new PlayerInfo
-                {
-                    UserId = p.UserId,
-                    Slot = p.Slot,
-                    Index = (int)p.Index,
-                    SteamId = p.SteamID.ToString(),
-                    Name = p.PlayerName,
-                    IpAddress = p.IpAddress?.Split(":")[0],
-                };
+                var playerInfo = PlayerInfo.From(p);
 
                 if (
                     !_gBCommandsAllowed
@@ -649,7 +639,7 @@ public partial class WeaponPaints
 
     private void RegisterCommands()
     {
-        _config.Additional.CommandStattrak.ForEach(c =>
+	Config.Additional.CommandStattrak.ForEach(c =>
         {
             AddCommand(
                 $"css_{c}",
@@ -664,7 +654,7 @@ public partial class WeaponPaints
             );
         });
 
-        _config.Additional.CommandSkin.ForEach(c =>
+        Config.Additional.CommandSkin.ForEach(c =>
         {
             AddCommand(
                 $"css_{c}",
@@ -678,7 +668,7 @@ public partial class WeaponPaints
             );
         });
 
-        _config.Additional.CommandRefresh.ForEach(c =>
+        Config.Additional.CommandRefresh.ForEach(c =>
         {
             AddCommand(
                 $"css_{c}",
@@ -693,7 +683,7 @@ public partial class WeaponPaints
         });
 
         // Register float command
-        _config.Additional.CommandFloat.ForEach(c =>
+        Config.Additional.CommandFloat.ForEach(c =>
         {
             AddCommand(
                 $"css_{c}",
@@ -708,7 +698,7 @@ public partial class WeaponPaints
         });
 
         // Register seed command
-        _config.Additional.CommandSeed.ForEach(c =>
+        Config.Additional.CommandSeed.ForEach(c =>
         {
             AddCommand(
                 $"css_{c}",
@@ -724,7 +714,7 @@ public partial class WeaponPaints
 
         if (Config.Additional.CommandKillEnabled)
         {
-            _config.Additional.CommandKill.ForEach(c =>
+            Config.Additional.CommandKill.ForEach(c =>
             {
                 AddCommand(
                     $"css_{c}",
@@ -830,15 +820,7 @@ public partial class WeaponPaints
                 player.Print(Localizer["wp_knife_menu_kill"]);
             }
 
-            PlayerInfo playerInfo = new PlayerInfo
-            {
-                UserId = player.UserId,
-                Slot = player.Slot,
-                Index = (int)player.Index,
-                SteamId = player.SteamID.ToString(),
-                Name = player.PlayerName,
-                IpAddress = player.IpAddress?.Split(":")[0],
-            };
+	    PlayerInfo playerInfo = PlayerInfo.From(player);
 
             foreach (var team in teamsToCheck)
             {
@@ -858,7 +840,7 @@ public partial class WeaponPaints
         {
             giveItemMenu?.AddMenuOption(knifePair.Value, handleGive);
         }
-        _config.Additional.CommandKnife.ForEach(c =>
+        Config.Additional.CommandKnife.ForEach(c =>
         {
             AddCommand(
                 $"css_{c}",
@@ -904,7 +886,7 @@ public partial class WeaponPaints
     private void SetupSkinsMenu()
     {
         // Register the direct skin selection command with argument support
-        _config.Additional.CommandSkinSelection.ForEach(c =>
+        Config.Additional.CommandSkinSelection.ForEach(c =>
         {
             AddCommand(
                 $"css_{c}",
@@ -946,14 +928,10 @@ public partial class WeaponPaints
                     ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
                     : [player.Team];
 
-            var selectedGlove = GlovesList.FirstOrDefault(g =>
-                g.ContainsKey("paint_name") && g["paint_name"]?.ToString() == selectedPaintName
-            );
+            GlovesByPaintName.TryGetValue(selectedPaintName, out var selectedGlove);
             var image = selectedGlove?["image"]?.ToString() ?? "";
             if (
                 selectedGlove == null
-                || !selectedGlove.ContainsKey("weapon_defindex")
-                || !selectedGlove.ContainsKey("paint")
                 || !int.TryParse(
                     selectedGlove["weapon_defindex"]?.ToString(),
                     out var weaponDefindex
@@ -971,47 +949,20 @@ public partial class WeaponPaints
                 );
             }
 
-            PlayerInfo playerInfo = new PlayerInfo
-            {
-                UserId = player.UserId,
-                Slot = player.Slot,
-                Index = (int)player.Index,
-                SteamId = player.SteamID.ToString(),
-                Name = player.PlayerName,
-                IpAddress = player.IpAddress?.Split(":")[0],
-            };
+            PlayerInfo playerInfo = PlayerInfo.From(player);
 
             if (paint != 0)
             {
-                // Ensure that player weapons info exists for the player
-                if (!GPlayerWeaponsInfo.ContainsKey(player.Slot))
-                {
-                    GPlayerWeaponsInfo[player.Slot] =
-                        new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>();
-                }
-
-                // Ensure teams are initialized and update glove info
+                var playerWeapons = GPlayerWeaponsInfo.GetOrAdd(
+                    player.Slot,
+                    _ => new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>()
+                );
                 foreach (var team in teamsToCheck)
                 {
-                    if (!GPlayerWeaponsInfo[player.Slot].ContainsKey(team))
-                    {
-                        GPlayerWeaponsInfo[player.Slot][team] =
-                            new ConcurrentDictionary<int, WeaponInfo>();
-                    }
-
-                    // Update the glove for the player in the specified team
                     playerGloves[team] = (ushort)weaponDefindex;
-
-                    // Update weapon info with glove paint
-                    if (
-                        !GPlayerWeaponsInfo[player.Slot]
-                            [team]
-                            .TryGetValue(weaponDefindex, out var weaponInfo)
-                    )
-                    {
-                        weaponInfo = new WeaponInfo();
-                        GPlayerWeaponsInfo[player.Slot][team][weaponDefindex] = weaponInfo;
-                    }
+                    var weaponInfo = playerWeapons
+                        .GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>())
+                        .GetOrAdd(weaponDefindex, _ => new WeaponInfo());
                     weaponInfo.Paint = paint;
                     weaponInfo.Wear = 0.00f;
                     weaponInfo.Seed = 0;
@@ -1025,18 +976,15 @@ public partial class WeaponPaints
             if (WeaponSync == null)
                 return;
 
-            // Async DB sync (doesn't block glove refresh)
+            // Single DB round-trip for both syncs — previous loop ran them once per team.
             _ = Task.Run(async () =>
             {
-                foreach (var team in teamsToCheck)
-                {
-                    await WeaponSync.SyncGloveToDatabase(
-                        playerInfo,
-                        (ushort)weaponDefindex,
-                        teamsToCheck
-                    );
-                    await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo);
-                }
+                await WeaponSync.SyncGloveToDatabase(
+                    playerInfo,
+                    (ushort)weaponDefindex,
+                    teamsToCheck
+                );
+                await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo);
             });
 
             AddTimer(
@@ -1066,7 +1014,7 @@ public partial class WeaponPaints
         }
 
         // Command to open the weapon selection menu for players
-        _config.Additional.CommandGlove.ForEach(c =>
+        Config.Additional.CommandGlove.ForEach(c =>
         {
             AddCommand(
                 $"css_{c}",
@@ -1121,11 +1069,7 @@ public partial class WeaponPaints
             var selectedAgentName = option.Text;
             var playerTeam = player.TeamNum.ToString();
 
-            var selectedAgent = AgentsList.FirstOrDefault(a =>
-                a.ContainsKey("agent_name")
-                && a["agent_name"]?.ToString() == selectedAgentName
-                && a["team"]?.ToString() == playerTeam
-            );
+            AgentsByNameAndTeam.TryGetValue((selectedAgentName, player.TeamNum), out var selectedAgent);
             var image = selectedAgent?["image"]?.ToString() ?? "";
             if (
                 selectedAgent == null
@@ -1150,15 +1094,7 @@ public partial class WeaponPaints
             if (string.IsNullOrEmpty(model) || string.IsNullOrEmpty(team))
                 return;
 
-            PlayerInfo playerInfo = new PlayerInfo
-            {
-                UserId = player.UserId,
-                Slot = player.Slot,
-                Index = (int)player.Index,
-                SteamId = player.SteamID.ToString(),
-                Name = player.PlayerName,
-                IpAddress = player.IpAddress?.Split(":")[0],
-            };
+            PlayerInfo playerInfo = PlayerInfo.From(player);
 
             var currentAgents = GPlayersAgent.GetOrAdd(player.Slot, (null, null));
             var isDefault = model == "null";
@@ -1184,6 +1120,28 @@ public partial class WeaponPaints
                 AddTimer(0.1f, () => GivePlayerAgent(player));
                 AddTimer(0.25f, () => GivePlayerAgent(player));
             }
+            else if (player.PawnIsAlive
+                     && player.PlayerPawn.Value != null
+                     && OriginalPawnModel.TryGetValue(player.Slot, out var defaultModel))
+            {
+                // Player selected "Agent | Default" while alive — restore the map/team's
+                // default model captured on this player's last spawn. If the cache is empty
+                // (plugin hot-reloaded mid-round, or model path wasn't readable), we fall
+                // through silently and the change applies on the next natural respawn.
+                var pawn = player.PlayerPawn.Value;
+                Server.NextFrame(() =>
+                {
+                    try
+                    {
+                        if (pawn.IsValid)
+                            pawn.SetModel(defaultModel);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogWarning("Default agent restore failed: {Message}", ex.Message);
+                    }
+                });
+            }
 
             if (WeaponSync != null)
             {
@@ -1205,7 +1163,7 @@ public partial class WeaponPaints
         }
 
         // Command to open the agent selection menu for players
-        _config.Additional.CommandAgent.ForEach(c =>
+        Config.Additional.CommandAgent.ForEach(c =>
         {
             AddCommand(
                 $"css_{c}",
@@ -1288,15 +1246,7 @@ public partial class WeaponPaints
                     );
                 }
 
-                PlayerInfo playerInfo = new PlayerInfo
-                {
-                    UserId = player.UserId,
-                    Slot = player.Slot,
-                    Index = (int)player.Index,
-                    SteamId = player.SteamID.ToString(),
-                    Name = player.PlayerName,
-                    IpAddress = player.IpAddress?.Split(":")[0],
-                };
+                PlayerInfo playerInfo = PlayerInfo.From(player);
 
                 if (paint != 0)
                 {
@@ -1334,15 +1284,7 @@ public partial class WeaponPaints
             }
             else
             {
-                PlayerInfo playerInfo = new PlayerInfo
-                {
-                    UserId = player.UserId,
-                    Slot = player.Slot,
-                    Index = (int)player.Index,
-                    SteamId = player.SteamID.ToString(),
-                    Name = player.PlayerName,
-                    IpAddress = player.IpAddress?.Split(":")[0],
-                };
+                PlayerInfo playerInfo = PlayerInfo.From(player);
 
                 foreach (var team in teamsToCheck)
                 {
@@ -1378,7 +1320,7 @@ public partial class WeaponPaints
         }
 
         // Command to open the weapon selection menu for players
-        _config.Additional.CommandMusic.ForEach(c =>
+        Config.Additional.CommandMusic.ForEach(c =>
         {
             AddCommand(
                 $"css_{c}",
@@ -1461,15 +1403,7 @@ public partial class WeaponPaints
                     );
                 }
 
-                PlayerInfo playerInfo = new PlayerInfo
-                {
-                    UserId = player.UserId,
-                    Slot = player.Slot,
-                    Index = (int)player.Index,
-                    SteamId = player.SteamID.ToString(),
-                    Name = player.PlayerName,
-                    IpAddress = player.IpAddress?.Split(":")[0],
-                };
+                PlayerInfo playerInfo = PlayerInfo.From(player);
 
                 if (paint != 0)
                 {
@@ -1503,15 +1437,7 @@ public partial class WeaponPaints
             }
             else
             {
-                PlayerInfo playerInfo = new PlayerInfo
-                {
-                    UserId = player.UserId,
-                    Slot = player.Slot,
-                    Index = (int)player.Index,
-                    SteamId = player.SteamID.ToString(),
-                    Name = player.PlayerName,
-                    IpAddress = player.IpAddress?.Split(":")[0],
-                };
+                PlayerInfo playerInfo = PlayerInfo.From(player);
 
                 foreach (var team in teamsToCheck)
                 {
@@ -1547,7 +1473,7 @@ public partial class WeaponPaints
         }
 
         // Command to open the weapon selection menu for players
-        _config.Additional.CommandPin.ForEach(c =>
+        Config.Additional.CommandPin.ForEach(c =>
         {
             AddCommand(
                 $"css_{c}",

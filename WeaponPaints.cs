@@ -18,21 +18,14 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
 
     public WeaponPaintsConfig Config { get; set; } = new();
     internal static WeaponPaintsSqlConfig SqlConfig { get; set; } = new();
-    private static WeaponPaintsConfig _config { get; set; } = new();
     public override string ModuleAuthor => "Nereziel & daffyy";
     public override string ModuleDescription =>
         "Skin, gloves, agents and knife selector, standalone and web-based";
     public override string ModuleName => "WeaponPaints";
-    public override string ModuleVersion => "3.3a";
+    public override string ModuleVersion => "3.4a";
 
     public override void Load(bool hotReload)
     {
-        // Hardcoded hotfix needs to be changed later (Not needed 17.09.2025)
-        //if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        //	Patch.PerformPatch("0F 85 ? ? ? ? 31 C0 B9 ? ? ? ? BA ? ? ? ? 66 0F EF C0 31 F6 31 FF 48 C7 45 ? ? ? ? ? 48 C7 45 ? ? ? ? ? 48 C7 45 ? ? ? ? ? 48 C7 45 ? ? ? ? ? 0F 29 45 ? 48 C7 45 ? ? ? ? ? C7 45 ? ? ? ? ? 66 89 45 ? E8 ? ? ? ? 41 89 C5 85 C0 0F 8E", "90 90 90 90 90 90");
-        //else
-        //	Patch.PerformPatch("74 ? 48 8D 0D ? ? ? ? FF 15 ? ? ? ? EB ? BA", "EB");
-
         Instance = this;
 
         if (hotReload)
@@ -59,21 +52,12 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
                             )
                             .Where(player =>
                                 player.IsValid
-                                && !string.IsNullOrEmpty(player.IpAddress)
                                 && player
                                     is { IsBot: false, Connected: PlayerConnectedState.PlayerConnected }
                             )
                     )
                     {
-                        var playerInfo = new PlayerInfo
-                        {
-                            UserId = player.UserId,
-                            Slot = player.Slot,
-                            Index = (int)player.Index,
-                            SteamId = player?.SteamID.ToString(),
-                            Name = player?.PlayerName,
-                            IpAddress = player?.IpAddress?.Split(":")[0],
-                        };
+                        var playerInfo = PlayerInfo.From(player);
 
                         _ = Task.Run(async () =>
                         {
@@ -81,9 +65,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
                                 await WeaponSync.GetPlayerData(playerInfo);
                         });
 
-                        // Rebuild SteamID cache
-                        if (player != null)
-                            PlayersBySteamId[player.SteamID] = player;
+                        PlayersBySteamId[player.SteamID] = player;
                     }
                 }
                 catch (Exception ex)
@@ -94,23 +76,23 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         }
 
         Utility.LoadSkinsFromFile(
-            ModuleDirectory + $"/data/skins_{_config.SkinsLanguage}.json",
+            ModuleDirectory + $"/data/skins_{Config.SkinsLanguage}.json",
             Logger
         );
         Utility.LoadGlovesFromFile(
-            ModuleDirectory + $"/data/gloves_{_config.SkinsLanguage}.json",
+            ModuleDirectory + $"/data/gloves_{Config.SkinsLanguage}.json",
             Logger
         );
         Utility.LoadAgentsFromFile(
-            ModuleDirectory + $"/data/agents_{_config.SkinsLanguage}.json",
+            ModuleDirectory + $"/data/agents_{Config.SkinsLanguage}.json",
             Logger
         );
         Utility.LoadMusicFromFile(
-            ModuleDirectory + $"/data/music_{_config.SkinsLanguage}.json",
+            ModuleDirectory + $"/data/music_{Config.SkinsLanguage}.json",
             Logger
         );
         Utility.LoadPinsFromFile(
-            ModuleDirectory + $"/data/collectibles_{_config.SkinsLanguage}.json",
+            ModuleDirectory + $"/data/collectibles_{Config.SkinsLanguage}.json",
             Logger
         );
 
@@ -120,7 +102,6 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
     public void OnConfigParsed(WeaponPaintsConfig config)
     {
         Config = config;
-        _config = config;
 
         // Load SQL config from separate file (configs/plugins/WeaponPaints/)
         // Accept either casing; prefer whichever has filled DB credentials.

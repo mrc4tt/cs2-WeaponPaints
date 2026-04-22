@@ -29,15 +29,7 @@ namespace WeaponPaints
             )
                 return HookResult.Continue;
 
-            var playerInfo = new PlayerInfo
-            {
-                UserId = player.UserId,
-                Slot = player.Slot,
-                Index = (int)player.Index,
-                SteamId = player.SteamID.ToString(),
-                Name = player.PlayerName,
-                IpAddress = player.IpAddress?.Split(":")[0],
-            };
+            var playerInfo = PlayerInfo.From(player);
 
             try
             {
@@ -64,10 +56,7 @@ namespace WeaponPaints
 
                         // Check if the knife already has the correct type applied (normal connect)
                         // Only kill+regive if it's still a default knife (reconnect race condition)
-                        var desiredDefIndex = WeaponDefindex.FirstOrDefault(x =>
-                            x.Value == knifeValue
-                        );
-                        if (desiredDefIndex.Key == 0)
+                        if (knifeValue == null || !WeaponDefindexByName.TryGetValue(knifeValue, out var desiredDefIndex))
                             return;
 
                         bool needsRefresh = false;
@@ -83,7 +72,7 @@ namespace WeaponPaints
                             {
                                 // If defindex already matches desired knife, skin was applied normally
                                 if (weaponHandle.Value.AttributeManager?.Item != null &&
-                                    weaponHandle.Value.AttributeManager.Item.ItemDefinitionIndex == (ushort)desiredDefIndex.Key)
+                                    weaponHandle.Value.AttributeManager.Item.ItemDefinitionIndex == (ushort)desiredDefIndex)
                                     break;
 
                                 needsRefresh = true;
@@ -124,15 +113,7 @@ namespace WeaponPaints
             if (player is null || !player.IsValid || player.IsBot)
                 return HookResult.Continue;
 
-            var playerInfo = new PlayerInfo
-            {
-                UserId = player.UserId,
-                Slot = player.Slot,
-                Index = (int)player.Index,
-                SteamId = player.SteamID.ToString(),
-                Name = player.PlayerName,
-                IpAddress = player.IpAddress?.Split(":")[0],
-            };
+            var playerInfo = PlayerInfo.From(player);
 
             try
             {
@@ -176,6 +157,7 @@ namespace WeaponPaints
             _temporaryPlayerWeaponWear.TryRemove(player.Slot, out _);
             CommandsCooldown.Remove(player.Slot);
             PlayersBySteamId.TryRemove(player.SteamID, out _);
+            OriginalPawnModel.TryRemove(player.Slot, out _);
             Players.Remove(player);
 
             return HookResult.Continue;
@@ -223,6 +205,24 @@ namespace WeaponPaints
                 CCSPlayerPawn? pawn = player.PlayerPawn.Value;
                 if (pawn == null || !pawn.IsValid)
                     return;
+
+                // Capture CS2's default pawn model for this map/team BEFORE any custom agent
+                // overrides it — lets us restore "Default" mid-round without kill+respawn.
+                try
+                {
+                    var modelPath = pawn.CBodyComponent?.SceneNode?
+                        .GetSkeletonInstance()?.ModelState.ModelName.ToString();
+                    if (!string.IsNullOrEmpty(modelPath)
+                        && modelPath.Contains('/')
+                        && modelPath.EndsWith(".vmdl"))
+                    {
+                        OriginalPawnModel[player.Slot] = modelPath;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning("Cache pawn model failed: {Message}", ex.Message);
+                }
 
                 GivePlayerMusicKit(player);
                 GivePlayerAgent(player);
@@ -403,7 +403,10 @@ namespace WeaponPaints
 
                         GivePlayerWeaponSkin(player, weapon);
                     }
-                    catch (Exception) { }
+                    catch (Exception ex)
+                    {
+                        Logger.LogWarning("OnEntityCreated apply failed: {Message}", ex.Message);
+                    }
                 });
             }
         }

@@ -37,7 +37,7 @@ namespace WeaponPaints
             if (!isKnife)
             {
                 bool hasCustomSkin = HasChangedPaint(player, weaponDefIndex, out _);
-                bool giveRandomSkin = _config.Additional.GiveRandomSkin;
+                bool giveRandomSkin = Config.Additional.GiveRandomSkin;
 
                 // If player has no custom skin and random skins are disabled, preserve their inventory skin
                 if (!hasCustomSkin && !giveRandomSkin)
@@ -55,10 +55,7 @@ namespace WeaponPaints
 
                 case true:
                 {
-                    var newDefIndex = WeaponDefindex.FirstOrDefault(x =>
-                        x.Value == playerKnifeValue
-                    );
-                    if (newDefIndex.Key == 0)
+                    if (playerKnifeValue == null || !WeaponDefindexByName.TryGetValue(playerKnifeValue, out var newDefIndex))
                         return;
 
                     // Only call SubclassChange if the knife type actually needs to change.
@@ -68,10 +65,10 @@ namespace WeaponPaints
                     // when processed. By skipping SubclassChange when the defindex already
                     // matches, the second call (from OnEntityCreated's NextWorldUpdate) applies
                     // paint without a pending SubclassChange to wipe it.
-                    if (weapon.AttributeManager.Item.ItemDefinitionIndex != (ushort)newDefIndex.Key)
+                    if (weapon.AttributeManager.Item.ItemDefinitionIndex != (ushort)newDefIndex)
                     {
-                        SubclassChange(weapon, (ushort)newDefIndex.Key);
-                        weapon.AttributeManager.Item.ItemDefinitionIndex = (ushort)newDefIndex.Key;
+                        SubclassChange(weapon, (ushort)newDefIndex);
+                        weapon.AttributeManager.Item.ItemDefinitionIndex = (ushort)newDefIndex;
                     }
 
                     weapon.AttributeManager.Item.EntityQuality = 3;
@@ -94,11 +91,10 @@ namespace WeaponPaints
 
             weapon.AttributeManager.Item.AccountID = (uint)player.SteamID;
 
-            List<JObject> skinInfo;
             bool isLegacyModel;
 
             if (
-                _config.Additional.GiveRandomSkin && !HasChangedPaint(player, weaponDefIndex, out _)
+                Config.Additional.GiveRandomSkin && !HasChangedPaint(player, weaponDefIndex, out _)
             )
             {
                 // Random skins
@@ -145,14 +141,7 @@ namespace WeaponPaints
                 if (fallbackPaintKit == 0)
                     return;
 
-                skinInfo = SkinsList
-                    .Where(w =>
-                        w["weapon_defindex"]?.ToObject<int>() == weaponDefIndex
-                        && w["paint"]?.ToObject<int>() == fallbackPaintKit
-                    )
-                    .ToList();
-
-                isLegacyModel = skinInfo.Count <= 0 || skinInfo[0].Value<bool>("legacy_model");
+                isLegacyModel = !SkinsLegacyModelIndex.TryGetValue((weaponDefIndex, fallbackPaintKit), out var legacyApply) || legacyApply;
                 UpdatePlayerWeaponMeshGroupMask(player, weapon, isLegacyModel);
                 return;
             }
@@ -221,14 +210,7 @@ namespace WeaponPaints
             if (weaponInfo.Stickers.Count > 0)
                 SetStickers(player, weapon);
 
-            skinInfo = SkinsList
-                .Where(w =>
-                    w["weapon_defindex"]?.ToObject<int>() == weaponDefIndex
-                    && w["paint"]?.ToObject<int>() == fallbackPaintKit
-                )
-                .ToList();
-
-            isLegacyModel = skinInfo.Count <= 0 || skinInfo[0].Value<bool>("legacy_model");
+            isLegacyModel = !SkinsLegacyModelIndex.TryGetValue((weaponDefIndex, fallbackPaintKit), out var legacyApply2) || legacyApply2;
             UpdatePlayerWeaponMeshGroupMask(player, weapon, isLegacyModel);
         }
 
@@ -365,7 +347,7 @@ namespace WeaponPaints
 
         private static void GiveKnifeToPlayer(CCSPlayerController? player)
         {
-            if (!_config.Additional.KnifeEnabled || player == null || !player.IsValid)
+            if (!Instance.Config.Additional.KnifeEnabled || player == null || !player.IsValid)
                 return;
 
             if (PlayerHasKnife(player))
@@ -378,7 +360,7 @@ namespace WeaponPaints
 
         private static bool PlayerHasKnife(CCSPlayerController? player)
         {
-            if (!_config.Additional.KnifeEnabled)
+            if (!Instance.Config.Additional.KnifeEnabled)
                 return false;
 
             if (player == null || !player.IsValid || !player.PlayerPawn.IsValid)
@@ -805,12 +787,18 @@ namespace WeaponPaints
                                 TimerFlags.STOP_ON_MAPCHANGE
                             );
                         }
-                        catch (Exception) { }
+                        catch (Exception ex)
+                        {
+                            Logger.LogWarning("GivePlayerGloves bodygroup refresh failed: {Message}", ex.Message);
+                        }
                     },
                     TimerFlags.STOP_ON_MAPCHANGE
                 );
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                Logger.LogWarning("GivePlayerGloves failed: {Message}", ex.Message);
+            }
         }
 
         private static int GetRandomPaint(int defindex)
@@ -884,6 +872,13 @@ namespace WeaponPaints
             if (string.IsNullOrEmpty(model) || model == "null")
                 return;
 
+            // Only load models that came from the agents catalog — untrusted paths could cause issues.
+            if (!AgentsModelSet.Contains(model))
+            {
+                Instance.Logger.LogWarning("Rejected agent model not in catalog: {Model}", model);
+                return;
+            }
+
             if (player.PlayerPawn.Value == null)
                 return;
 
@@ -894,7 +889,10 @@ namespace WeaponPaints
                     player.PlayerPawn.Value.SetModel($"agents/models/{model}.vmdl");
                 });
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                Instance.Logger.LogWarning("GivePlayerAgent failed: {Message}", ex.Message);
+            }
         }
 
         private static void GivePlayerMusicKit(CCSPlayerController player)

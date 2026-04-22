@@ -78,7 +78,22 @@ namespace WeaponPaints
     public class WeaponPaintsConfig : BasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 11;
+        public override int Version { get; set; } = 12;
+
+        [JsonPropertyName("DatabaseHost")]
+        public string DatabaseHost { get; set; } = "";
+
+        [JsonPropertyName("DatabasePort")]
+        public int DatabasePort { get; set; } = 3306;
+
+        [JsonPropertyName("DatabaseUser")]
+        public string DatabaseUser { get; set; } = "";
+
+        [JsonPropertyName("DatabasePassword")]
+        public string DatabasePassword { get; set; } = "";
+
+        [JsonPropertyName("DatabaseName")]
+        public string DatabaseName { get; set; } = "";
 
         [JsonPropertyName("SkinsLanguage")]
         public string SkinsLanguage { get; set; } = "en";

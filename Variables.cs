@@ -100,6 +100,14 @@ public partial class WeaponPaints
     internal static List<JObject> GlovesList = [];
     internal static List<JObject> AgentsList = [];
     internal static List<JObject> MusicList = [];
+
+    // O(1) lookup indexes rebuilt whenever the corresponding *List is reloaded.
+    internal static Dictionary<string, List<JObject>> SkinsByWeaponName = new();
+    internal static Dictionary<(int defindex, int paint), bool> SkinsLegacyModelIndex = new();
+    internal static Dictionary<string, JObject> GlovesByPaintName = new();
+    internal static Dictionary<(string name, int team), JObject> AgentsByNameAndTeam = new();
+    internal static Dictionary<int, List<JObject>> AgentsByTeam = new();
+    internal static HashSet<string> AgentsModelSet = new();
     internal static WeaponSynchronization? WeaponSync;
     private static bool _gBCommandsAllowed = true;
     private readonly Dictionary<int, string> _playerWeaponImage = new();
@@ -182,6 +190,9 @@ public partial class WeaponPaints
             { 526, "weapon_knife_kukri" },
         };
 
+    private static readonly Dictionary<string, int> WeaponDefindexByName = WeaponDefindex
+        .ToDictionary(kv => kv.Value, kv => kv.Key);
+
     private const ulong MinimumCustomItemId = 65578;
     private ulong _nextItemId = MinimumCustomItemId;
     private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
@@ -200,4 +211,8 @@ public partial class WeaponPaints
 
     // Performance: SteamID → Player cache to avoid linear scans in OnEntityCreated
     internal readonly ConcurrentDictionary<ulong, CCSPlayerController> PlayersBySteamId = new();
+
+    // Per-slot cache of CS2's faction/map default pawn model, captured on spawn before any
+    // custom agent overrides it. Used to restore immediately when player picks "Agent | Default".
+    internal static readonly ConcurrentDictionary<int, string> OriginalPawnModel = new();
 }

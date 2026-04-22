@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using CounterStrikeSharp.API.Modules.Utils;
 using Dapper;
+using Microsoft.Extensions.Logging;
 using MySqlConnector;
 
 namespace WeaponPaints;
@@ -35,36 +36,25 @@ internal class WeaponSynchronization
             await using var connection = await _database.GetConnectionAsync();
 
             if (_config.Additional.KnifeEnabled)
-            {
-                GetKnifeFromDatabase(player, connection);
-            }
+                await GetKnifeFromDatabaseAsync(player, connection);
             if (_config.Additional.GloveEnabled)
-            {
-                GetGloveFromDatabase(player, connection);
-            }
+                await GetGloveFromDatabaseAsync(player, connection);
             if (_config.Additional.AgentEnabled)
-            {
-                GetAgentFromDatabase(player, connection);
-            }
+                await GetAgentFromDatabaseAsync(player, connection);
             if (_config.Additional.MusicEnabled)
-            {
-                GetMusicFromDatabase(player, connection);
-            }
+                await GetMusicFromDatabaseAsync(player, connection);
             if (_config.Additional.SkinEnabled)
-            {
-                GetWeaponPaintsFromDatabase(player, connection);
-            }
+                await GetWeaponPaintsFromDatabaseAsync(player, connection);
             if (_config.Additional.PinsEnabled)
-            {
-                GetPinsFromDatabase(player, connection);
-            }
+                await GetPinsFromDatabaseAsync(player, connection);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            WeaponPaints.Instance.Logger.LogWarning("GetPlayerData failed: {Message}", ex.Message);
         }
     }
 
-    private void GetKnifeFromDatabase(PlayerInfo? player, MySqlConnection connection)
+    private async Task GetKnifeFromDatabaseAsync(PlayerInfo? player, MySqlConnection connection)
     {
         try
         {
@@ -73,7 +63,7 @@ internal class WeaponSynchronization
 
             const string query =
                 "SELECT `knife`, `weapon_team` FROM `wp_player_knife` WHERE `steamid` = @steamid ORDER BY `weapon_team` ASC";
-            var rows = connection.Query<dynamic>(query, new { steamid = player.SteamId });
+            var rows = await connection.QueryAsync<dynamic>(query, new { steamid = player.SteamId });
 
             var rowCount = 0;
             foreach (var row in rows)
@@ -106,12 +96,13 @@ internal class WeaponSynchronization
                 }
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            WeaponPaints.Instance.Logger.LogWarning("GetKnifeFromDatabase failed: {Message}", ex.Message);
         }
     }
 
-    private void GetGloveFromDatabase(PlayerInfo? player, MySqlConnection connection)
+    private async Task GetGloveFromDatabaseAsync(PlayerInfo? player, MySqlConnection connection)
     {
         try
         {
@@ -120,7 +111,7 @@ internal class WeaponSynchronization
 
             const string query =
                 "SELECT `weapon_defindex`, `weapon_team` FROM `wp_player_gloves` WHERE `steamid` = @steamid ORDER BY `weapon_team` ASC";
-            var rows = connection.Query<dynamic>(query, new { steamid = player.SteamId });
+            var rows = await connection.QueryAsync<dynamic>(query, new { steamid = player.SteamId });
 
             var rowCount = 0;
             foreach (var row in rows)
@@ -151,12 +142,13 @@ internal class WeaponSynchronization
                 }
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            WeaponPaints.Instance.Logger.LogWarning("GetGloveFromDatabase failed: {Message}", ex.Message);
         }
     }
 
-    private void GetAgentFromDatabase(PlayerInfo? player, MySqlConnection connection)
+    private async Task GetAgentFromDatabaseAsync(PlayerInfo? player, MySqlConnection connection)
     {
         try
         {
@@ -165,7 +157,7 @@ internal class WeaponSynchronization
 
             const string query =
                 "SELECT `agent_ct`, `agent_t` FROM `wp_player_agents` WHERE `steamid` = @steamid";
-            var agentData = connection.QueryFirstOrDefault<(string, string)>(
+            var agentData = await connection.QueryFirstOrDefaultAsync<(string, string)>(
                 query,
                 new { steamid = player.SteamId }
             );
@@ -183,12 +175,13 @@ internal class WeaponSynchronization
                 WeaponPaints.GPlayersAgent[player.Slot] = (agentCT, agentT);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            WeaponPaints.Instance.Logger.LogWarning("GetAgentFromDatabase failed: {Message}", ex.Message);
         }
     }
 
-    private void GetWeaponPaintsFromDatabase(PlayerInfo? player, MySqlConnection connection)
+    private async Task GetWeaponPaintsFromDatabaseAsync(PlayerInfo? player, MySqlConnection connection)
     {
         try
         {
@@ -204,9 +197,15 @@ internal class WeaponSynchronization
                 _ => new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>()
             );
 
-            const string query =
-                "SELECT * FROM `wp_player_skins` WHERE `steamid` = @steamid ORDER BY `weapon_team` ASC";
-            var playerSkins = connection.Query<dynamic>(query, new { steamid = player.SteamId });
+            const string query = @"
+                SELECT `weapon_team`, `weapon_defindex`, `weapon_paint_id`, `weapon_wear`, `weapon_seed`,
+                       `weapon_nametag`, `weapon_stattrak`, `weapon_stattrak_count`,
+                       `weapon_sticker_0`, `weapon_sticker_1`, `weapon_sticker_2`,
+                       `weapon_sticker_3`, `weapon_sticker_4`, `weapon_keychain`
+                FROM `wp_player_skins`
+                WHERE `steamid` = @steamid
+                ORDER BY `weapon_team` ASC";
+            var playerSkins = await connection.QueryAsync<dynamic>(query, new { steamid = player.SteamId });
 
             var rowCount = 0;
             foreach (var row in playerSkins)
@@ -217,6 +216,8 @@ internal class WeaponSynchronization
                 float weaponWear = row.weapon_wear ?? 0f;
                 int weaponSeed = row.weapon_seed ?? 0;
                 string weaponNameTag = row.weapon_nametag ?? "";
+                if (weaponNameTag.Length > 128)
+                    weaponNameTag = weaponNameTag[..128];
                 bool weaponStatTrak = row.weapon_stattrak ?? false;
                 int weaponStatTrakCount = row.weapon_stattrak_count ?? 0;
 
@@ -367,12 +368,13 @@ internal class WeaponSynchronization
                 }
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            WeaponPaints.Instance.Logger.LogWarning("GetWeaponPaintsFromDatabase failed: {Message}", ex.Message);
         }
     }
 
-    private void GetMusicFromDatabase(PlayerInfo? player, MySqlConnection connection)
+    private async Task GetMusicFromDatabaseAsync(PlayerInfo? player, MySqlConnection connection)
     {
         try
         {
@@ -381,7 +383,7 @@ internal class WeaponSynchronization
 
             const string query =
                 "SELECT `music_id`, `weapon_team` FROM `wp_player_music` WHERE `steamid` = @steamid ORDER BY `weapon_team` ASC";
-            var rows = connection.Query<dynamic>(query, new { steamid = player.SteamId });
+            var rows = await connection.QueryAsync<dynamic>(query, new { steamid = player.SteamId });
 
             var rowCount = 0;
             foreach (var row in rows)
@@ -412,12 +414,13 @@ internal class WeaponSynchronization
                 }
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            WeaponPaints.Instance.Logger.LogWarning("GetMusicFromDatabase failed: {Message}", ex.Message);
         }
     }
 
-    private void GetPinsFromDatabase(PlayerInfo? player, MySqlConnection connection)
+    private async Task GetPinsFromDatabaseAsync(PlayerInfo? player, MySqlConnection connection)
     {
         try
         {
@@ -426,7 +429,7 @@ internal class WeaponSynchronization
 
             const string query =
                 "SELECT `id`, `weapon_team` FROM `wp_player_pins` WHERE `steamid` = @steamid ORDER BY `weapon_team` ASC";
-            var rows = connection.Query<dynamic>(query, new { steamid = player.SteamId });
+            var rows = await connection.QueryAsync<dynamic>(query, new { steamid = player.SteamId });
 
             var rowCount = 0;
             foreach (var row in rows)
@@ -457,8 +460,9 @@ internal class WeaponSynchronization
                 }
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            WeaponPaints.Instance.Logger.LogWarning("GetPinsFromDatabase failed: {Message}", ex.Message);
         }
     }
 
@@ -540,6 +544,9 @@ internal class WeaponSynchronization
         if (!_config.Additional.AgentEnabled || string.IsNullOrEmpty(player.SteamId))
             return;
 
+        if (!WeaponPaints.GPlayersAgent.TryGetValue(player.Slot, out var agents))
+            return;
+
         const string query = """
             					INSERT INTO `wp_player_agents` (`steamid`, `agent_ct`, `agent_t`)
             					VALUES(@steamid, @agent_ct, @agent_t)
@@ -556,8 +563,8 @@ internal class WeaponSynchronization
                 new
                 {
                     steamid = player.SteamId,
-                    agent_ct = WeaponPaints.GPlayersAgent[player.Slot].CT,
-                    agent_t = WeaponPaints.GPlayersAgent[player.Slot].T,
+                    agent_ct = agents.CT,
+                    agent_t = agents.T,
                 }
             );
         }
@@ -575,33 +582,43 @@ internal class WeaponSynchronization
         )
             return;
 
+        // Flatten to a single batch — one round-trip instead of N inserts.
+        var sb = new System.Text.StringBuilder(
+            "INSERT INTO `wp_player_skins` " +
+            "(`steamid`, `weapon_defindex`, `weapon_team`, `weapon_paint_id`, `weapon_wear`, `weapon_seed`) VALUES "
+        );
+        var args = new DynamicParameters();
+        args.Add("steamid", player.SteamId);
+
+        var i = 0;
+        foreach (var (teamId, weaponsInfo) in teamWeaponInfos)
+        {
+            foreach (var (weaponDefIndex, weaponInfo) in weaponsInfo)
+            {
+                if (i > 0) sb.Append(',');
+                sb.Append($"(@steamid, @d{i}, @t{i}, @p{i}, @w{i}, @s{i})");
+                args.Add($"d{i}", weaponDefIndex);
+                args.Add($"t{i}", (int)teamId);
+                args.Add($"p{i}", weaponInfo.Paint);
+                args.Add($"w{i}", weaponInfo.Wear);
+                args.Add($"s{i}", weaponInfo.Seed);
+                i++;
+            }
+        }
+
+        if (i == 0) return;
+
+        sb.Append(
+            " ON DUPLICATE KEY UPDATE " +
+            "`weapon_paint_id` = VALUES(`weapon_paint_id`), " +
+            "`weapon_wear` = VALUES(`weapon_wear`), " +
+            "`weapon_seed` = VALUES(`weapon_seed`)"
+        );
+
         try
         {
             await using var connection = await _database.GetConnectionAsync();
-            await using var transaction = await connection.BeginTransactionAsync();
-
-            const string query =
-                "INSERT INTO `wp_player_skins` (`steamid`, `weapon_defindex`, `weapon_team`, `weapon_paint_id`, `weapon_wear`, `weapon_seed`) "
-                + "VALUES (@steamid, @weaponDefIndex, @weaponTeam, @paintId, @wear, @seed) "
-                + "ON DUPLICATE KEY UPDATE `weapon_paint_id` = @paintId, `weapon_wear` = @wear, `weapon_seed` = @seed";
-
-            foreach (var (teamId, weaponsInfo) in teamWeaponInfos)
-            {
-                foreach (var (weaponDefIndex, weaponInfo) in weaponsInfo)
-                {
-                    await connection.ExecuteAsync(query, new
-                    {
-                        steamid = player.SteamId,
-                        weaponDefIndex,
-                        weaponTeam = (int)teamId,
-                        paintId = weaponInfo.Paint,
-                        wear = weaponInfo.Wear,
-                        seed = weaponInfo.Seed,
-                    }, transaction);
-                }
-            }
-
-            await transaction.CommitAsync();
+            await connection.ExecuteAsync(sb.ToString(), args);
         }
         catch (Exception e)
         {

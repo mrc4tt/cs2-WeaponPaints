@@ -117,11 +117,38 @@ namespace WeaponPaints
                 var json = File.ReadAllText(filePath);
                 var deserializedSkins = JsonConvert.DeserializeObject<List<JObject>>(json);
                 WeaponPaints.SkinsList = deserializedSkins ?? [];
+                RebuildSkinsIndexes();
             }
             catch (Exception ex)
             {
                 logger?.LogError($"Failed to load skins from file: {ex.Message}");
             }
+        }
+
+        private static void RebuildSkinsIndexes()
+        {
+            var byWeapon = new Dictionary<string, List<JObject>>();
+            var legacyByDefPaint = new Dictionary<(int, int), bool>();
+
+            foreach (var skin in WeaponPaints.SkinsList)
+            {
+                var weaponName = skin["weapon_name"]?.ToString();
+                if (!string.IsNullOrEmpty(weaponName))
+                {
+                    if (!byWeapon.TryGetValue(weaponName, out var list))
+                        byWeapon[weaponName] = list = new List<JObject>();
+                    list.Add(skin);
+                }
+
+                if (skin["weapon_defindex"] == null || skin["paint"] == null)
+                    continue;
+                var defindex = (int?)skin["weapon_defindex"] ?? 0;
+                var paint = (int?)skin["paint"] ?? 0;
+                legacyByDefPaint[(defindex, paint)] = skin.Value<bool>("legacy_model");
+            }
+
+            WeaponPaints.SkinsByWeaponName = byWeapon;
+            WeaponPaints.SkinsLegacyModelIndex = legacyByDefPaint;
         }
 
         internal static void LoadPinsFromFile(string filePath, ILogger logger)
@@ -145,6 +172,15 @@ namespace WeaponPaints
                 var json = File.ReadAllText(filePath);
                 var deserializedSkins = JsonConvert.DeserializeObject<List<JObject>>(json);
                 WeaponPaints.GlovesList = deserializedSkins ?? [];
+
+                var byPaint = new Dictionary<string, JObject>();
+                foreach (var glove in WeaponPaints.GlovesList)
+                {
+                    var paintName = glove["paint_name"]?.ToString();
+                    if (!string.IsNullOrEmpty(paintName))
+                        byPaint[paintName] = glove;
+                }
+                WeaponPaints.GlovesByPaintName = byPaint;
             }
             catch (Exception ex)
             {
@@ -159,6 +195,30 @@ namespace WeaponPaints
                 var json = File.ReadAllText(filePath);
                 var deserializedSkins = JsonConvert.DeserializeObject<List<JObject>>(json);
                 WeaponPaints.AgentsList = deserializedSkins ?? [];
+
+                var byNameTeam = new Dictionary<(string, int), JObject>();
+                var byTeam = new Dictionary<int, List<JObject>>();
+                var modelSet = new HashSet<string>();
+
+                foreach (var agent in WeaponPaints.AgentsList)
+                {
+                    var name = agent["agent_name"]?.ToString();
+                    var team = (int?)agent["team"] ?? 0;
+                    if (!string.IsNullOrEmpty(name))
+                        byNameTeam[(name, team)] = agent;
+
+                    if (!byTeam.TryGetValue(team, out var list))
+                        byTeam[team] = list = new List<JObject>();
+                    list.Add(agent);
+
+                    var model = agent["model"]?.ToString();
+                    if (!string.IsNullOrEmpty(model))
+                        modelSet.Add(model);
+                }
+
+                WeaponPaints.AgentsByNameAndTeam = byNameTeam;
+                WeaponPaints.AgentsByTeam = byTeam;
+                WeaponPaints.AgentsModelSet = modelSet;
             }
             catch (Exception ex)
             {
