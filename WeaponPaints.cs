@@ -141,9 +141,8 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             {
                 parsed = JsonSerializer.Deserialize<WeaponPaintsSqlConfig>(File.ReadAllText(path));
             }
-            catch (Exception ex)
+            catch
             {
-                Logger.LogError($"Error reading SQL config \"{path}\": {ex.Message}");
             }
 
             var filled =
