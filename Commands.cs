@@ -1106,10 +1106,12 @@ public partial class WeaponPaints
 
     private void SetupAgentsMenu()
     {
-        var agentSelectionMenu = Utility.CreateMenu(Localizer["wp_agent_menu_title"]);
-        if (agentSelectionMenu == null)
+        var ctAgentMenu = Utility.CreateMenu(Localizer["wp_agent_menu_title"]);
+        var tAgentMenu = Utility.CreateMenu(Localizer["wp_agent_menu_title"]);
+        if (ctAgentMenu == null || tAgentMenu == null)
             return;
-        agentSelectionMenu.PostSelectAction = PostSelectAction.Close;
+        ctAgentMenu.PostSelectAction = PostSelectAction.Close;
+        tAgentMenu.PostSelectAction = PostSelectAction.Close;
 
         var handleAgentSelection = (CCSPlayerController? player, ChatMenuOption option) =>
         {
@@ -1117,9 +1119,12 @@ public partial class WeaponPaints
                 return;
 
             var selectedAgentName = option.Text;
+            var playerTeam = player.TeamNum.ToString();
 
             var selectedAgent = AgentsList.FirstOrDefault(a =>
-                a.ContainsKey("agent_name") && a["agent_name"]?.ToString() == selectedAgentName
+                a.ContainsKey("agent_name")
+                && a["agent_name"]?.ToString() == selectedAgentName
+                && a["team"]?.ToString() == playerTeam
             );
             var image = selectedAgent?["image"]?.ToString() ?? "";
             if (
@@ -1156,14 +1161,16 @@ public partial class WeaponPaints
             };
 
             var currentAgents = GPlayersAgent.GetOrAdd(player.Slot, (null, null));
+            var isDefault = model == "null";
+            string? storedModel = isDefault ? null : model;
 
-            if (team == "ct")
+            if (team == "3")
             {
-                GPlayersAgent[player.Slot] = (model, currentAgents.T);
+                GPlayersAgent[player.Slot] = (storedModel, currentAgents.T);
             }
-            else if (team == "t")
+            else if (team == "2")
             {
-                GPlayersAgent[player.Slot] = (currentAgents.CT, model);
+                GPlayersAgent[player.Slot] = (currentAgents.CT, storedModel);
             }
 
             if (!string.IsNullOrEmpty(Localizer["wp_agent_menu_select"]))
@@ -1171,7 +1178,12 @@ public partial class WeaponPaints
                 player.Print(Localizer["wp_agent_menu_select", selectedAgentName]);
             }
 
-            GivePlayerAgent(player);
+            if (!isDefault)
+            {
+                GivePlayerAgent(player);
+                AddTimer(0.1f, () => GivePlayerAgent(player));
+                AddTimer(0.25f, () => GivePlayerAgent(player));
+            }
 
             if (WeaponSync != null)
             {
@@ -1179,14 +1191,17 @@ public partial class WeaponPaints
             }
         };
 
-        // Add agent options to the selection menu
-        foreach (
-            var agentName in AgentsList
-                .Select(agentObject => agentObject["agent_name"]?.ToString() ?? "")
-                .Where(agentName => agentName.Length > 0)
-        )
+        foreach (var agent in AgentsList)
         {
-            agentSelectionMenu.AddMenuOption(agentName, handleAgentSelection);
+            var agentName = agent["agent_name"]?.ToString() ?? "";
+            var agentTeam = agent["team"]?.ToString();
+            if (agentName.Length == 0)
+                continue;
+
+            if (agentTeam == "3")
+                ctAgentMenu.AddMenuOption(agentName, handleAgentSelection);
+            else if (agentTeam == "2")
+                tAgentMenu.AddMenuOption(agentName, handleAgentSelection);
         }
 
         // Command to open the agent selection menu for players
@@ -1216,13 +1231,13 @@ public partial class WeaponPaints
                         CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(
                             Config.CmdRefreshCooldownSeconds
                         );
-                        agentSelectionMenu?.Open(player);
+
+                        if (player.TeamNum == 3)
+                            ctAgentMenu?.Open(player);
+                        else if (player.TeamNum == 2)
+                            tAgentMenu?.Open(player);
                         return;
                     }
-                    // if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
-                    // {
-                    // 	player.Print(Localizer["wp_command_cooldown"]);
-                    // }
                 }
             );
         });

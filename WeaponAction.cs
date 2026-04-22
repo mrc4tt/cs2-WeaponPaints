@@ -881,7 +881,7 @@ namespace WeaponPaints
                 return;
 
             var model = player.TeamNum == 3 ? value.CT : value.T;
-            if (string.IsNullOrEmpty(model))
+            if (string.IsNullOrEmpty(model) || model == "null")
                 return;
 
             if (player.PlayerPawn.Value == null)
