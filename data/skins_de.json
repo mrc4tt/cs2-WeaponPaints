@@ -12,7 +12,7 @@
         "weapon_name": "weapon_ak47",
         "paint": "1425",
         "image": "https://raw.githubusercontent.com/Nereziel/cs2-WeaponPaints/main/website/img/skins/weapon_ak47-1425.png",
-        "paint_name": "AK-47 | Crane Flight",
+        "paint_name": "AK-47 | Flug des Kranichs",
         "legacy_model": false
     },
     {
@@ -932,7 +932,7 @@
         "weapon_name": "weapon_awp",
         "paint": "1422",
         "image": "https://raw.githubusercontent.com/Nereziel/cs2-WeaponPaints/main/website/img/skins/weapon_awp-1422.png",
-        "paint_name": "AWP | Queen's Gambit",
+        "paint_name": "AWP | Damengambit",
         "legacy_model": false
     },
     {
@@ -2380,7 +2380,7 @@
         "weapon_name": "weapon_deagle",
         "paint": "1430",
         "image": "https://raw.githubusercontent.com/Nereziel/cs2-WeaponPaints/main/website/img/skins/weapon_deagle-1430.png",
-        "paint_name": "Desert Eagle | Firebreathing",
+        "paint_name": "Desert Eagle | Feuerodem",
         "legacy_model": false
     },
     {
@@ -3364,7 +3364,7 @@
         "weapon_name": "weapon_fiveseven",
         "paint": "1429",
         "image": "https://raw.githubusercontent.com/Nereziel/cs2-WeaponPaints/main/website/img/skins/weapon_fiveseven-1429.png",
-        "paint_name": "Five-SeveN | Dark Polymer",
+        "paint_name": "Five-SeveN | Dunkles Polymer",
         "legacy_model": false
     },
     {
@@ -4404,7 +4404,7 @@
         "weapon_name": "weapon_glock",
         "paint": "1421",
         "image": "https://raw.githubusercontent.com/Nereziel/cs2-WeaponPaints/main/website/img/skins/weapon_glock-1421.png",
-        "paint_name": "Glock-18 | Fully Tuned",
+        "paint_name": "Glock-18 | Aufgemotzt",
         "legacy_model": false
     },
     {
@@ -9356,7 +9356,7 @@
         "weapon_name": "weapon_m249",
         "paint": "1435",
         "image": "https://raw.githubusercontent.com/Nereziel/cs2-WeaponPaints/main/website/img/skins/weapon_m249-1435.png",
-        "paint_name": "M249 | Bock Blocks",
+        "paint_name": "M249 | Bock-Bock-Block",
         "legacy_model": false
     },
     {
@@ -10108,7 +10108,7 @@
         "weapon_name": "weapon_m4a1_silencer",
         "paint": "1433",
         "image": "https://raw.githubusercontent.com/Nereziel/cs2-WeaponPaints/main/website/img/skins/weapon_m4a1_silencer-1433.png",
-        "paint_name": "M4A1-S | Electrum",
+        "paint_name": "M4A1-S | Elektron",
         "legacy_model": false
     },
     {
@@ -11372,7 +11372,7 @@
         "weapon_name": "weapon_mp7",
         "paint": "1436",
         "image": "https://raw.githubusercontent.com/Nereziel/cs2-WeaponPaints/main/website/img/skins/weapon_mp7-1436.png",
-        "paint_name": "MP7 | Amberline",
+        "paint_name": "MP7 | Bernsteineinschluss",
         "legacy_model": false
     },
     {
@@ -11764,7 +11764,7 @@
         "weapon_name": "weapon_mp9",
         "paint": "1423",
         "image": "https://raw.githubusercontent.com/Nereziel/cs2-WeaponPaints/main/website/img/skins/weapon_mp9-1423.png",
-        "paint_name": "MP9 | Urban Sovereign",
+        "paint_name": "MP9 | Städtischer Herrscher",
         "legacy_model": false
     },
     {
@@ -13212,7 +13212,7 @@
         "weapon_name": "weapon_p90",
         "paint": "1419",
         "image": "https://raw.githubusercontent.com/Nereziel/cs2-WeaponPaints/main/website/img/skins/weapon_p90-1419.png",
-        "paint_name": "P90 | Deathgaze",
+        "paint_name": "P90 | Blick des Todes",
         "legacy_model": false
     },
     {
@@ -15900,7 +15900,7 @@
         "weapon_name": "weapon_usp_silencer",
         "paint": "1431",
         "image": "https://raw.githubusercontent.com/Nereziel/cs2-WeaponPaints/main/website/img/skins/weapon_usp_silencer-1431.png",
-        "paint_name": "USP-S | Silent Shot",
+        "paint_name": "USP-S | Lautloser Schuss",
         "legacy_model": false
     },
     {
