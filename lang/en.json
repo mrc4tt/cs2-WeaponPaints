@@ -12,7 +12,7 @@
 	"wp_knife_menu_select": "You have chosen {lime}{0}{default} as your knife",
 	"wp_knife_menu_kill": "",
 	"wp_knife_menu_title": "Knife Menu",
-	"wp_glove_menu_select": "You have chosen {lime}{0}{default} as your glove",
+	"wp_glove_menu_select": "You have chosen {lime}{0}{default} as your gloves",
 	"wp_glove_menu_title": "Gloves Menu",
 	"wp_agent_menu_select": "You have chosen {lime}{0}{default} as your agent",
 	"wp_agent_menu_title": "Agents Menu",
