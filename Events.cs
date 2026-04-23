@@ -5,8 +5,8 @@ using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
-using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Timers;
+using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace WeaponPaints
@@ -20,13 +20,7 @@ namespace WeaponPaints
         {
             CCSPlayerController? player = @event.Userid;
 
-            if (
-                player is null
-                || !player.IsValid
-                || player.IsBot
-                || WeaponSync == null
-                || Database == null
-            )
+            if (player is null || !player.IsValid || player.IsBot || WeaponSync == null || Database == null)
                 return HookResult.Continue;
 
             var playerInfo = PlayerInfo.From(player);
@@ -71,8 +65,7 @@ namespace WeaponPaints
                             if (designerName.Contains("knife") || designerName.Contains("bayonet"))
                             {
                                 // If defindex already matches desired knife, skin was applied normally
-                                if (weaponHandle.Value.AttributeManager?.Item != null &&
-                                    weaponHandle.Value.AttributeManager.Item.ItemDefinitionIndex == (ushort)desiredDefIndex)
+                                if (weaponHandle.Value.AttributeManager?.Item != null && weaponHandle.Value.AttributeManager.Item.ItemDefinitionIndex == (ushort)desiredDefIndex)
                                     break;
 
                                 needsRefresh = true;
@@ -84,12 +77,15 @@ namespace WeaponPaints
                         // Give a new knife — OnGiveNamedItemPost + OnEntityCreated will handle skin
                         if (needsRefresh)
                         {
-                            AddTimer(0.1f, () =>
-                            {
-                                if (player == null || !player.IsValid || !player.PawnIsAlive)
-                                    return;
-                                player.GiveNamedItem(CsItem.Knife);
-                            });
+                            AddTimer(
+                                0.1f,
+                                () =>
+                                {
+                                    if (player == null || !player.IsValid || !player.PawnIsAlive)
+                                        return;
+                                    player.GiveNamedItem(CsItem.Knife);
+                                }
+                            );
                         }
                     });
                 });
@@ -165,10 +161,7 @@ namespace WeaponPaints
 
         private void OnMapStart(string mapName)
         {
-            if (
-                Config.Additional is
-                { KnifeEnabled: false, SkinEnabled: false, GloveEnabled: false }
-            )
+            if (Config.Additional is { KnifeEnabled: false, SkinEnabled: false, GloveEnabled: false })
                 return;
 
             // Initialize WeaponSync if not already done (e.g., if OnConfigParsed ran before map start)
@@ -183,52 +176,48 @@ namespace WeaponPaints
         {
             CCSPlayerController? player = @event.Userid;
 
-            if (
-                player is null
-                || !player.IsValid
-                || player.IsBot
-                || Config.Additional is { KnifeEnabled: false, GloveEnabled: false }
-            )
+            if (player is null || !player.IsValid || player.IsBot || Config.Additional is { KnifeEnabled: false, GloveEnabled: false })
                 return HookResult.Continue;
 
             // Defer ALL cosmetic application — OnPlayerSpawn fires during team assignment
             // when the pawn's native scene node, body component, and model infrastructure
             // are not yet fully initialized. Applying cosmetics synchronously or even on
             // NextFrame crashes in native SetModel/SetBodygroup calls.
-            AddTimer(0.15f, () =>
-            {
-                if (player == null || !player.IsValid || !player.PawnIsAlive)
-                    return;
-                if (player.Team is CsTeam.None or CsTeam.Spectator)
-                    return;
-
-                CCSPlayerPawn? pawn = player.PlayerPawn.Value;
-                if (pawn == null || !pawn.IsValid)
-                    return;
-
-                // Capture CS2's default pawn model for this map/team BEFORE any custom agent
-                // overrides it — lets us restore "Default" mid-round without kill+respawn.
-                try
+            AddTimer(
+                0.15f,
+                () =>
                 {
-                    var modelPath = pawn.CBodyComponent?.SceneNode?
-                        .GetSkeletonInstance()?.ModelState.ModelName.ToString();
-                    if (!string.IsNullOrEmpty(modelPath)
-                        && modelPath.Contains('/')
-                        && modelPath.EndsWith(".vmdl"))
+                    if (player == null || !player.IsValid || !player.PawnIsAlive)
+                        return;
+                    if (player.Team is CsTeam.None or CsTeam.Spectator)
+                        return;
+
+                    CCSPlayerPawn? pawn = player.PlayerPawn.Value;
+                    if (pawn == null || !pawn.IsValid)
+                        return;
+
+                    // Capture CS2's default pawn model for this map/team BEFORE any custom agent
+                    // overrides it — lets us restore "Default" mid-round without kill+respawn.
+                    try
                     {
-                        OriginalPawnModel[player.Slot] = modelPath;
+                        var modelPath = pawn.CBodyComponent?.SceneNode?.GetSkeletonInstance()?.ModelState.ModelName.ToString();
+                        if (!string.IsNullOrEmpty(modelPath) && modelPath.Contains('/') && modelPath.EndsWith(".vmdl"))
+                        {
+                            OriginalPawnModel[player.Slot] = modelPath;
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning("Cache pawn model failed: {Message}", ex.Message);
-                }
+                    catch (Exception ex)
+                    {
+                        Logger.LogWarning("Cache pawn model failed: {Message}", ex.Message);
+                    }
 
-                GivePlayerMusicKit(player);
-                GivePlayerAgent(player);
-                GivePlayerGloves(player);
-                GivePlayerPin(player);
-            }, TimerFlags.STOP_ON_MAPCHANGE);
+                    GivePlayerMusicKit(player);
+                    GivePlayerAgent(player);
+                    GivePlayerGloves(player);
+                    GivePlayerPin(player);
+                },
+                TimerFlags.STOP_ON_MAPCHANGE
+            );
 
             return HookResult.Continue;
         }
@@ -260,13 +249,7 @@ namespace WeaponPaints
             if (player.Team is CsTeam.None or CsTeam.Spectator)
                 return HookResult.Continue;
 
-            if (
-                !(
-                    GPlayersMusic.TryGetValue(player.Slot, out var musicInfo)
-                    && musicInfo.TryGetValue(player.Team, out var musicId)
-                    && musicId != 0
-                )
-            )
+            if (!(GPlayersMusic.TryGetValue(player.Slot, out var musicInfo) && musicInfo.TryGetValue(player.Team, out var musicId) && musicId != 0))
                 return HookResult.Continue;
 
             @event.Musickitid = musicId;
@@ -426,20 +409,10 @@ namespace WeaponPaints
 
             var weaponDefIndex = (int)@event.Defindex;
 
-            if (
-                !HasChangedKnife(player, out var _)
-                || !HasChangedPaint(player, weaponDefIndex, out var _)
-            )
+            if (!HasChangedKnife(player, out var _) || !HasChangedPaint(player, weaponDefIndex, out var _))
                 return HookResult.Continue;
 
-            if (
-                player is
-                {
-                    Connected: PlayerConnectedState.PlayerConnected,
-                    PawnIsAlive: true,
-                    PlayerPawn.IsValid: true
-                }
-            )
+            if (player is { Connected: PlayerConnectedState.PlayerConnected, PawnIsAlive: true, PlayerPawn.IsValid: true })
             {
                 GiveOnItemPickup(player);
             }
@@ -473,27 +446,11 @@ namespace WeaponPaints
 
             weaponInfo.StatTrakCount += 1;
 
-            CAttributeListSetOrAddAttributeValueByName.Invoke(
-                weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle,
-                "kill eater",
-                ViewAsFloat((uint)weaponInfo.StatTrakCount)
-            );
-            CAttributeListSetOrAddAttributeValueByName.Invoke(
-                weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle,
-                "kill eater score type",
-                0
-            );
+            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "kill eater", ViewAsFloat((uint)weaponInfo.StatTrakCount));
+            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "kill eater score type", 0);
 
-            CAttributeListSetOrAddAttributeValueByName.Invoke(
-                weapon.AttributeManager.Item.AttributeList.Handle,
-                "kill eater",
-                ViewAsFloat((uint)weaponInfo.StatTrakCount)
-            );
-            CAttributeListSetOrAddAttributeValueByName.Invoke(
-                weapon.AttributeManager.Item.AttributeList.Handle,
-                "kill eater score type",
-                0
-            );
+            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.AttributeList.Handle, "kill eater", ViewAsFloat((uint)weaponInfo.StatTrakCount));
+            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.AttributeList.Handle, "kill eater score type", 0);
 
             return HookResult.Continue;
         }

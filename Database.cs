@@ -18,9 +18,7 @@ namespace WeaponPaints
             }
             catch (Exception ex)
             {
-                WeaponPaints.Instance.Logger.LogError(
-                    $"Unable to connect to database: {ex.Message}"
-                );
+                WeaponPaints.Instance.Logger.LogError($"Unable to connect to database: {ex.Message}");
                 throw;
             }
         }

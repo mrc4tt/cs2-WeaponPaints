@@ -15,11 +15,7 @@ public partial class WeaponPaints
 {
     private void OnCommandRefresh(CCSPlayerController? player, CommandInfo command)
     {
-        if (
-            !Config.Additional.CommandWpEnabled
-            || !Config.Additional.SkinEnabled
-            || !_gBCommandsAllowed
-        )
+        if (!Config.Additional.CommandWpEnabled || !Config.Additional.SkinEnabled || !_gBCommandsAllowed)
             return;
         if (!Utility.IsPlayerValid(player))
             return;
@@ -28,10 +24,7 @@ public partial class WeaponPaints
             return;
 
         // Prevent double-call from chat/console trigger
-        if (
-            LastCommandTime.TryGetValue(player.Slot, out var lastTime)
-            && (DateTime.UtcNow - lastTime).TotalMilliseconds < 100
-        )
+        if (LastCommandTime.TryGetValue(player.Slot, out var lastTime) && (DateTime.UtcNow - lastTime).TotalMilliseconds < 100)
             return;
         LastCommandTime[player.Slot] = DateTime.UtcNow;
 
@@ -45,12 +38,10 @@ public partial class WeaponPaints
         // 	return;
         // }
 
-	PlayerInfo playerInfo = PlayerInfo.From(player);
+        PlayerInfo playerInfo = PlayerInfo.From(player);
 
         // Set cooldown immediately
-        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(
-            Config.CmdRefreshCooldownSeconds
-        );
+        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
 
         if (WeaponSync != null)
         {
@@ -150,10 +141,7 @@ public partial class WeaponPaints
             return;
 
         // Prevent double-call from chat/console trigger
-        if (
-            LastCommandTime.TryGetValue(player.Slot, out var lastTime)
-            && (DateTime.UtcNow - lastTime).TotalMilliseconds < 100
-        )
+        if (LastCommandTime.TryGetValue(player.Slot, out var lastTime) && (DateTime.UtcNow - lastTime).TotalMilliseconds < 100)
             return;
         LastCommandTime[player.Slot] = DateTime.UtcNow;
 
@@ -166,14 +154,7 @@ public partial class WeaponPaints
             return;
         }
 
-        if (
-            !float.TryParse(
-                command.GetArg(1),
-                System.Globalization.NumberStyles.Float,
-                System.Globalization.CultureInfo.InvariantCulture,
-                out var floatValue
-            )
-        )
+        if (!float.TryParse(command.GetArg(1), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var floatValue))
         {
             if (!string.IsNullOrEmpty(Localizer["wp_float_invalid"]))
             {
@@ -208,21 +189,12 @@ public partial class WeaponPaints
             return;
         }
 
-        var playerSkins = GPlayerWeaponsInfo.GetOrAdd(
-            player.Slot,
-            new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>()
-        );
-        var teamsToCheck =
-            player.TeamNum < 2
-                ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
-                : [player.Team];
+        var playerSkins = GPlayerWeaponsInfo.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
+        var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [player.Team];
 
         foreach (var team in teamsToCheck)
         {
-            var teamWeapons = playerSkins.GetOrAdd(
-                team,
-                _ => new ConcurrentDictionary<int, WeaponInfo>()
-            );
+            var teamWeapons = playerSkins.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>());
             if (teamWeapons.TryGetValue(weaponDefIndex, out var weaponInfo))
             {
                 weaponInfo.Wear = floatValue;
@@ -240,8 +212,7 @@ public partial class WeaponPaints
         // Refresh only this specific weapon; for knives, apply skin directly without kill/regive
         if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
         {
-            bool isKnife =
-                weapon.DesignerName.Contains("knife") || weapon.DesignerName.Contains("bayonet");
+            bool isKnife = weapon.DesignerName.Contains("knife") || weapon.DesignerName.Contains("bayonet");
             if (isKnife)
             {
                 RefreshKnife(player);
@@ -259,12 +230,7 @@ public partial class WeaponPaints
 
         if (!string.IsNullOrEmpty(Localizer["wp_float_set"]))
         {
-            player.Print(
-                Localizer[
-                    "wp_float_set",
-                    floatValue.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)
-                ]
-            );
+            player.Print(Localizer["wp_float_set", floatValue.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)]);
         }
     }
 
@@ -276,10 +242,7 @@ public partial class WeaponPaints
             return;
 
         // Prevent double-call from chat/console trigger
-        if (
-            LastCommandTime.TryGetValue(player.Slot, out var lastTime)
-            && (DateTime.UtcNow - lastTime).TotalMilliseconds < 100
-        )
+        if (LastCommandTime.TryGetValue(player.Slot, out var lastTime) && (DateTime.UtcNow - lastTime).TotalMilliseconds < 100)
             return;
         LastCommandTime[player.Slot] = DateTime.UtcNow;
 
@@ -327,21 +290,12 @@ public partial class WeaponPaints
             return;
         }
 
-        var playerSkins = GPlayerWeaponsInfo.GetOrAdd(
-            player.Slot,
-            new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>()
-        );
-        var teamsToCheck =
-            player.TeamNum < 2
-                ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
-                : [player.Team];
+        var playerSkins = GPlayerWeaponsInfo.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
+        var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [player.Team];
 
         foreach (var team in teamsToCheck)
         {
-            var teamWeapons = playerSkins.GetOrAdd(
-                team,
-                _ => new ConcurrentDictionary<int, WeaponInfo>()
-            );
+            var teamWeapons = playerSkins.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>());
             if (teamWeapons.TryGetValue(weaponDefIndex, out var weaponInfo))
             {
                 weaponInfo.Seed = seedValue;
@@ -353,8 +307,7 @@ public partial class WeaponPaints
         // Refresh only this specific weapon; for knives, apply skin directly without kill/regive
         if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
         {
-            bool isKnife =
-                weapon.DesignerName.Contains("knife") || weapon.DesignerName.Contains("bayonet");
+            bool isKnife = weapon.DesignerName.Contains("knife") || weapon.DesignerName.Contains("bayonet");
             if (isKnife)
             {
                 RefreshKnife(player);
@@ -396,9 +349,7 @@ public partial class WeaponPaints
         // If no argument, open the normal weapon selection menu
         if (command.ArgCount < 2)
         {
-            CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(
-                Config.CmdRefreshCooldownSeconds
-            );
+            CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
             OpenWeaponSelectionMenu(player);
             return;
         }
@@ -416,11 +367,7 @@ public partial class WeaponPaints
             var displayName = kvp.Value.ToLower();
             var displayNameCompact = displayName.Replace("-", "").Replace(" ", "");
 
-            if (
-                classNameStripped == weaponArg
-                || displayName == weaponArg
-                || displayNameCompact == weaponArg
-            )
+            if (classNameStripped == weaponArg || displayName == weaponArg || displayNameCompact == weaponArg)
             {
                 selectedWeaponClassname = kvp.Key;
                 selectedWeaponName = kvp.Value;
@@ -459,9 +406,7 @@ public partial class WeaponPaints
             return;
         }
 
-        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(
-            Config.CmdRefreshCooldownSeconds
-        );
+        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
         OpenSkinSelectionMenuForWeapon(player, selectedWeaponClassname, selectedWeaponName!);
     }
 
@@ -493,18 +438,9 @@ public partial class WeaponPaints
         weaponSelectionMenu.Open(player);
     }
 
-    private void OpenSkinSelectionMenuForWeapon(
-        CCSPlayerController player,
-        string weaponClassname,
-        string weaponDisplayName
-    )
+    private void OpenSkinSelectionMenuForWeapon(CCSPlayerController player, string weaponClassname, string weaponDisplayName)
     {
-        var skinsForSelectedWeapon = SkinsList
-            .Where(skin =>
-                skin.TryGetValue("weapon_name", out var weaponName)
-                && weaponName?.ToString() == weaponClassname
-            )
-            ?.ToList();
+        var skinsForSelectedWeapon = SkinsList.Where(skin => skin.TryGetValue("weapon_name", out var weaponName) && weaponName?.ToString() == weaponClassname)?.ToList();
 
         if (skinsForSelectedWeapon == null || skinsForSelectedWeapon.Count == 0)
         {
@@ -515,9 +451,7 @@ public partial class WeaponPaints
             return;
         }
 
-        var skinSubMenu = Utility.CreateMenu(
-            Localizer["wp_skin_menu_skin_title", weaponDisplayName]
-        );
+        var skinSubMenu = Utility.CreateMenu(Localizer["wp_skin_menu_skin_title", weaponDisplayName]);
         if (skinSubMenu == null)
             return;
 
@@ -556,28 +490,17 @@ public partial class WeaponPaints
                     }
                     var image = foundSkin?["image"]?.ToString() ?? "";
                     _playerWeaponImage[p.Slot] = image;
-                    AddTimer(
-                        2.0f,
-                        () => _playerWeaponImage.Remove(p.Slot),
-                        TimerFlags.STOP_ON_MAPCHANGE
-                    );
+                    AddTimer(2.0f, () => _playerWeaponImage.Remove(p.Slot), TimerFlags.STOP_ON_MAPCHANGE);
                 }
 
                 p.Print(Localizer["wp_skin_menu_select", selectedSkin]);
-                var playerSkins = GPlayerWeaponsInfo.GetOrAdd(
-                    p.Slot,
-                    new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>()
-                );
+                var playerSkins = GPlayerWeaponsInfo.GetOrAdd(p.Slot, new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
 
-                var teamsToCheck =
-                    p.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [p.Team];
+                var teamsToCheck = p.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [p.Team];
 
                 foreach (var team in teamsToCheck)
                 {
-                    var teamWeapons = playerSkins.GetOrAdd(
-                        team,
-                        _ => new ConcurrentDictionary<int, WeaponInfo>()
-                    );
+                    var teamWeapons = playerSkins.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>());
                     var value = teamWeapons.GetOrAdd(weaponDefIndex, _ => new WeaponInfo());
                     value.Paint = paintId;
                     value.Wear = 0.01f;
@@ -586,16 +509,11 @@ public partial class WeaponPaints
 
                 var playerInfo = PlayerInfo.From(p);
 
-                if (
-                    !_gBCommandsAllowed
-                    || (LifeState_t)p.LifeState != LifeState_t.LIFE_ALIVE
-                    || WeaponSync == null
-                )
+                if (!_gBCommandsAllowed || (LifeState_t)p.LifeState != LifeState_t.LIFE_ALIVE || WeaponSync == null)
                     return;
 
                 // Refresh only the specific weapon we changed the skin for (preserves knife)
-                bool isKnife =
-                    weaponClassname.Contains("knife") || weaponClassname.Contains("bayonet");
+                bool isKnife = weaponClassname.Contains("knife") || weaponClassname.Contains("bayonet");
                 if (isKnife)
                 {
                     RefreshKnife(p);
@@ -607,9 +525,7 @@ public partial class WeaponPaints
 
                 try
                 {
-                    _ = Task.Run(async () =>
-                        await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo)
-                    );
+                    _ = Task.Run(async () => await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo));
                 }
                 catch (Exception ex)
                 {
@@ -620,10 +536,7 @@ public partial class WeaponPaints
 
         foreach (var skin in skinsForSelectedWeapon)
         {
-            if (
-                !skin.TryGetValue("paint_name", out var paintNameObj)
-                || !skin.TryGetValue("paint", out var paintObj)
-            )
+            if (!skin.TryGetValue("paint_name", out var paintNameObj) || !skin.TryGetValue("paint", out var paintObj))
                 continue;
             var paintName = paintNameObj?.ToString();
             var paint = paintObj?.ToString();
@@ -639,7 +552,7 @@ public partial class WeaponPaints
 
     private void RegisterCommands()
     {
-	Config.Additional.CommandStattrak.ForEach(c =>
+        Config.Additional.CommandStattrak.ForEach(c =>
         {
             AddCommand(
                 $"css_{c}",
@@ -721,12 +634,7 @@ public partial class WeaponPaints
                     "kill yourself",
                     (player, _) =>
                     {
-                        if (
-                            player == null
-                            || !Utility.IsPlayerValid(player)
-                            || player.PlayerPawn.Value == null
-                            || !player.PlayerPawn.IsValid
-                        )
+                        if (player == null || !Utility.IsPlayerValid(player) || player.PlayerPawn.Value == null || !player.PlayerPawn.IsValid)
                             return;
 
                         player.PlayerPawn.Value.CommitSuicide(true, false);
@@ -745,10 +653,7 @@ public partial class WeaponPaints
             return;
 
         // Prevent double-call from chat/console trigger
-        if (
-            LastCommandTime.TryGetValue(player.Slot, out var lastTime)
-            && (DateTime.UtcNow - lastTime).TotalMilliseconds < 100
-        )
+        if (LastCommandTime.TryGetValue(player.Slot, out var lastTime) && (DateTime.UtcNow - lastTime).TotalMilliseconds < 100)
             return;
         LastCommandTime[player.Slot] = DateTime.UtcNow;
 
@@ -757,14 +662,7 @@ public partial class WeaponPaints
         if (weapon == null || !weapon.IsValid)
             return;
 
-        if (
-            !HasChangedPaint(
-                player,
-                weapon.AttributeManager.Item.ItemDefinitionIndex,
-                out var weaponInfo
-            )
-            || weaponInfo == null
-        )
+        if (!HasChangedPaint(player, weapon.AttributeManager.Item.ItemDefinitionIndex, out var weaponInfo) || weaponInfo == null)
             return;
 
         weaponInfo.StatTrak = !weaponInfo.StatTrak;
@@ -781,11 +679,7 @@ public partial class WeaponPaints
         if (!Config.Additional.KnifeEnabled || !_gBCommandsAllowed)
             return;
 
-        var knivesOnly = WeaponList
-            .Where(pair =>
-                pair.Key.StartsWith("weapon_knife") || pair.Key.StartsWith("weapon_bayonet")
-            )
-            .ToDictionary(pair => pair.Key, pair => pair.Value);
+        var knivesOnly = WeaponList.Where(pair => pair.Key.StartsWith("weapon_knife") || pair.Key.StartsWith("weapon_bayonet")).ToDictionary(pair => pair.Key, pair => pair.Value);
 
         var giveItemMenu = Utility.CreateMenu(Localizer["wp_knife_menu_title"]);
 
@@ -794,14 +688,8 @@ public partial class WeaponPaints
             if (!Utility.IsPlayerValid(player))
                 return;
 
-            var playerKnives = GPlayersKnife.GetOrAdd(
-                player.Slot,
-                new ConcurrentDictionary<CsTeam, string>()
-            );
-            var teamsToCheck =
-                player.TeamNum < 2
-                    ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
-                    : [player.Team];
+            var playerKnives = GPlayersKnife.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, string>());
+            var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [player.Team];
 
             var knifeName = option.Text;
             var knifeKey = knivesOnly.FirstOrDefault(x => x.Value == knifeName).Key;
@@ -812,15 +700,12 @@ public partial class WeaponPaints
                 player.Print(Localizer["wp_knife_menu_select", knifeName]);
             }
 
-            if (
-                !string.IsNullOrEmpty(Localizer["wp_knife_menu_kill"])
-                && Config.Additional.CommandKillEnabled
-            )
+            if (!string.IsNullOrEmpty(Localizer["wp_knife_menu_kill"]) && Config.Additional.CommandKillEnabled)
             {
                 player.Print(Localizer["wp_knife_menu_kill"]);
             }
 
-	    PlayerInfo playerInfo = PlayerInfo.From(player);
+            PlayerInfo playerInfo = PlayerInfo.From(player);
 
             foreach (var team in teamsToCheck)
             {
@@ -832,9 +717,7 @@ public partial class WeaponPaints
                 RefreshWeapons(player);
 
             if (WeaponSync != null)
-                _ = Task.Run(async () =>
-                    await WeaponSync.SyncKnifeToDatabase(playerInfo, knifeKey, teamsToCheck)
-                );
+                _ = Task.Run(async () => await WeaponSync.SyncKnifeToDatabase(playerInfo, knifeKey, teamsToCheck));
         };
         foreach (var knifePair in knivesOnly)
         {
@@ -857,17 +740,10 @@ public partial class WeaponPaints
 
                     if (
                         !CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime)
-                        || DateTime.UtcNow
-                            >= (
-                                CommandsCooldown.TryGetValue(player.Slot, out cooldownEndTime)
-                                    ? cooldownEndTime
-                                    : DateTime.UtcNow
-                            )
+                        || DateTime.UtcNow >= (CommandsCooldown.TryGetValue(player.Slot, out cooldownEndTime) ? cooldownEndTime : DateTime.UtcNow)
                     )
                     {
-                        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(
-                            Config.CmdRefreshCooldownSeconds
-                        );
+                        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
                         giveItemMenu.PostSelectAction = PostSelectAction.Close;
 
                         giveItemMenu.Open(player);
@@ -919,50 +795,28 @@ public partial class WeaponPaints
 
             var selectedPaintName = option.Text;
 
-            var playerGloves = GPlayersGlove.GetOrAdd(
-                player.Slot,
-                new ConcurrentDictionary<CsTeam, ushort>()
-            );
-            var teamsToCheck =
-                player.TeamNum < 2
-                    ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
-                    : [player.Team];
+            var playerGloves = GPlayersGlove.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ushort>());
+            var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [player.Team];
 
             GlovesByPaintName.TryGetValue(selectedPaintName, out var selectedGlove);
             var image = selectedGlove?["image"]?.ToString() ?? "";
-            if (
-                selectedGlove == null
-                || !int.TryParse(
-                    selectedGlove["weapon_defindex"]?.ToString(),
-                    out var weaponDefindex
-                )
-                || !int.TryParse(selectedGlove["paint"]?.ToString(), out var paint)
-            )
+            if (selectedGlove == null || !int.TryParse(selectedGlove["weapon_defindex"]?.ToString(), out var weaponDefindex) || !int.TryParse(selectedGlove["paint"]?.ToString(), out var paint))
                 return;
             if (Config.Additional.ShowSkinImage)
             {
                 _playerWeaponImage[player.Slot] = image;
-                AddTimer(
-                    2.0f,
-                    () => _playerWeaponImage.Remove(player.Slot),
-                    CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE
-                );
+                AddTimer(2.0f, () => _playerWeaponImage.Remove(player.Slot), CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
             }
 
             PlayerInfo playerInfo = PlayerInfo.From(player);
 
             if (paint != 0)
             {
-                var playerWeapons = GPlayerWeaponsInfo.GetOrAdd(
-                    player.Slot,
-                    _ => new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>()
-                );
+                var playerWeapons = GPlayerWeaponsInfo.GetOrAdd(player.Slot, _ => new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
                 foreach (var team in teamsToCheck)
                 {
                     playerGloves[team] = (ushort)weaponDefindex;
-                    var weaponInfo = playerWeapons
-                        .GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>())
-                        .GetOrAdd(weaponDefindex, _ => new WeaponInfo());
+                    var weaponInfo = playerWeapons.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>()).GetOrAdd(weaponDefindex, _ => new WeaponInfo());
                     weaponInfo.Paint = paint;
                     weaponInfo.Wear = 0.00f;
                     weaponInfo.Seed = 0;
@@ -979,11 +833,7 @@ public partial class WeaponPaints
             // Single DB round-trip for both syncs — previous loop ran them once per team.
             _ = Task.Run(async () =>
             {
-                await WeaponSync.SyncGloveToDatabase(
-                    playerInfo,
-                    (ushort)weaponDefindex,
-                    teamsToCheck
-                );
+                await WeaponSync.SyncGloveToDatabase(playerInfo, (ushort)weaponDefindex, teamsToCheck);
                 await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo);
             });
 
@@ -1004,11 +854,7 @@ public partial class WeaponPaints
         };
 
         // Add weapon options to the weapon selection menu
-        foreach (
-            var paintName in GlovesList
-                .Select(gloveObject => gloveObject["paint_name"]?.ToString() ?? "")
-                .Where(paintName => paintName.Length > 0)
-        )
+        foreach (var paintName in GlovesList.Select(gloveObject => gloveObject["paint_name"]?.ToString() ?? "").Where(paintName => paintName.Length > 0))
         {
             glovesSelectionMenu.AddMenuOption(paintName, handleGloveSelection);
         }
@@ -1029,17 +875,10 @@ public partial class WeaponPaints
 
                     if (
                         !CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime)
-                        || DateTime.UtcNow
-                            >= (
-                                CommandsCooldown.TryGetValue(player.Slot, out cooldownEndTime)
-                                    ? cooldownEndTime
-                                    : DateTime.UtcNow
-                            )
+                        || DateTime.UtcNow >= (CommandsCooldown.TryGetValue(player.Slot, out cooldownEndTime) ? cooldownEndTime : DateTime.UtcNow)
                     )
                     {
-                        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(
-                            Config.CmdRefreshCooldownSeconds
-                        );
+                        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
                         glovesSelectionMenu?.Open(player);
                         return;
                     }
@@ -1071,21 +910,13 @@ public partial class WeaponPaints
 
             AgentsByNameAndTeam.TryGetValue((selectedAgentName, player.TeamNum), out var selectedAgent);
             var image = selectedAgent?["image"]?.ToString() ?? "";
-            if (
-                selectedAgent == null
-                || !selectedAgent.ContainsKey("model")
-                || !selectedAgent.ContainsKey("team")
-            )
+            if (selectedAgent == null || !selectedAgent.ContainsKey("model") || !selectedAgent.ContainsKey("team"))
                 return;
 
             if (Config.Additional.ShowSkinImage)
             {
                 _playerWeaponImage[player.Slot] = image;
-                AddTimer(
-                    2.0f,
-                    () => _playerWeaponImage.Remove(player.Slot),
-                    TimerFlags.STOP_ON_MAPCHANGE
-                );
+                AddTimer(2.0f, () => _playerWeaponImage.Remove(player.Slot), TimerFlags.STOP_ON_MAPCHANGE);
             }
 
             var model = selectedAgent["model"]?.ToString();
@@ -1120,9 +951,7 @@ public partial class WeaponPaints
                 AddTimer(0.1f, () => GivePlayerAgent(player));
                 AddTimer(0.25f, () => GivePlayerAgent(player));
             }
-            else if (player.PawnIsAlive
-                     && player.PlayerPawn.Value != null
-                     && OriginalPawnModel.TryGetValue(player.Slot, out var defaultModel))
+            else if (player.PawnIsAlive && player.PlayerPawn.Value != null && OriginalPawnModel.TryGetValue(player.Slot, out var defaultModel))
             {
                 // Player selected "Agent | Default" while alive — restore the map/team's
                 // default model captured on this player's last spawn. If the cache is empty
@@ -1178,17 +1007,10 @@ public partial class WeaponPaints
 
                     if (
                         !CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime)
-                        || DateTime.UtcNow
-                            >= (
-                                CommandsCooldown.TryGetValue(player.Slot, out cooldownEndTime)
-                                    ? cooldownEndTime
-                                    : DateTime.UtcNow
-                            )
+                        || DateTime.UtcNow >= (CommandsCooldown.TryGetValue(player.Slot, out cooldownEndTime) ? cooldownEndTime : DateTime.UtcNow)
                     )
                     {
-                        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(
-                            Config.CmdRefreshCooldownSeconds
-                        );
+                        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
 
                         if (player.TeamNum == 3)
                             ctAgentMenu?.Open(player);
@@ -1215,35 +1037,19 @@ public partial class WeaponPaints
 
             var selectedPaintName = option.Text;
 
-            var playerMusic = GPlayersMusic.GetOrAdd(
-                player.Slot,
-                new ConcurrentDictionary<CsTeam, ushort>()
-            );
-            var teamsToCheck =
-                player.TeamNum < 2
-                    ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
-                    : [player.Team]; // Corrected array initializer
+            var playerMusic = GPlayersMusic.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ushort>());
+            var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [player.Team]; // Corrected array initializer
 
-            var selectedMusic = MusicList.FirstOrDefault(g =>
-                g.ContainsKey("name") && g["name"]?.ToString() == selectedPaintName
-            );
+            var selectedMusic = MusicList.FirstOrDefault(g => g.ContainsKey("name") && g["name"]?.ToString() == selectedPaintName);
             if (selectedMusic != null)
             {
-                if (
-                    !selectedMusic.ContainsKey("id")
-                    || !selectedMusic.ContainsKey("name")
-                    || !int.TryParse(selectedMusic["id"]?.ToString(), out var paint)
-                )
+                if (!selectedMusic.ContainsKey("id") || !selectedMusic.ContainsKey("name") || !int.TryParse(selectedMusic["id"]?.ToString(), out var paint))
                     return;
                 var image = selectedMusic["image"]?.ToString() ?? "";
                 if (Config.Additional.ShowSkinImage)
                 {
                     _playerWeaponImage[player.Slot] = image;
-                    AddTimer(
-                        2.0f,
-                        () => _playerWeaponImage.Remove(player.Slot),
-                        TimerFlags.STOP_ON_MAPCHANGE
-                    );
+                    AddTimer(2.0f, () => _playerWeaponImage.Remove(player.Slot), TimerFlags.STOP_ON_MAPCHANGE);
                 }
 
                 PlayerInfo playerInfo = PlayerInfo.From(player);
@@ -1274,11 +1080,7 @@ public partial class WeaponPaints
                 {
                     _ = Task.Run(async () =>
                     {
-                        await WeaponSync.SyncMusicToDatabase(
-                            playerInfo,
-                            (ushort)paint,
-                            teamsToCheck
-                        );
+                        await WeaponSync.SyncMusicToDatabase(playerInfo, (ushort)paint, teamsToCheck);
                     });
                 }
             }
@@ -1310,11 +1112,7 @@ public partial class WeaponPaints
 
         musicSelectionMenu.AddMenuOption(Localizer["None"], handleMusicSelection);
         // Add weapon options to the weapon selection menu
-        foreach (
-            var paintName in MusicList
-                .Select(musicObject => musicObject["name"]?.ToString() ?? "")
-                .Where(paintName => paintName.Length > 0)
-        )
+        foreach (var paintName in MusicList.Select(musicObject => musicObject["name"]?.ToString() ?? "").Where(paintName => paintName.Length > 0))
         {
             musicSelectionMenu.AddMenuOption(paintName, handleMusicSelection);
         }
@@ -1335,17 +1133,10 @@ public partial class WeaponPaints
 
                     if (
                         !CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime)
-                        || DateTime.UtcNow
-                            >= (
-                                CommandsCooldown.TryGetValue(player.Slot, out cooldownEndTime)
-                                    ? cooldownEndTime
-                                    : DateTime.UtcNow
-                            )
+                        || DateTime.UtcNow >= (CommandsCooldown.TryGetValue(player.Slot, out cooldownEndTime) ? cooldownEndTime : DateTime.UtcNow)
                     )
                     {
-                        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(
-                            Config.CmdRefreshCooldownSeconds
-                        );
+                        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
                         musicSelectionMenu.Open(player);
                         return;
                     }
@@ -1372,35 +1163,19 @@ public partial class WeaponPaints
 
             var selectedPaintName = option.Text;
 
-            var playerPins = GPlayersPin.GetOrAdd(
-                player.Slot,
-                new ConcurrentDictionary<CsTeam, ushort>()
-            );
-            var teamsToCheck =
-                player.TeamNum < 2
-                    ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
-                    : [player.Team];
+            var playerPins = GPlayersPin.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ushort>());
+            var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [player.Team];
 
-            var selectedPin = PinsList.FirstOrDefault(g =>
-                g.ContainsKey("name") && g["name"]?.ToString() == selectedPaintName
-            );
+            var selectedPin = PinsList.FirstOrDefault(g => g.ContainsKey("name") && g["name"]?.ToString() == selectedPaintName);
             if (selectedPin != null)
             {
-                if (
-                    !selectedPin.ContainsKey("id")
-                    || !selectedPin.ContainsKey("name")
-                    || !int.TryParse(selectedPin["id"]?.ToString(), out var paint)
-                )
+                if (!selectedPin.ContainsKey("id") || !selectedPin.ContainsKey("name") || !int.TryParse(selectedPin["id"]?.ToString(), out var paint))
                     return;
                 var image = selectedPin["image"]?.ToString() ?? "";
                 if (Config.Additional.ShowSkinImage)
                 {
                     _playerWeaponImage[player.Slot] = image;
-                    AddTimer(
-                        2.0f,
-                        () => _playerWeaponImage.Remove(player.Slot),
-                        TimerFlags.STOP_ON_MAPCHANGE
-                    );
+                    AddTimer(2.0f, () => _playerWeaponImage.Remove(player.Slot), TimerFlags.STOP_ON_MAPCHANGE);
                 }
 
                 PlayerInfo playerInfo = PlayerInfo.From(player);
@@ -1463,11 +1238,7 @@ public partial class WeaponPaints
 
         pinsSelectionMenu.AddMenuOption(Localizer["None"], handlePinsSelection);
         // Add weapon options to the weapon selection menu
-        foreach (
-            var paintName in PinsList
-                .Select(musicObject => musicObject["name"]?.ToString() ?? "")
-                .Where(paintName => paintName.Length > 0)
-        )
+        foreach (var paintName in PinsList.Select(musicObject => musicObject["name"]?.ToString() ?? "").Where(paintName => paintName.Length > 0))
         {
             pinsSelectionMenu.AddMenuOption(paintName, handlePinsSelection);
         }
@@ -1488,17 +1259,10 @@ public partial class WeaponPaints
 
                     if (
                         !CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime)
-                        || DateTime.UtcNow
-                            >= (
-                                CommandsCooldown.TryGetValue(player.Slot, out cooldownEndTime)
-                                    ? cooldownEndTime
-                                    : DateTime.UtcNow
-                            )
+                        || DateTime.UtcNow >= (CommandsCooldown.TryGetValue(player.Slot, out cooldownEndTime) ? cooldownEndTime : DateTime.UtcNow)
                     )
                     {
-                        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(
-                            Config.CmdRefreshCooldownSeconds
-                        );
+                        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
                         pinsSelectionMenu.Open(player);
                         return;
                     }

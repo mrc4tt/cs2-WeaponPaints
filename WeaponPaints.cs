@@ -19,8 +19,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
     public WeaponPaintsConfig Config { get; set; } = new();
     internal static WeaponPaintsSqlConfig SqlConfig { get; set; } = new();
     public override string ModuleAuthor => "Nereziel & daffyy";
-    public override string ModuleDescription =>
-        "Skin, gloves, agents and knife selector, standalone and web-based";
+    public override string ModuleDescription => "Skin, gloves, agents and knife selector, standalone and web-based";
     public override string ModuleName => "WeaponPaints";
     public override string ModuleVersion => "3.4a";
 
@@ -47,14 +46,8 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
                 {
                     foreach (
                         var player in Enumerable
-                            .OfType<CCSPlayerController>(
-                                Utilities.GetPlayers().TakeWhile(_ => WeaponSync != null)
-                            )
-                            .Where(player =>
-                                player.IsValid
-                                && player
-                                    is { IsBot: false, Connected: PlayerConnectedState.PlayerConnected }
-                            )
+                            .OfType<CCSPlayerController>(Utilities.GetPlayers().TakeWhile(_ => WeaponSync != null))
+                            .Where(player => player.IsValid && player is { IsBot: false, Connected: PlayerConnectedState.PlayerConnected })
                     )
                     {
                         var playerInfo = PlayerInfo.From(player);
@@ -75,26 +68,11 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             });
         }
 
-        Utility.LoadSkinsFromFile(
-            ModuleDirectory + $"/data/skins_{Config.SkinsLanguage}.json",
-            Logger
-        );
-        Utility.LoadGlovesFromFile(
-            ModuleDirectory + $"/data/gloves_{Config.SkinsLanguage}.json",
-            Logger
-        );
-        Utility.LoadAgentsFromFile(
-            ModuleDirectory + $"/data/agents_{Config.SkinsLanguage}.json",
-            Logger
-        );
-        Utility.LoadMusicFromFile(
-            ModuleDirectory + $"/data/music_{Config.SkinsLanguage}.json",
-            Logger
-        );
-        Utility.LoadPinsFromFile(
-            ModuleDirectory + $"/data/collectibles_{Config.SkinsLanguage}.json",
-            Logger
-        );
+        Utility.LoadSkinsFromFile(ModuleDirectory + $"/data/skins_{Config.SkinsLanguage}.json", Logger);
+        Utility.LoadGlovesFromFile(ModuleDirectory + $"/data/gloves_{Config.SkinsLanguage}.json", Logger);
+        Utility.LoadAgentsFromFile(ModuleDirectory + $"/data/agents_{Config.SkinsLanguage}.json", Logger);
+        Utility.LoadMusicFromFile(ModuleDirectory + $"/data/music_{Config.SkinsLanguage}.json", Logger);
+        Utility.LoadPinsFromFile(ModuleDirectory + $"/data/collectibles_{Config.SkinsLanguage}.json", Logger);
 
         RegisterListeners();
     }
@@ -107,11 +85,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         // (Config.Database*). Fall back to the legacy split-file layout
         // (weaponpaintssql.json / WeaponPaintsSQL.json) only if the main config
         // has empty DB fields, so older deployments keep working.
-        if (
-            config.DatabaseHost.Length > 0
-            && config.DatabaseName.Length > 0
-            && config.DatabaseUser.Length > 0
-        )
+        if (config.DatabaseHost.Length > 0 && config.DatabaseName.Length > 0 && config.DatabaseUser.Length > 0)
         {
             SqlConfig = new WeaponPaintsSqlConfig
             {
@@ -142,15 +116,9 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
                 {
                     parsed = JsonSerializer.Deserialize<WeaponPaintsSqlConfig>(File.ReadAllText(path));
                 }
-                catch
-                {
-                }
+                catch { }
 
-                var filled =
-                    parsed is not null
-                    && parsed.DatabaseHost.Length > 0
-                    && parsed.DatabaseName.Length > 0
-                    && parsed.DatabaseUser.Length > 0;
+                var filled = parsed is not null && parsed.DatabaseHost.Length > 0 && parsed.DatabaseName.Length > 0 && parsed.DatabaseUser.Length > 0;
 
                 existingCandidates.Add((path, parsed, filled));
             }
@@ -164,20 +132,13 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             }
             else
             {
-                Logger.LogError(
-                    "You need to setup Database credentials (DatabaseHost/Port/User/Password/Name) in WeaponPaints.json!"
-                );
+                Logger.LogError("You need to setup Database credentials (DatabaseHost/Port/User/Password/Name) in WeaponPaints.json!");
                 Unload(false);
                 return;
             }
         }
 
-        if (
-            !File.Exists(
-                Path.GetDirectoryName(Path.GetDirectoryName(ModuleDirectory))
-                    + "/gamedata/weaponpaints.json"
-            )
-        )
+        if (!File.Exists(Path.GetDirectoryName(Path.GetDirectoryName(ModuleDirectory)) + "/gamedata/weaponpaints.json"))
         {
             Logger.LogError("You need to upload \"weaponpaints.json\" to \"gamedata directory\"!");
             Unload(false);

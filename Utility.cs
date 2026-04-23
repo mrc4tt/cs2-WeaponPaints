@@ -254,20 +254,15 @@ namespace WeaponPaints
 
             var menu = menuType switch
             {
-                _ when menuType.Equals("selectable", StringComparison.CurrentCultureIgnoreCase) =>
-                    WeaponPaints.MenuApi?.NewMenu(title),
+                _ when menuType.Equals("selectable", StringComparison.CurrentCultureIgnoreCase) => WeaponPaints.MenuApi?.NewMenu(title),
 
-                _ when menuType.Equals("dynamic", StringComparison.CurrentCultureIgnoreCase) =>
-                    WeaponPaints.MenuApi?.NewMenuForcetype(title, MenuType.ButtonMenu),
+                _ when menuType.Equals("dynamic", StringComparison.CurrentCultureIgnoreCase) => WeaponPaints.MenuApi?.NewMenuForcetype(title, MenuType.ButtonMenu),
 
-                _ when menuType.Equals("center", StringComparison.CurrentCultureIgnoreCase) =>
-                    WeaponPaints.MenuApi?.NewMenuForcetype(title, MenuType.CenterMenu),
+                _ when menuType.Equals("center", StringComparison.CurrentCultureIgnoreCase) => WeaponPaints.MenuApi?.NewMenuForcetype(title, MenuType.CenterMenu),
 
-                _ when menuType.Equals("chat", StringComparison.CurrentCultureIgnoreCase) =>
-                    WeaponPaints.MenuApi?.NewMenuForcetype(title, MenuType.ChatMenu),
+                _ when menuType.Equals("chat", StringComparison.CurrentCultureIgnoreCase) => WeaponPaints.MenuApi?.NewMenuForcetype(title, MenuType.ChatMenu),
 
-                _ when menuType.Equals("console", StringComparison.CurrentCultureIgnoreCase) =>
-                    WeaponPaints.MenuApi?.NewMenuForcetype(title, MenuType.ConsoleMenu),
+                _ when menuType.Equals("console", StringComparison.CurrentCultureIgnoreCase) => WeaponPaints.MenuApi?.NewMenuForcetype(title, MenuType.ConsoleMenu),
 
                 _ => WeaponPaints.MenuApi?.NewMenu(title),
             };

@@ -61,8 +61,7 @@ internal class WeaponSynchronization
             if (!_config.Additional.KnifeEnabled || string.IsNullOrEmpty(player?.SteamId))
                 return;
 
-            const string query =
-                "SELECT `knife`, `weapon_team` FROM `wp_player_knife` WHERE `steamid` = @steamid ORDER BY `weapon_team` ASC";
+            const string query = "SELECT `knife`, `weapon_team` FROM `wp_player_knife` WHERE `steamid` = @steamid ORDER BY `weapon_team` ASC";
             var rows = await connection.QueryAsync<dynamic>(query, new { steamid = player.SteamId });
 
             var rowCount = 0;
@@ -80,10 +79,7 @@ internal class WeaponSynchronization
                     _ => CsTeam.None,
                 };
 
-                var playerKnives = WeaponPaints.GPlayersKnife.GetOrAdd(
-                    player.Slot,
-                    _ => new ConcurrentDictionary<CsTeam, string>()
-                );
+                var playerKnives = WeaponPaints.GPlayersKnife.GetOrAdd(player.Slot, _ => new ConcurrentDictionary<CsTeam, string>());
 
                 if (weaponTeam == CsTeam.None)
                 {
@@ -109,8 +105,7 @@ internal class WeaponSynchronization
             if (!_config.Additional.GloveEnabled || string.IsNullOrEmpty(player?.SteamId))
                 return;
 
-            const string query =
-                "SELECT `weapon_defindex`, `weapon_team` FROM `wp_player_gloves` WHERE `steamid` = @steamid ORDER BY `weapon_team` ASC";
+            const string query = "SELECT `weapon_defindex`, `weapon_team` FROM `wp_player_gloves` WHERE `steamid` = @steamid ORDER BY `weapon_team` ASC";
             var rows = await connection.QueryAsync<dynamic>(query, new { steamid = player.SteamId });
 
             var rowCount = 0;
@@ -120,10 +115,7 @@ internal class WeaponSynchronization
                 if (row.weapon_defindex == null)
                     continue;
 
-                var playerGloves = WeaponPaints.GPlayersGlove.GetOrAdd(
-                    player.Slot,
-                    _ => new ConcurrentDictionary<CsTeam, ushort>()
-                );
+                var playerGloves = WeaponPaints.GPlayersGlove.GetOrAdd(player.Slot, _ => new ConcurrentDictionary<CsTeam, ushort>());
                 CsTeam weaponTeam = (int)row.weapon_team switch
                 {
                     2 => CsTeam.Terrorist,
@@ -155,12 +147,8 @@ internal class WeaponSynchronization
             if (!_config.Additional.AgentEnabled || string.IsNullOrEmpty(player?.SteamId))
                 return;
 
-            const string query =
-                "SELECT `agent_ct`, `agent_t` FROM `wp_player_agents` WHERE `steamid` = @steamid";
-            var agentData = await connection.QueryFirstOrDefaultAsync<(string, string)>(
-                query,
-                new { steamid = player.SteamId }
-            );
+            const string query = "SELECT `agent_ct`, `agent_t` FROM `wp_player_agents` WHERE `steamid` = @steamid";
+            var agentData = await connection.QueryFirstOrDefaultAsync<(string, string)>(query, new { steamid = player.SteamId });
 
             if (agentData == default)
             {
@@ -185,19 +173,13 @@ internal class WeaponSynchronization
     {
         try
         {
-            if (
-                !_config.Additional.SkinEnabled
-                || player == null
-                || string.IsNullOrEmpty(player.SteamId)
-            )
+            if (!_config.Additional.SkinEnabled || player == null || string.IsNullOrEmpty(player.SteamId))
                 return;
 
-            var playerWeapons = WeaponPaints.GPlayerWeaponsInfo.GetOrAdd(
-                player.Slot,
-                _ => new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>()
-            );
+            var playerWeapons = WeaponPaints.GPlayerWeaponsInfo.GetOrAdd(player.Slot, _ => new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
 
-            const string query = @"
+            const string query =
+                @"
                 SELECT `weapon_team`, `weapon_defindex`, `weapon_paint_id`, `weapon_wear`, `weapon_seed`,
                        `weapon_nametag`, `weapon_stattrak`, `weapon_stattrak_count`,
                        `weapon_sticker_0`, `weapon_sticker_1`, `weapon_sticker_2`,
@@ -235,24 +217,9 @@ internal class WeaponSynchronization
                 if (
                     keyChainParts!.Length == 5
                     && uint.TryParse(keyChainParts[0], out uint keyChainId)
-                    && float.TryParse(
-                        keyChainParts[1],
-                        NumberStyles.Float,
-                        CultureInfo.InvariantCulture,
-                        out float keyChainOffsetX
-                    )
-                    && float.TryParse(
-                        keyChainParts[2],
-                        NumberStyles.Float,
-                        CultureInfo.InvariantCulture,
-                        out float keyChainOffsetY
-                    )
-                    && float.TryParse(
-                        keyChainParts[3],
-                        NumberStyles.Float,
-                        CultureInfo.InvariantCulture,
-                        out float keyChainOffsetZ
-                    )
+                    && float.TryParse(keyChainParts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float keyChainOffsetX)
+                    && float.TryParse(keyChainParts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float keyChainOffsetY)
+                    && float.TryParse(keyChainParts[3], NumberStyles.Float, CultureInfo.InvariantCulture, out float keyChainOffsetZ)
                     && uint.TryParse(keyChainParts[4], out uint keyChainSeed)
                 )
                 {
@@ -299,36 +266,11 @@ internal class WeaponSynchronization
                         parts.Length != 7
                         || !uint.TryParse(parts[0], out uint stickerId)
                         || !uint.TryParse(parts[1], out uint stickerSchema)
-                        || !float.TryParse(
-                            parts[2],
-                            NumberStyles.Float,
-                            CultureInfo.InvariantCulture,
-                            out float stickerOffsetX
-                        )
-                        || !float.TryParse(
-                            parts[3],
-                            NumberStyles.Float,
-                            CultureInfo.InvariantCulture,
-                            out float stickerOffsetY
-                        )
-                        || !float.TryParse(
-                            parts[4],
-                            NumberStyles.Float,
-                            CultureInfo.InvariantCulture,
-                            out float stickerWear
-                        )
-                        || !float.TryParse(
-                            parts[5],
-                            NumberStyles.Float,
-                            CultureInfo.InvariantCulture,
-                            out float stickerScale
-                        )
-                        || !float.TryParse(
-                            parts[6],
-                            NumberStyles.Float,
-                            CultureInfo.InvariantCulture,
-                            out float stickerRotation
-                        )
+                        || !float.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float stickerOffsetX)
+                        || !float.TryParse(parts[3], NumberStyles.Float, CultureInfo.InvariantCulture, out float stickerOffsetY)
+                        || !float.TryParse(parts[4], NumberStyles.Float, CultureInfo.InvariantCulture, out float stickerWear)
+                        || !float.TryParse(parts[5], NumberStyles.Float, CultureInfo.InvariantCulture, out float stickerScale)
+                        || !float.TryParse(parts[6], NumberStyles.Float, CultureInfo.InvariantCulture, out float stickerRotation)
                     )
                         continue;
 
@@ -346,23 +288,14 @@ internal class WeaponSynchronization
                     weaponInfo.Stickers.Add(stickerInfo);
                 }
 
-                var teamWeapons = playerWeapons.GetOrAdd(
-                    weaponTeam,
-                    _ => new ConcurrentDictionary<int, WeaponInfo>()
-                );
+                var teamWeapons = playerWeapons.GetOrAdd(weaponTeam, _ => new ConcurrentDictionary<int, WeaponInfo>());
                 teamWeapons[weaponDefIndex] = weaponInfo;
 
                 // Also add to both teams if None
                 if (weaponTeam == CsTeam.None)
                 {
-                    var tWeapons = playerWeapons.GetOrAdd(
-                        CsTeam.Terrorist,
-                        _ => new ConcurrentDictionary<int, WeaponInfo>()
-                    );
-                    var ctWeapons = playerWeapons.GetOrAdd(
-                        CsTeam.CounterTerrorist,
-                        _ => new ConcurrentDictionary<int, WeaponInfo>()
-                    );
+                    var tWeapons = playerWeapons.GetOrAdd(CsTeam.Terrorist, _ => new ConcurrentDictionary<int, WeaponInfo>());
+                    var ctWeapons = playerWeapons.GetOrAdd(CsTeam.CounterTerrorist, _ => new ConcurrentDictionary<int, WeaponInfo>());
                     tWeapons[weaponDefIndex] = weaponInfo;
                     ctWeapons[weaponDefIndex] = weaponInfo;
                 }
@@ -381,8 +314,7 @@ internal class WeaponSynchronization
             if (!_config.Additional.MusicEnabled || string.IsNullOrEmpty(player?.SteamId))
                 return;
 
-            const string query =
-                "SELECT `music_id`, `weapon_team` FROM `wp_player_music` WHERE `steamid` = @steamid ORDER BY `weapon_team` ASC";
+            const string query = "SELECT `music_id`, `weapon_team` FROM `wp_player_music` WHERE `steamid` = @steamid ORDER BY `weapon_team` ASC";
             var rows = await connection.QueryAsync<dynamic>(query, new { steamid = player.SteamId });
 
             var rowCount = 0;
@@ -392,10 +324,7 @@ internal class WeaponSynchronization
                 if (row.music_id == null)
                     continue;
 
-                var playerMusic = WeaponPaints.GPlayersMusic.GetOrAdd(
-                    player.Slot,
-                    _ => new ConcurrentDictionary<CsTeam, ushort>()
-                );
+                var playerMusic = WeaponPaints.GPlayersMusic.GetOrAdd(player.Slot, _ => new ConcurrentDictionary<CsTeam, ushort>());
                 CsTeam weaponTeam = (int)row.weapon_team switch
                 {
                     2 => CsTeam.Terrorist,
@@ -427,8 +356,7 @@ internal class WeaponSynchronization
             if (!_config.Additional.PinsEnabled || string.IsNullOrEmpty(player?.SteamId))
                 return;
 
-            const string query =
-                "SELECT `id`, `weapon_team` FROM `wp_player_pins` WHERE `steamid` = @steamid ORDER BY `weapon_team` ASC";
+            const string query = "SELECT `id`, `weapon_team` FROM `wp_player_pins` WHERE `steamid` = @steamid ORDER BY `weapon_team` ASC";
             var rows = await connection.QueryAsync<dynamic>(query, new { steamid = player.SteamId });
 
             var rowCount = 0;
@@ -438,10 +366,7 @@ internal class WeaponSynchronization
                 if (row.id == null)
                     continue;
 
-                var playerPins = WeaponPaints.GPlayersPin.GetOrAdd(
-                    player.Slot,
-                    _ => new ConcurrentDictionary<CsTeam, ushort>()
-                );
+                var playerPins = WeaponPaints.GPlayersPin.GetOrAdd(player.Slot, _ => new ConcurrentDictionary<CsTeam, ushort>());
                 CsTeam weaponTeam = (int)row.weapon_team switch
                 {
                     2 => CsTeam.Terrorist,
@@ -468,15 +393,10 @@ internal class WeaponSynchronization
 
     internal async Task SyncKnifeToDatabase(PlayerInfo player, string knife, CsTeam[] teams)
     {
-        if (
-            !_config.Additional.KnifeEnabled
-            || string.IsNullOrEmpty(player.SteamId)
-            || teams.Length == 0
-        )
+        if (!_config.Additional.KnifeEnabled || string.IsNullOrEmpty(player.SteamId) || teams.Length == 0)
             return;
 
-        const string query =
-            "INSERT INTO `wp_player_knife` (`steamid`, `weapon_team`, `knife`) VALUES(@steamid, @team, @newKnife) ON DUPLICATE KEY UPDATE `knife` = @newKnife";
+        const string query = "INSERT INTO `wp_player_knife` (`steamid`, `weapon_team`, `knife`) VALUES(@steamid, @team, @newKnife) ON DUPLICATE KEY UPDATE `knife` = @newKnife";
 
         try
         {
@@ -503,11 +423,7 @@ internal class WeaponSynchronization
 
     internal async Task SyncGloveToDatabase(PlayerInfo player, ushort gloveDefIndex, CsTeam[] teams)
     {
-        if (
-            !_config.Additional.GloveEnabled
-            || string.IsNullOrEmpty(player.SteamId)
-            || teams.Length == 0
-        )
+        if (!_config.Additional.GloveEnabled || string.IsNullOrEmpty(player.SteamId) || teams.Length == 0)
             return;
 
         const string query =
@@ -576,17 +492,11 @@ internal class WeaponSynchronization
 
     internal async Task SyncWeaponPaintsToDatabase(PlayerInfo player)
     {
-        if (
-            string.IsNullOrEmpty(player.SteamId)
-            || !WeaponPaints.GPlayerWeaponsInfo.TryGetValue(player.Slot, out var teamWeaponInfos)
-        )
+        if (string.IsNullOrEmpty(player.SteamId) || !WeaponPaints.GPlayerWeaponsInfo.TryGetValue(player.Slot, out var teamWeaponInfos))
             return;
 
         // Flatten to a single batch — one round-trip instead of N inserts.
-        var sb = new System.Text.StringBuilder(
-            "INSERT INTO `wp_player_skins` " +
-            "(`steamid`, `weapon_defindex`, `weapon_team`, `weapon_paint_id`, `weapon_wear`, `weapon_seed`) VALUES "
-        );
+        var sb = new System.Text.StringBuilder("INSERT INTO `wp_player_skins` " + "(`steamid`, `weapon_defindex`, `weapon_team`, `weapon_paint_id`, `weapon_wear`, `weapon_seed`) VALUES ");
         var args = new DynamicParameters();
         args.Add("steamid", player.SteamId);
 
@@ -595,7 +505,8 @@ internal class WeaponSynchronization
         {
             foreach (var (weaponDefIndex, weaponInfo) in weaponsInfo)
             {
-                if (i > 0) sb.Append(',');
+                if (i > 0)
+                    sb.Append(',');
                 sb.Append($"(@steamid, @d{i}, @t{i}, @p{i}, @w{i}, @s{i})");
                 args.Add($"d{i}", weaponDefIndex);
                 args.Add($"t{i}", (int)teamId);
@@ -606,14 +517,10 @@ internal class WeaponSynchronization
             }
         }
 
-        if (i == 0) return;
+        if (i == 0)
+            return;
 
-        sb.Append(
-            " ON DUPLICATE KEY UPDATE " +
-            "`weapon_paint_id` = VALUES(`weapon_paint_id`), " +
-            "`weapon_wear` = VALUES(`weapon_wear`), " +
-            "`weapon_seed` = VALUES(`weapon_seed`)"
-        );
+        sb.Append(" ON DUPLICATE KEY UPDATE " + "`weapon_paint_id` = VALUES(`weapon_paint_id`), " + "`weapon_wear` = VALUES(`weapon_wear`), " + "`weapon_seed` = VALUES(`weapon_seed`)");
 
         try
         {
@@ -631,8 +538,7 @@ internal class WeaponSynchronization
         if (!_config.Additional.MusicEnabled || string.IsNullOrEmpty(player.SteamId))
             return;
 
-        const string query =
-            "INSERT INTO `wp_player_music` (`steamid`, `weapon_team`, `music_id`) VALUES(@steamid, @team, @newMusic) ON DUPLICATE KEY UPDATE `music_id` = @newMusic";
+        const string query = "INSERT INTO `wp_player_music` (`steamid`, `weapon_team`, `music_id`) VALUES(@steamid, @team, @newMusic) ON DUPLICATE KEY UPDATE `music_id` = @newMusic";
 
         try
         {
@@ -662,8 +568,7 @@ internal class WeaponSynchronization
         if (!_config.Additional.PinsEnabled || string.IsNullOrEmpty(player.SteamId))
             return;
 
-        const string query =
-            "INSERT INTO `wp_player_pins` (`steamid`, `weapon_team`, `id`) VALUES(@steamid, @team, @newPin) ON DUPLICATE KEY UPDATE `id` = @newPin";
+        const string query = "INSERT INTO `wp_player_pins` (`steamid`, `weapon_team`, `id`) VALUES(@steamid, @team, @newPin) ON DUPLICATE KEY UPDATE `id` = @newPin";
 
         try
         {
@@ -707,10 +612,7 @@ internal class WeaponSynchronization
             {
                 var weaponInfos = teamInfo.Value;
 
-                var statTrakWeapons = weaponInfos.ToDictionary(
-                    w => w.Key,
-                    w => (w.Value.StatTrak, w.Value.StatTrakCount)
-                );
+                var statTrakWeapons = weaponInfos.ToDictionary(w => w.Key, w => (w.Value.StatTrak, w.Value.StatTrakCount));
 
                 if (statTrakWeapons.Count == 0)
                     continue;

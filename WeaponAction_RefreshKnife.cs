@@ -15,12 +15,7 @@ namespace WeaponPaints
             {
                 return;
             }
-            if (
-                player == null
-                || !player.IsValid
-                || player.PlayerPawn.Value == null
-                || (LifeState_t)player.LifeState != LifeState_t.LIFE_ALIVE
-            )
+            if (player == null || !player.IsValid || player.PlayerPawn.Value == null || (LifeState_t)player.LifeState != LifeState_t.LIFE_ALIVE)
             {
                 return;
             }

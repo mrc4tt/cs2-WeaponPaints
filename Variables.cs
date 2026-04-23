@@ -73,28 +73,12 @@ public partial class WeaponPaints
     };
 
     public static IStringLocalizer? _localizer;
-    internal static readonly ConcurrentDictionary<
-        int,
-        ConcurrentDictionary<CsTeam, string>
-    > GPlayersKnife = new();
-    internal static readonly ConcurrentDictionary<
-        int,
-        ConcurrentDictionary<CsTeam, ushort>
-    > GPlayersGlove = new();
-    internal static readonly ConcurrentDictionary<
-        int,
-        ConcurrentDictionary<CsTeam, ushort>
-    > GPlayersMusic = new();
-    internal static readonly ConcurrentDictionary<
-        int,
-        ConcurrentDictionary<CsTeam, ushort>
-    > GPlayersPin = new();
-    internal static readonly ConcurrentDictionary<int, (string? CT, string? T)> GPlayersAgent =
-        new();
-    internal static readonly ConcurrentDictionary<
-        int,
-        ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>
-    > GPlayerWeaponsInfo = new();
+    internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, string>> GPlayersKnife = new();
+    internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ushort>> GPlayersGlove = new();
+    internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ushort>> GPlayersMusic = new();
+    internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ushort>> GPlayersPin = new();
+    internal static readonly ConcurrentDictionary<int, (string? CT, string? T)> GPlayersAgent = new();
+    internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>> GPlayerWeaponsInfo = new();
     internal static List<JObject> SkinsList = [];
     internal static List<JObject> PinsList = [];
     internal static List<JObject> GlovesList = [];
@@ -116,13 +100,7 @@ public partial class WeaponPaints
     private static readonly Dictionary<int, DateTime> LastCommandTime = new(); // Prevents double-call from chat/console
     internal static Database? Database;
 
-    private static readonly MemoryFunctionVoid<
-        nint,
-        string,
-        float
-    > CAttributeListSetOrAddAttributeValueByName = new(
-        GameData.GetSignature("CAttributeList_SetOrAddAttributeValueByName")
-    );
+    private static readonly MemoryFunctionVoid<nint, string, float> CAttributeListSetOrAddAttributeValueByName = new(GameData.GetSignature("CAttributeList_SetOrAddAttributeValueByName"));
 
     //we dont need anymore because we use AcceptInput
     //private static readonly MemoryFunctionWithReturn<nint, string, int, int> SetBodygroupFunc = new(
@@ -190,17 +168,13 @@ public partial class WeaponPaints
             { 526, "weapon_knife_kukri" },
         };
 
-    private static readonly Dictionary<string, int> WeaponDefindexByName = WeaponDefindex
-        .ToDictionary(kv => kv.Value, kv => kv.Key);
+    private static readonly Dictionary<string, int> WeaponDefindexByName = WeaponDefindex.ToDictionary(kv => kv.Value, kv => kv.Key);
 
     private const ulong MinimumCustomItemId = 65578;
     private ulong _nextItemId = MinimumCustomItemId;
     private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
-    private readonly ConcurrentDictionary<
-        int,
-        ConcurrentDictionary<int, float>
-    > _temporaryPlayerWeaponWear = new();
+    private readonly ConcurrentDictionary<int, ConcurrentDictionary<int, float>> _temporaryPlayerWeaponWear = new();
 
     internal static IMenuApi? MenuApi;
     private static readonly PluginCapability<IMenuApi> MenuCapability = new("menu:nfcore");
