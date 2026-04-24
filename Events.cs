@@ -412,7 +412,7 @@ namespace WeaponPaints
             if (!HasChangedKnife(player, out var _) || !HasChangedPaint(player, weaponDefIndex, out var _))
                 return HookResult.Continue;
 
-            if (player is { Connected: PlayerConnectedState.PlayerConnected, PawnIsAlive: true, PlayerPawn.IsValid: true })
+            if (player is { Connected: PlayerConnectedState.Connected, PawnIsAlive: true, PlayerPawn.IsValid: true })
             {
                 GiveOnItemPickup(player);
             }

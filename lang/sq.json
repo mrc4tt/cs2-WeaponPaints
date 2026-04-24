@@ -1,0 +1,45 @@
+{
+	"wp_prefix": "{lightblue}[WeaponPaints] {default}",
+	"wp_info_website": "Vizitoni {lime}{0}{default} ku mund të ndryshoni skit-et",
+	"wp_info_refresh": "Shkruani {lime}!wp{default} për të sinkronizuar skin-et e zgjedhura",
+	"wp_info_knife": "Shkruani {lime}!knife{default} për të hapur menunë e thikave",
+	"wp_info_glove": "Shkruani {lime}!gloves{default} për të hapur menunë e dorezave",
+	"wp_info_agent": "Shkruani {lime}!agents{default} për të hapur menunë e agjentëve",
+	"wp_info_music": "Shkruani {lime}!music{default} për të hapur menunë e muzikës",
+	"wp_info_pin": "Shkruani {lime}!pins{default} për të hapur menunë e kunjave (pins)",
+	"wp_command_cooldown": "{lightred}Nuk mund t'i rifreskoni skin-et e armëve tani",
+	"wp_command_refresh_done": "{lime}Duke rifreskuar skin-et e armëve",
+	"wp_knife_menu_select": "Ju keni zgjedhur {lime}{0}{default} si thikën tuaj",
+	"wp_knife_menu_kill": "",
+	"wp_knife_menu_title": "Menuja e Thikave",
+	"wp_glove_menu_select": "Ju keni zgjedhur {lime}{0}{default} si dorezat tuaja",
+	"wp_glove_menu_title": "Menuja e Dorezave",
+	"wp_agent_menu_select": "Ju keni zgjedhur {lime}{0}{default} si agjentin tuaj",
+	"wp_agent_menu_title": "Menuja e Agjentëve",
+	"wp_music_menu_title": "Menuja e Muzikës",
+	"wp_music_menu_select": "Ju keni zgjedhur {lime}{0}{default} si paketën tuaj muzikore",
+	"wp_pins_menu_title": "Menuja e Kunjave (Pins)",
+	"wp_pins_menu_select": "Ju keni zgjedhur {lime}{0}{default} si kunjin tuaj",
+	"wp_skin_menu_weapon_title": "Menuja e Armëve",
+	"wp_skin_menu_skin_title": "Zgjidhni skin-in për {lime}{0}{default}",
+	"wp_skin_menu_select": "Ju keni zgjedhur {lime}{0}{default} si skin-in tuaj",
+
+	"wp_stattrak_action": "Ju keni ndryshuar me sukses cilësimin StatTrak",
+
+	"wp_float_usage": "Përdorimi: {lime}!float <0.00-1.00>{default} - Shembull: !float 0.01",
+	"wp_float_invalid": "{lightred}Vlerë e pasaktë. Përdorni një numër midis 0.00 dhe 1.00",
+	"wp_float_no_weapon": "{lightred}Duhet të keni një armë në dorë",
+	"wp_float_no_skin": "{lightred}Ju nuk keni një skin në këtë armë",
+	"wp_float_set": "Vlera Float/Wear u vendos në {lime}{0}",
+
+	"wp_seed_usage": "Përdorimi: {lime}!seed <0-1000>{default} - Shembull: !seed 661",
+	"wp_seed_invalid": "{lightred}Vlerë e pasaktë e seed. Përdorni një numër midis 0 dhe 1000",
+	"wp_seed_no_weapon": "{lightred}Duhet të keni një armë në dorë",
+	"wp_seed_no_skin": "{lightred}Ju nuk keni një skin në këtë armë",
+	"wp_seed_set": "Pattern seed u vendos në {lime}{0}",
+
+	"wp_skin_weapon_not_found": "{lightred}Arma '{0}' nuk u gjet. Provoni: ak47, awp, glock, etj.",
+	"wp_skin_no_skins_found": "{lightred}Nuk u gjet asnjë skin për {0}",
+
+	"None": "Asnjë"
+}
