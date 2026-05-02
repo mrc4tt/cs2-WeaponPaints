@@ -1,4 +1,4 @@
-﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Translations;
 using CS2MenuManager.API.Interface;
 using CS2MenuManager.API.Menu;
