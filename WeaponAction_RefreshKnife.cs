@@ -60,7 +60,6 @@ namespace WeaponPaints
                         return;
                     }
 
-                    // Use CsItem.Knife - OnEntityCreated will handle applying the skin automatically
                     var newKnifeHandle = player.GiveNamedItem(CsItem.Knife);
 
                     if (newKnifeHandle == IntPtr.Zero)

@@ -15,11 +15,11 @@ dotnet restore
 dotnet build WeaponPaints.csproj -c Release -o ./WeaponPaints
 ```
 
-There are no tests. CI (`.forgejo/workflows/release.yml`) replicates the build above and packages a release zip: plugin files land in `staging/addons/counterstrikesharp/plugins/WeaponPaints/`, and top-level `gamedata/weaponpaints.json` is copied to `addons/counterstrikesharp/gamedata/` (must not live inside the plugin folder). CI explicitly deletes `CounterStrikeSharp.API.dll`, `McMaster.NETCore.Plugins.dll`, `Microsoft.DotNet.PlatformAbstractions.dll`, and `Microsoft.Extensions.DependencyModel.dll` from the output before zipping — these are provided by the CSSharp runtime and must not ship with the plugin.
+There are no tests. CI (`.forgejo/workflows/release.yml`) replicates the build above and packages a release zip: plugin files land in `staging/addons/counterstrikesharp/plugins/WeaponPaints/`, and top-level `gamedata/weaponpaints.json` is copied to `addons/counterstrikesharp/gamedata/` (must not live inside the plugin folder). CI explicitly deletes `CounterStrikeSharp.API.dll`, `McMaster.NETCore.Plugins.dll`, `Microsoft.DotNet.PlatformAbstractions.dll`, `Microsoft.Extensions.DependencyModel.dll`, and `CS2MenuManager.dll` from the output before zipping — these are provided by the CSSharp runtime / MenuManagerCore and must not ship with the plugin.
 
 Local dev loop: copy the build output into an existing CS2 server's `addons/counterstrikesharp/plugins/WeaponPaints/` directory and use `css_plugins reload WeaponPaints` in server console. The `Load(bool hotReload)` branch in `WeaponPaints.cs` handles reloading connected players.
 
-`3rd_party/MenuManagerApi.dll` is referenced directly by `HintPath` — it is vendored, not a NuGet package.
+Menus are powered by **schwarper's [CS2MenuManager](https://github.com/schwarper/CS2MenuManager)** (NuGet `CS2MenuManager` v1.0.42). The server must have `MenuManagerCore` installed alongside the plugin — `CS2MenuManager.dll` itself is provided by that core plugin and is excluded from the release zip. The legacy NfCore `menu:nfcore` capability and the vendored `3rd_party/MenuManagerApi.dll` are gone — do not reintroduce them.
 
 ## Runtime configuration layout
 
@@ -39,10 +39,10 @@ The plugin is a single `partial class WeaponPaints : BasePlugin` split across fi
 - `WeaponPaints.cs` — lifecycle: `Load`, `OnConfigParsed`, `OnAllPluginsLoaded`. Sets up DB, loads skin/glove/agent/music/pin JSON from `data/`, registers listeners and commands.
 - `Variables.cs` — **all** shared static state lives here (see below for detail).
 - `Events.cs` — CSSharp event handlers (`OnClientFullConnect`, `OnPlayerSpawn`, `OnPlayerDisconnect`, round/MVP hooks, `OnGiveNamedItemPost`, `OnEntityCreated`) and `RegisterListeners()`.
-- `Commands.cs` — chat/console commands and `RegisterCommands()`; also contains the menu setup (`SetupKnifeMenu` etc.) driven by `MenuManagerApi` via the `menu:nfcore` plugin capability.
+- `Commands.cs` — chat/console commands and `RegisterCommands()`; also contains the menu setup (`SetupKnifeMenu` etc.) built on schwarper's CS2MenuManager (`CS2MenuManager.API.{Class,Interface,Menu}`). `Utility.CreateMenu` returns an `IMenu`; menus are populated with `AddItem(...)` and shown with `Display(player, 0)`.
 - `WeaponAction.cs` / `WeaponAction_RefreshKnife.cs` — actually applying skins, knife swaps, gloves, agents, pins, music to in-world entities.
 - `WeaponSynchronization.cs` — all DB reads/writes via Dapper; populates the `GPlayers*` dictionaries on connect and writes them back on disconnect. DB reads use `async`/`await` and log warnings via the injected `Logger` on failure — don't swallow exceptions silently.
-- `Utility.cs` — DB table creation, skin/gloves/agents/music/pins JSON loaders, `CreateMenu` wrapper that honors `Config.MenuType`. The `Load*FromFile` methods are also responsible for rebuilding the lookup indexes described below.
+- `Utility.cs` — DB table creation, skin/gloves/agents/music/pins JSON loaders, `CreateMenu` wrapper that returns a `PlayerMenu`. `PlayerMenu.Display(player, ...)` consults `MenuTypeManager.GetPlayerMenuType(player)` so each player sees the menu style they picked via MenuManagerCore's settings menu, falling back to MenuManagerCore's server-default. **`Config.MenuType` is deprecated and no longer read** — leave it in the class so old user configs still parse, but configure the default in MenuManagerCore. The `Load*FromFile` methods are also responsible for rebuilding the lookup indexes described below.
 - `PlayerInfo.cs` — lightweight DTO carrying player identity across thread boundaries. **Always construct via `PlayerInfo.From(CCSPlayerController)`**; do not inline-build new `PlayerInfo { ... }` objects (the factory is the single source of truth for which fields come off the controller, and it's safe to call on the main thread before handing the struct to a background task).
 - `PlayerExtensions.cs` — `.Print()` prepends the localized `wp_prefix` to chat messages; use it instead of `PrintToChat`.
 
@@ -69,7 +69,7 @@ Static catalogs loaded from `data/*.json`:
   - `AgentsModelSet : HashSet<string>`
 - `WeaponDefindex` (int → class name) and its reverse `WeaponDefindexByName` (class name → int); `WeaponList` (class name → display name). Use `WeaponDefindexByName.TryGetValue(...)` instead of `WeaponDefindex.FirstOrDefault(kv => kv.Value == name)`.
 
-Other static infrastructure: `WeaponSync`, `Database`, `MenuApi`, `_localizer`, and the `CAttributeList_SetOrAddAttributeValueByName` memory function pointer loaded from `gamedata/weaponpaints.json`.
+Other static infrastructure: `WeaponSync`, `Database`, `_localizer`, and the `CAttributeList_SetOrAddAttributeValueByName` memory function pointer loaded from `gamedata/weaponpaints.json`. (CS2MenuManager menus are constructed on demand inside `Utility.CreateMenu` — there is no shared `MenuApi` singleton.)
 
 Performance cache: `PlayersBySteamId` is a `ConcurrentDictionary<ulong, CCSPlayerController>` to avoid O(n) scans inside `OnEntityCreated` — keep it in sync with `Players` in every connect/disconnect/hot-reload path.
 

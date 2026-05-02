@@ -354,6 +354,56 @@ namespace WeaponPaints
             );
         }
 
+        // Returns a "slotN" command that switches the player back to whatever they had drawn,
+        // or null when no active weapon can be determined. Used after refresh paths that
+        // forcibly re-equip the knife (slot3) so the player doesn't lose their drawn weapon.
+        private static string? GetActiveWeaponSlotCommand(CCSPlayerController player)
+        {
+            var pawn = player.PlayerPawn.Value;
+            var active = pawn?.WeaponServices?.ActiveWeapon.Value;
+            if (active == null || !active.IsValid)
+                return null;
+
+            var name = active.DesignerName;
+            if (string.IsNullOrEmpty(name))
+                return null;
+
+            // Slots: 1=primary, 2=secondary, 3=knife, 4=grenades, 5=c4. Taser shares the
+            // pistol slot (slot2) — the engine maps "use weapon_taser" to slot2 internally.
+            return name switch
+            {
+                "weapon_c4" => "slot5",
+                "weapon_hegrenade" or "weapon_flashbang" or "weapon_smokegrenade"
+                    or "weapon_decoy" or "weapon_molotov" or "weapon_incgrenade" => "slot4",
+                "weapon_taser" => "slot2",
+                "weapon_deagle" or "weapon_elite" or "weapon_fiveseven" or "weapon_glock"
+                    or "weapon_hkp2000" or "weapon_p250" or "weapon_usp_silencer"
+                    or "weapon_cz75a" or "weapon_revolver" or "weapon_tec9" => "slot2",
+                var n when n.StartsWith("weapon_knife", StringComparison.Ordinal)
+                    || n == "weapon_bayonet" => "slot3",
+                _ => "slot1",
+            };
+        }
+
+        private void RestoreActiveWeaponSlot(CCSPlayerController player, string? activeSlotCommand)
+        {
+            if (string.IsNullOrEmpty(activeSlotCommand))
+                return;
+
+            AddTimer(0.05f, () =>
+            {
+                try
+                {
+                    if (Utility.IsPlayerValid(player) && player.PawnIsAlive)
+                        player.ExecuteClientCommand(activeSlotCommand);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning("RestoreActiveWeaponSlot failed: {Message}", ex.Message);
+                }
+            }, TimerFlags.STOP_ON_MAPCHANGE);
+        }
+
         private static void GiveKnifeToPlayer(CCSPlayerController? player)
         {
             if (!Instance.Config.Additional.KnifeEnabled || player == null || !player.IsValid)
@@ -362,7 +412,10 @@ namespace WeaponPaints
             if (PlayerHasKnife(player))
                 return;
 
-            //string knifeToGive = (CsTeam)player.TeamNum == CsTeam.Terrorist ? "weapon_knife_t" : "weapon_knife";
+            // Don't substitute weapon_knife_t for T players — CS2 doesn't accept it as a
+            // GiveNamedItem classname here, and downstream code (OnGiveNamedItemPost,
+            // WeaponDefindexByName lookups, SubclassChange dual-event flow) is keyed on
+            // "weapon_knife". CS2's spawn pipeline applies the team-correct model itself.
             player.GiveNamedItem(CsItem.Knife);
             Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInventoryServices");
         }
@@ -558,6 +611,10 @@ namespace WeaponPaints
             if (player.Team is CsTeam.None or CsTeam.Spectator)
                 return;
 
+            // Capture before the kill+regive cycle so we can restore the player's drawn weapon
+            // after refresh — without this they end up holding the knife (slot3) every time.
+            var activeSlotCommand = GetActiveWeaponSlotCommand(player);
+
             var hasKnife = false;
 
             Dictionary<string, List<(int, int)>> weaponsWithAmmo = [];
@@ -646,8 +703,6 @@ namespace WeaponPaints
 
                     if (!PlayerHasKnife(player) && hasKnife)
                     {
-                        // Give a generic knife - OnEntityCreated event will automatically call GivePlayerWeaponSkin
-                        // which handles SubclassChange to the correct knife type
                         player.GiveNamedItem(CsItem.Knife);
                         player.ExecuteClientCommand("slot3");
                     }
@@ -675,6 +730,8 @@ namespace WeaponPaints
                             });
                         }
                     }
+
+                    RestoreActiveWeaponSlot(player, activeSlotCommand);
                 },
                 TimerFlags.STOP_ON_MAPCHANGE
             );
@@ -695,6 +752,11 @@ namespace WeaponPaints
             // Ensure player is on a valid team before glove logic
             if (player.Team is CsTeam.None or CsTeam.Spectator)
                 return;
+
+            // Capture the active draw before lastinv toggles things around. We restore at the
+            // end of the inner timer so the player keeps their current weapon held instead of
+            // ending up on whatever was previously selected.
+            var activeSlotCommand = GetActiveWeaponSlotCommand(player);
 
             try
             {
@@ -794,6 +856,8 @@ namespace WeaponPaints
                             player.ExecuteClientCommand("lastinv");
                             SetBodygroup(pawn, "first_or_third_person", 0);
                             AddTimer(0.2f, () => SetBodygroup(pawn, "first_or_third_person", 1), TimerFlags.STOP_ON_MAPCHANGE);
+
+                            RestoreActiveWeaponSlot(player, activeSlotCommand);
                         }
                         catch (Exception ex)
                         {

@@ -73,7 +73,8 @@ jobs:
             ${{ env.OUTPUT_PATH }}/CounterStrikeSharp.API.dll \
             ${{ env.OUTPUT_PATH }}/McMaster.NETCore.Plugins.dll \
             ${{ env.OUTPUT_PATH }}/Microsoft.DotNet.PlatformAbstractions.dll \
-            ${{ env.OUTPUT_PATH }}/Microsoft.Extensions.DependencyModel.dll
+            ${{ env.OUTPUT_PATH }}/Microsoft.Extensions.DependencyModel.dll \
+            ${{ env.OUTPUT_PATH }}/CS2MenuManager.dll
 
       - name: Prepare release structure
         run: |

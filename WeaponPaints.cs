@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using CounterStrikeSharp.API;
@@ -11,17 +12,23 @@ using MySqlConnector;
 
 namespace WeaponPaints;
 
-[MinimumApiVersion(338)]
 public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig>
 {
     internal static WeaponPaints Instance { get; private set; } = new();
 
     public WeaponPaintsConfig Config { get; set; } = new();
     internal static WeaponPaintsSqlConfig SqlConfig { get; set; } = new();
-    public override string ModuleAuthor => "Nereziel & daffyy";
+    public override string ModuleAuthor => "Nereziel & daffyy (Forked by Miksen)";
     public override string ModuleDescription => "Skin, gloves, agents and knife selector, standalone and web-based";
     public override string ModuleName => "WeaponPaints";
-    public override string ModuleVersion => "3.4a";
+    public override string ModuleVersion => _moduleVersion;
+
+    // Embedded by MSBuild from the repo-root VERSION file via <AssemblyMetadata>.
+    private static readonly string _moduleVersion =
+        typeof(WeaponPaints).Assembly
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .FirstOrDefault(a => a.Key == "ModuleVersion")?.Value
+        ?? "unknown";
 
     public override void Load(bool hotReload)
     {
@@ -169,8 +176,6 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
     {
         try
         {
-            MenuApi = MenuCapability.Get();
-
             if (Config.Additional.KnifeEnabled)
                 SetupKnifeMenu();
             if (Config.Additional.SkinEnabled)
@@ -188,7 +193,6 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         }
         catch (Exception)
         {
-            MenuApi = null;
             Logger.LogError("Error while loading required plugins");
             throw;
         }

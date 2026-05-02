@@ -1,8 +1,8 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Translations;
-using CounterStrikeSharp.API.Modules.Menu;
+using CS2MenuManager.API.Interface;
+using CS2MenuManager.API.Menu;
 using Dapper;
-using MenuManager;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -248,26 +248,10 @@ namespace WeaponPaints
             Console.ResetColor();
         }
 
-        internal static IMenu? CreateMenu(string title)
-        {
-            var menuType = WeaponPaints.Instance.Config.MenuType.ToLower();
-
-            var menu = menuType switch
-            {
-                _ when menuType.Equals("selectable", StringComparison.CurrentCultureIgnoreCase) => WeaponPaints.MenuApi?.NewMenu(title),
-
-                _ when menuType.Equals("dynamic", StringComparison.CurrentCultureIgnoreCase) => WeaponPaints.MenuApi?.NewMenuForcetype(title, MenuType.ButtonMenu),
-
-                _ when menuType.Equals("center", StringComparison.CurrentCultureIgnoreCase) => WeaponPaints.MenuApi?.NewMenuForcetype(title, MenuType.CenterMenu),
-
-                _ when menuType.Equals("chat", StringComparison.CurrentCultureIgnoreCase) => WeaponPaints.MenuApi?.NewMenuForcetype(title, MenuType.ChatMenu),
-
-                _ when menuType.Equals("console", StringComparison.CurrentCultureIgnoreCase) => WeaponPaints.MenuApi?.NewMenuForcetype(title, MenuType.ConsoleMenu),
-
-                _ => WeaponPaints.MenuApi?.NewMenu(title),
-            };
-
-            return menu;
-        }
+        // PlayerMenu defers menu-type selection to MenuTypeManager.GetPlayerMenuType(player),
+        // so each player sees the style they've picked via MenuManagerCore's settings menu.
+        // Falls back to MenuManagerCore's server-default when the player hasn't chosen one.
+        internal static IMenu CreateMenu(string title)
+            => new PlayerMenu(title, WeaponPaints.Instance);
     }
 }

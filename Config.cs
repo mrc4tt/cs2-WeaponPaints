@@ -65,6 +65,9 @@ namespace WeaponPaints
         [JsonPropertyName("CommandSeed")]
         public List<string> CommandSeed { get; set; } = ["seed", "pattern"];
 
+        [JsonPropertyName("CommandMenu")]
+        public List<string> CommandMenu { get; set; } = ["menu"];
+
         [JsonPropertyName("GiveRandomKnife")]
         public bool GiveRandomKnife { get; set; } = false;
 
@@ -78,7 +81,7 @@ namespace WeaponPaints
     public class WeaponPaintsConfig : BasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 12;
+        public override int Version { get; set; } = 14;
 
         [JsonPropertyName("DatabaseHost")]
         public string DatabaseHost { get; set; } = "";
@@ -107,7 +110,11 @@ namespace WeaponPaints
         [JsonPropertyName("Additional")]
         public Additional Additional { get; set; } = new();
 
+        // DEPRECATED — kept only so existing user configs don't error out. The plugin now uses
+        // CS2MenuManager's PlayerMenu, which defers to each player's choice from MenuManagerCore's
+        // settings menu (and MenuManagerCore's own server-default when the player hasn't picked one).
+        // Configure the server default in MenuManagerCore's config, not here.
         [JsonPropertyName("MenuType")]
-        public string MenuType { get; set; } = "selectable";
+        public string MenuType { get; set; } = "chat";
     }
 }
