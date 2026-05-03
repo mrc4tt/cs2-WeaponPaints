@@ -618,9 +618,9 @@ namespace WeaponPaints
             if (player.Team is CsTeam.None or CsTeam.Spectator)
                 return;
 
-            // Capture the active draw before lastinv toggles things around. We restore at the
-            // end of the inner timer so the player keeps their current weapon held instead of
-            // ending up on whatever was previously selected.
+            // Capture the active draw before the bodygroup toggle / glove apply so we can
+            // restore the player's drawn weapon at the end of the inner timer instead of
+            // letting the model refresh leave them on a different slot.
             var activeSlotCommand = GetActiveWeaponSlotCommand(player);
 
             try
@@ -638,7 +638,10 @@ namespace WeaponPaints
                     earlyItem.AttributeList.Attributes.RemoveAll();
                 }
 
-                player.ExecuteClientCommand("lastinv");
+                // No "lastinv" trigger here — it created a transient weapon-switch on every
+                // glove apply, accumulating entities on long-running workshop maps and slowing
+                // Q-Q switching. UpdateItemView (called inside the inner timer) re-publishes
+                // the item view authoritatively, so the workaround is no longer needed.
                 Instance.AddTimer(
                     0.08f,
                     () =>
@@ -699,14 +702,14 @@ namespace WeaponPaints
 
                             item.Initialized = true;
 
-                            // Force the engine to re-publish the modified item view. Replaces
-                            // the older lastinv + bodygroup toggle hack — UpdateItemView is the
-                            // authoritative path; the toggles are kept as belt-and-suspenders
-                            // because some glove+agent combinations still need the model nudge.
+                            // Authoritative re-publish via the engine's CEconItemView::Update.
+                            // No "lastinv" toggle — it caused entity accumulation on workshop
+                            // maps. The bodygroup flip is kept as a lightweight model nudge
+                            // (just sets a network var, no entity churn) for the rare glove+
+                            // agent combinations where UpdateItemView alone doesn't redraw.
                             UpdateGloveItemView(item, player.Slot);
                             Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInventoryServices");
 
-                            player.ExecuteClientCommand("lastinv");
                             SetBodygroup(pawn, "first_or_third_person", 0);
                             AddTimer(0.2f, () => SetBodygroup(pawn, "first_or_third_person", 1), TimerFlags.STOP_ON_MAPCHANGE);
 
