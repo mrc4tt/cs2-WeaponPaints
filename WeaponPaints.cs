@@ -24,11 +24,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
     public override string ModuleVersion => _moduleVersion;
 
     // Embedded by MSBuild from the repo-root VERSION file via <AssemblyMetadata>.
-    private static readonly string _moduleVersion =
-        typeof(WeaponPaints).Assembly
-            .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .FirstOrDefault(a => a.Key == "ModuleVersion")?.Value
-        ?? "unknown";
+    private static readonly string _moduleVersion = typeof(WeaponPaints).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "ModuleVersion")?.Value ?? "unknown";
 
     public override void Load(bool hotReload)
     {

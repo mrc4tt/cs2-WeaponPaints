@@ -100,6 +100,11 @@ public partial class WeaponPaints
 
     private static readonly MemoryFunctionVoid<nint, string, float> CAttributeListSetOrAddAttributeValueByName = new(GameData.GetSignature("CAttributeList_SetOrAddAttributeValueByName"));
 
+    // CEconItemView::Update — forces the engine to re-publish item attributes after we mutate
+    // them. Cleaner than the lastinv + bodygroup toggle hacks for getting glove changes to
+    // actually render. Signature lifted from M-archand/cs2-WeaponPaints@1cedb61.
+    private static readonly MemoryFunctionWithReturn<nint, nint, nint> UpdateItemView = new(GameData.GetSignature("UpdateItemView"));
+
     //we dont need anymore because we use AcceptInput
     //private static readonly MemoryFunctionWithReturn<nint, string, int, int> SetBodygroupFunc = new(
     //	GameData.GetSignature("CBaseModelEntity_SetBodygroup"));

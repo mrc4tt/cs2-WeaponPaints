@@ -4,9 +4,9 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Timers;
+using CounterStrikeSharp.API.Modules.Utils;
 using CS2MenuManager.API.Class;
 using CS2MenuManager.API.Menu;
-using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
@@ -580,11 +580,7 @@ public partial class WeaponPaints
 
         Config.Additional.CommandMenu.ForEach(c =>
         {
-            AddCommand(
-                $"css_{c}",
-                "Pick your preferred menu style",
-                (player, info) => OnCommandMenu(player, info)
-            );
+            AddCommand($"css_{c}", "Pick your preferred menu style", (player, info) => OnCommandMenu(player, info));
         });
 
         Config.Additional.CommandSkin.ForEach(c =>

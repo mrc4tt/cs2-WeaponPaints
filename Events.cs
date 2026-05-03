@@ -363,7 +363,7 @@ namespace WeaponPaints
                                 if (player == null)
                                 {
                                     CCSWeaponBaseGun gun = weapon.As<CCSWeaponBaseGun>();
-                                    if (gun.OwnerEntity.IsValid && gun.OwnerEntity.Value != null)
+                                    if (gun.IsValid && gun.OwnerEntity.IsValid && gun.OwnerEntity.Value != null)
                                     {
                                         player = Utilities.GetPlayerFromIndex((int)gun.OwnerEntity.Value.Index);
                                     }
