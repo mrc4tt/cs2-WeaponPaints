@@ -851,20 +851,15 @@ public partial class WeaponPaints
                 await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo);
             });
 
-            AddTimer(
-                0.1f,
-                () =>
-                {
-                    GivePlayerGloves(player);
-                }
-            );
-            AddTimer(
-                0.25f,
-                () =>
-                {
-                    GivePlayerGloves(player);
-                }
-            );
+            AddTimer(0.1f, () => GivePlayerGloves(player));
+
+			//force gloves model refresh to prevent model overlap
+			player.ExecuteClientCommand("lastinv");
+			AddTimer(0.15f, () =>
+			{
+				if (player.IsValid && player.PawnIsAlive)
+					player.ExecuteClientCommand("lastinv");
+			}, TimerFlags.STOP_ON_MAPCHANGE);
         };
 
         // Add weapon options to the weapon selection menu
