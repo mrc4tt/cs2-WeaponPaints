@@ -85,6 +85,3 @@ The plugin is not loaded or configured with MySQL credentials. Tables are auto-c
 </details>
 
 ### Use this plugin at your own risk! Using this may lead to GSLT ban or something else Valve comes up with. [Valve Server guidelines](https://blog.counter-strike.net/index.php/server_guidelines/)
-
-## Preview
-![preview](https://github.com/Nereziel/cs2-WeaponPaints/blob/main/website/preview.png?raw=true)
