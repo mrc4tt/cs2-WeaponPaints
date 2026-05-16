@@ -26,8 +26,8 @@ Unfinished, unoptimized and not fully functional ugly demo weapon paints plugin 
 - Have working CounterStrikeSharp (**with RUNTIME!**)
 - Download from the release and copy the plugin to the plugins folder
 - Run server with plugin, **it will generate config if installed correctly!**
-- Edit `addons/counterstrikesharp/configs/`**`plugins/WeaponPaints/WeaponPaints.json`** include database credentials
-- In `addons/counterstrikesharp/configs/`**`core.json`** set **FollowCS2ServerGuidelines** to **`false`**
+- Edit **`addons/counterstrikesharp/configs/plugins/WeaponPaints/WeaponPaints.json`** include database credentials
+- In **`addons/counterstrikesharp/configs/core.json`** set **FollowCS2ServerGuidelines** to **`false`**
 - Copy from plugins folder gamedata file **`weaponpaints.json`** to folder **`addons/counterstrikesharp/gamedata/`**
 
 ## Plugin Configuration
@@ -73,16 +73,10 @@ Unfinished, unoptimized and not fully functional ugly demo weapon paints plugin 
 </details>
 
 ## Troubleshooting
-<details>
-**Skins are not changing:**
+**Skins are not changing:**<br />
 Set FollowCSGOGuidelines to false in cssharp’s core.jcon config
 
-**Database error table does not exist:**
+**Database error table does not exist:**<br />
 The plugin is not loaded or configured with MySQL credentials. Tables are auto-created by the plugin.
 
-</details>
-
 ### Use this plugin at your own risk! Using this may lead to GSLT ban or something else Valve comes up with. [Valve Server guidelines](https://blog.counter-strike.net/index.php/server_guidelines/)
-
-## Preview
-![preview](https://github.com/Nereziel/cs2-WeaponPaints/blob/main/website/preview.png?raw=true)
