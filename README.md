@@ -19,8 +19,6 @@ Unfinished, unoptimized and not fully functional ugly demo weapon paints plugin 
 ## ⚙️ Requirements
 **Ensure all the following dependencies are installed before proceeding**
 - [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
-- [PlayerSettings](https://github.com/NickFox007/PlayerSettingsCS2) - Required by CS2MenuManager
-- [AnyBaseLibCS2](https://github.com/NickFox007/AnyBaseLibCS2) - Required by PlayerSettings
 - [CS2MenuManager by schwarper](https://github.com/schwarper/CS2MenuManager)
 - MySQL database
 
