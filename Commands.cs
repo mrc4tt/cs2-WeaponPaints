@@ -641,6 +641,21 @@ public partial class WeaponPaints
             );
         });
 
+        // Register sticker command
+        Config.Additional.CommandSticker.ForEach(c =>
+        {
+            AddCommand(
+                $"css_{c}",
+                "Apply sticker to held weapon",
+                (player, info) =>
+                {
+                    if (!Utility.IsPlayerValid(player))
+                        return;
+                    OnCommandSticker(player, info);
+                }
+            );
+        });
+
         if (Config.Additional.CommandKillEnabled)
         {
             Config.Additional.CommandKill.ForEach(c =>
@@ -1196,7 +1211,11 @@ public partial class WeaponPaints
                 {
                     foreach (var team in teamsToCheck)
                     {
-                        playerPins[team] = 0; // Set pin for each team
+                        playerPins.TryRemove(team, out _);
+                    }
+                    if (playerPins.IsEmpty)
+                    {
+                        GPlayersPin.TryRemove(player.Slot, out _);
                     }
                 }
 
@@ -1205,7 +1224,10 @@ public partial class WeaponPaints
                     player.Print(Localizer["wp_pins_menu_select", selectedPaintName]);
                 }
 
-                GivePlayerPin(player);
+                if (paint != 0)
+                    GivePlayerPin(player);
+                else
+                    RestorePlayerDefaultPin(player);
 
                 if (WeaponSync != null)
                 {
@@ -1221,7 +1243,12 @@ public partial class WeaponPaints
 
                 foreach (var team in teamsToCheck)
                 {
-                    playerPins[team] = 0; // Set music for each team
+                    playerPins.TryRemove(team, out _);
+                }
+
+                if (playerPins.IsEmpty)
+                {
+                    GPlayersPin.TryRemove(player.Slot, out _);
                 }
 
                 if (!string.IsNullOrEmpty(Localizer["wp_pins_menu_select"]))
@@ -1229,7 +1256,7 @@ public partial class WeaponPaints
                     player.Print(Localizer["wp_pins_menu_select", Localizer["None"]]);
                 }
 
-                GivePlayerPin(player);
+                RestorePlayerDefaultPin(player);
 
                 if (WeaponSync != null)
                 {
@@ -1279,5 +1306,273 @@ public partial class WeaponPaints
                 }
             );
         });
+    }
+
+    // Per-slot snapshot of the sticker list a player should see in their next sticker
+    // sub-menu. Set when !sticker is invoked (filtered or full) and read once the slot
+    // sub-menu picks a slot. Cleared on player disconnect via OnPlayerDisconnect.
+    private static readonly ConcurrentDictionary<int, List<JObject>> _stickerCommandFilters = new();
+
+    private void OnCommandSticker(CCSPlayerController? player, CommandInfo command)
+    {
+        if (!Config.Additional.SkinEnabled || !_gBCommandsAllowed)
+            return;
+        if (!Utility.IsPlayerValid(player) || player == null)
+            return;
+
+        // Prevent double-call from chat/console trigger
+        if (LastCommandTime.TryGetValue(player.Slot, out var lastTime) && (DateTime.UtcNow - lastTime).TotalMilliseconds < 100)
+            return;
+        LastCommandTime[player.Slot] = DateTime.UtcNow;
+
+        var weapon = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
+        if (weapon == null || !weapon.IsValid)
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_sticker_no_weapon"]))
+                player.Print(Localizer["wp_sticker_no_weapon"]);
+            return;
+        }
+
+        var weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
+
+        if (!HasChangedPaint(player, weaponDefIndex, out _))
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_sticker_no_skin"]))
+                player.Print(Localizer["wp_sticker_no_skin"]);
+            return;
+        }
+
+        var query = "";
+        if (command.ArgCount >= 2)
+        {
+            var parts = new string[command.ArgCount - 1];
+            for (var i = 0; i < parts.Length; i++)
+                parts[i] = command.GetArg(i + 1);
+            query = string.Join(' ', parts).Trim();
+        }
+
+        List<JObject> filtered;
+        if (string.IsNullOrEmpty(query))
+        {
+            filtered = StickersList;
+        }
+        else if (uint.TryParse(query, out var idQuery) && StickersById.TryGetValue(idQuery, out var hit))
+        {
+            filtered = new List<JObject> { hit };
+        }
+        else
+        {
+            var tokens = query.ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            filtered = StickersList
+                .Where(s =>
+                {
+                    var name = s["name"]?.ToString()?.ToLowerInvariant() ?? "";
+                    return tokens.All(t => name.Contains(t));
+                })
+                .ToList();
+        }
+
+        if (filtered.Count == 0)
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_sticker_no_match"]))
+                player.Print(Localizer["wp_sticker_no_match", query]);
+            return;
+        }
+
+        _stickerCommandFilters[player.Slot] = filtered;
+        OpenStickerSlotMenu(player, weaponDefIndex);
+    }
+
+    private void OpenStickerSlotMenu(CCSPlayerController player, int weaponDefIndex)
+    {
+        var menu = Utility.CreateMenu(Localizer["wp_sticker_slot_title"]);
+        if (menu == null)
+            return;
+
+        for (var slot = 0; slot < 5; slot++)
+        {
+            var capturedSlot = slot;
+            var label = Localizer["wp_sticker_slot_label", slot].ToString();
+            if (string.IsNullOrEmpty(label))
+                label = $"Slot {slot}";
+
+            menu.AddItem(
+                label,
+                (p, _) =>
+                {
+                    if (!Utility.IsPlayerValid(p))
+                        return;
+                    OpenStickerListMenu(p, weaponDefIndex, capturedSlot);
+                }
+            );
+        }
+
+        var removeAllLabel = Localizer["wp_sticker_remove_all"].ToString();
+        if (string.IsNullOrEmpty(removeAllLabel))
+            removeAllLabel = "Remove all stickers";
+
+        menu.AddItem(
+            removeAllLabel,
+            (p, _) =>
+            {
+                if (!Utility.IsPlayerValid(p))
+                    return;
+                ClearAllStickers(p, weaponDefIndex);
+            }
+        );
+
+        menu.Display(player, 0);
+    }
+
+    private void OpenStickerListMenu(CCSPlayerController player, int weaponDefIndex, int slot)
+    {
+        if (!_stickerCommandFilters.TryGetValue(player.Slot, out var list))
+            list = StickersList;
+
+        var title = Localizer["wp_sticker_menu_title", slot].ToString();
+        if (string.IsNullOrEmpty(title))
+            title = $"Stickers - Slot {slot}";
+
+        var menu = Utility.CreateMenu(title);
+        if (menu == null)
+            return;
+
+        var clearLabel = Localizer["wp_sticker_clear_slot"].ToString();
+        if (string.IsNullOrEmpty(clearLabel))
+            clearLabel = "Clear this slot";
+
+        menu.AddItem(
+            clearLabel,
+            (p, _) =>
+            {
+                if (!Utility.IsPlayerValid(p))
+                    return;
+                ApplySticker(p, weaponDefIndex, slot, null);
+            }
+        );
+
+        foreach (var s in list)
+        {
+            var name = s["name"]?.ToString();
+            if (string.IsNullOrEmpty(name))
+                continue;
+            if (!uint.TryParse(s["id"]?.ToString(), out var id))
+                continue;
+
+            var capturedId = id;
+            menu.AddItem(
+                name,
+                (p, _) =>
+                {
+                    if (!Utility.IsPlayerValid(p))
+                        return;
+                    ApplySticker(
+                        p,
+                        weaponDefIndex,
+                        slot,
+                        new StickerInfo
+                        {
+                            Id = capturedId,
+                            Schema = 0,
+                            OffsetX = 0,
+                            OffsetY = 0,
+                            Wear = 0,
+                            Scale = 1,
+                            Rotation = 0,
+                        }
+                    );
+                }
+            );
+        }
+
+        menu.Display(player, 0);
+    }
+
+    private void ApplySticker(CCSPlayerController player, int weaponDefIndex, int slot, StickerInfo? sticker)
+    {
+        if (!HasChangedPaint(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null)
+            return;
+        if (slot < 0 || slot > 4)
+            return;
+
+        // Pad list to 5 slots so we can write to any index.
+        while (weaponInfo.Stickers.Count < 5)
+        {
+            weaponInfo.Stickers.Add(new StickerInfo());
+        }
+
+        weaponInfo.Stickers[slot] = sticker ?? new StickerInfo();
+
+        var playerInfo = PlayerInfo.From(player);
+        var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : new[] { player.Team };
+
+        var playerWeapons = GPlayerWeaponsInfo.GetOrAdd(player.Slot, _ => new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
+        foreach (var team in teamsToCheck)
+        {
+            var teamWeapons = playerWeapons.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>());
+            teamWeapons[weaponDefIndex] = weaponInfo;
+        }
+
+        if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
+        {
+            var active = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
+            var isKnife = active != null && active.IsValid && active.AttributeManager.Item.ItemDefinitionIndex == weaponDefIndex && (active.DesignerName.Contains("knife") || active.DesignerName.Contains("bayonet"));
+            if (isKnife)
+                RefreshKnife(player);
+            else
+                RefreshSingleWeapon(player, weaponDefIndex);
+        }
+
+        if (WeaponSync != null)
+        {
+            _ = Task.Run(async () => await WeaponSync.SyncStickerToDatabase(playerInfo, weaponDefIndex, slot, sticker, teamsToCheck));
+        }
+
+        if (sticker != null)
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_sticker_applied"]))
+            {
+                var displayName = StickersById.TryGetValue(sticker.Id, out var so) ? so["name"]?.ToString() ?? sticker.Id.ToString() : sticker.Id.ToString();
+                player.Print(Localizer["wp_sticker_applied", displayName, slot]);
+            }
+        }
+        else
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_sticker_cleared"]))
+                player.Print(Localizer["wp_sticker_cleared", slot]);
+        }
+    }
+
+    private void ClearAllStickers(CCSPlayerController player, int weaponDefIndex)
+    {
+        if (!HasChangedPaint(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null)
+            return;
+
+        weaponInfo.Stickers.Clear();
+
+        var playerInfo = PlayerInfo.From(player);
+        var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : new[] { player.Team };
+
+        if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
+        {
+            var active = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
+            var isKnife = active != null && active.IsValid && active.AttributeManager.Item.ItemDefinitionIndex == weaponDefIndex && (active.DesignerName.Contains("knife") || active.DesignerName.Contains("bayonet"));
+            if (isKnife)
+                RefreshKnife(player);
+            else
+                RefreshSingleWeapon(player, weaponDefIndex);
+        }
+
+        if (WeaponSync != null)
+        {
+            _ = Task.Run(async () =>
+            {
+                for (var slot = 0; slot < 5; slot++)
+                    await WeaponSync.SyncStickerToDatabase(playerInfo, weaponDefIndex, slot, null, teamsToCheck);
+            });
+        }
+
+        if (!string.IsNullOrEmpty(Localizer["wp_sticker_cleared_all"]))
+            player.Print(Localizer["wp_sticker_cleared_all"]);
     }
 }

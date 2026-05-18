@@ -226,6 +226,29 @@ namespace WeaponPaints
             }
         }
 
+        internal static void LoadStickersFromFile(string filePath, ILogger logger)
+        {
+            try
+            {
+                var json = File.ReadAllText(filePath);
+                var deserialized = JsonConvert.DeserializeObject<List<JObject>>(json);
+                WeaponPaints.StickersList = deserialized ?? [];
+
+                var byId = new Dictionary<uint, JObject>();
+                foreach (var sticker in WeaponPaints.StickersList)
+                {
+                    var idTok = sticker["id"]?.ToString();
+                    if (!string.IsNullOrEmpty(idTok) && uint.TryParse(idTok, out var id))
+                        byId[id] = sticker;
+                }
+                WeaponPaints.StickersById = byId;
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError($"Failed to load stickers from file: {ex.Message}");
+            }
+        }
+
         internal static void LoadMusicFromFile(string filePath, ILogger logger)
         {
             try

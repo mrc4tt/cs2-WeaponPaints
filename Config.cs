@@ -53,6 +53,9 @@ namespace WeaponPaints
         [JsonPropertyName("CommandSkinSelection")]
         public List<string> CommandSkinSelection { get; set; } = ["skins"];
 
+        [JsonPropertyName("CommandSticker")]
+        public List<string> CommandSticker { get; set; } = ["stickers", "sticker"];
+
         [JsonPropertyName("CommandRefresh")]
         public List<string> CommandRefresh { get; set; } = ["wp"];
 
@@ -106,6 +109,9 @@ namespace WeaponPaints
 
         [JsonPropertyName("Website")]
         public string Website { get; set; } = "example.com/skins";
+
+        [JsonPropertyName("SkinApiURL")]
+        public string SkinApiURL { get; set; } = "https://cdn.jsdelivr.net/gh/ByMykel/CSGO-API@main/public/api";
 
         [JsonPropertyName("Additional")]
         public Additional Additional { get; set; } = new();

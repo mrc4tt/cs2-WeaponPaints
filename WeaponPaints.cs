@@ -39,6 +39,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             GPlayersGlove.Clear();
             GPlayersAgent.Clear();
             GPlayersPin.Clear();
+            GPlayersNativePin.Clear();
             GPlayersMusic.Clear();
             PlayersBySteamId.Clear();
 
@@ -76,6 +77,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         Utility.LoadAgentsFromFile(ModuleDirectory + $"/data/agents_{Config.SkinsLanguage}.json", Logger);
         Utility.LoadMusicFromFile(ModuleDirectory + $"/data/music_{Config.SkinsLanguage}.json", Logger);
         Utility.LoadPinsFromFile(ModuleDirectory + $"/data/collectibles_{Config.SkinsLanguage}.json", Logger);
+        Utility.LoadStickersFromFile(ModuleDirectory + $"/data/stickers_{Config.SkinsLanguage}.json", Logger);
 
         RegisterListeners();
     }

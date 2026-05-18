@@ -593,6 +593,52 @@ internal class WeaponSynchronization
         }
     }
 
+    internal async Task SyncStickerToDatabase(PlayerInfo player, int weaponDefIndex, int slot, StickerInfo? sticker, CsTeam[] teams)
+    {
+        if (!_config.Additional.SkinEnabled || string.IsNullOrEmpty(player.SteamId) || teams.Length == 0)
+            return;
+        if (slot < 0 || slot > 4)
+            return;
+
+        var colName = $"weapon_sticker_{slot}";
+        var value = sticker is null
+            ? "0;0;0;0;0;0;0"
+            : string.Format(
+                CultureInfo.InvariantCulture,
+                "{0};{1};{2};{3};{4};{5};{6}",
+                sticker.Id, sticker.Schema, sticker.OffsetX, sticker.OffsetY,
+                sticker.Wear, sticker.Scale, sticker.Rotation
+            );
+
+        var query = $@"
+            INSERT INTO `wp_player_skins`
+                (`steamid`, `weapon_team`, `weapon_defindex`, `weapon_paint_id`, `{colName}`)
+            VALUES (@steamid, @team, @defindex, 0, @stickerVal)
+            ON DUPLICATE KEY UPDATE `{colName}` = @stickerVal";
+
+        try
+        {
+            await using var connection = await _database.GetConnectionAsync();
+            foreach (var team in teams)
+            {
+                await connection.ExecuteAsync(
+                    query,
+                    new
+                    {
+                        steamid = player.SteamId,
+                        team = (int)team,
+                        defindex = weaponDefIndex,
+                        stickerVal = value,
+                    }
+                );
+            }
+        }
+        catch (Exception e)
+        {
+            Utility.Log($"Error syncing sticker to database: {e.Message}");
+        }
+    }
+
     internal async Task SyncStatTrakToDatabase(PlayerInfo player)
     {
         if (WeaponPaints.WeaponSync == null || WeaponPaints.GPlayerWeaponsInfo.IsEmpty)

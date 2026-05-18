@@ -837,12 +837,35 @@ namespace WeaponPaints
 
         private static void GivePlayerPin(CCSPlayerController player)
         {
-            if (!GPlayersPin.TryGetValue(player.Slot, out var pinInfo) || !pinInfo.TryGetValue(player.Team, out var pinId))
+            if (!GPlayersPin.TryGetValue(player.Slot, out var pinInfo) || !pinInfo.TryGetValue(player.Team, out var pinId) || pinId == 0)
                 return;
             if (player.InventoryServices == null)
                 return;
 
-            player.InventoryServices.Rank[5] = pinId > 0 ? (MedalRank_t)pinId : MedalRank_t.MEDAL_RANK_NONE;
+            CacheCurrentNativePin(player);
+            player.InventoryServices.Rank[5] = (MedalRank_t)pinId;
+            Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInventoryServices");
+        }
+
+        // Snapshot the player's server-assigned pin rank exactly once per (slot, team) so we
+        // can restore it when the player picks "None" in the pin menu. GetOrAdd ensures the
+        // first-seen value wins and is never overwritten by our own custom assignments.
+        private static void CacheCurrentNativePin(CCSPlayerController player)
+        {
+            if (player.InventoryServices == null)
+                return;
+            var nativePinsByTeam = GPlayersNativePin.GetOrAdd(player.Slot, _ => new ConcurrentDictionary<CsTeam, MedalRank_t>());
+            nativePinsByTeam.GetOrAdd(player.Team, _ => player.InventoryServices.Rank[5]);
+        }
+
+        private static void RestorePlayerDefaultPin(CCSPlayerController player)
+        {
+            if (player.InventoryServices == null)
+                return;
+            if (!GPlayersNativePin.TryGetValue(player.Slot, out var nativePinsByTeam) || !nativePinsByTeam.TryGetValue(player.Team, out var nativePin))
+                return;
+
+            player.InventoryServices.Rank[5] = nativePin;
             Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInventoryServices");
         }
 

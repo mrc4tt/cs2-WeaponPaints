@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Localization;
@@ -75,6 +76,10 @@ public partial class WeaponPaints
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ushort>> GPlayersGlove = new();
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ushort>> GPlayersMusic = new();
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ushort>> GPlayersPin = new();
+    // Snapshot of player's default (server-assigned) pin per team, captured once before
+    // any custom pin overwrites InventoryServices.Rank[5]. Used by RestorePlayerDefaultPin
+    // when the player picks "None" in the pin menu, so we can revert without respawning.
+    internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, MedalRank_t>> GPlayersNativePin = new();
     internal static readonly ConcurrentDictionary<int, (string? CT, string? T)> GPlayersAgent = new();
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>> GPlayerWeaponsInfo = new();
     internal static List<JObject> SkinsList = [];
@@ -82,6 +87,7 @@ public partial class WeaponPaints
     internal static List<JObject> GlovesList = [];
     internal static List<JObject> AgentsList = [];
     internal static List<JObject> MusicList = [];
+    internal static List<JObject> StickersList = [];
 
     // O(1) lookup indexes rebuilt whenever the corresponding *List is reloaded.
     internal static Dictionary<string, List<JObject>> SkinsByWeaponName = new();
@@ -90,6 +96,7 @@ public partial class WeaponPaints
     internal static Dictionary<(string name, int team), JObject> AgentsByNameAndTeam = new();
     internal static Dictionary<int, List<JObject>> AgentsByTeam = new();
     internal static HashSet<string> AgentsModelSet = new();
+    internal static Dictionary<uint, JObject> StickersById = new();
     internal static WeaponSynchronization? WeaponSync;
     private static bool _gBCommandsAllowed = true;
     private readonly Dictionary<int, string> _playerWeaponImage = new();

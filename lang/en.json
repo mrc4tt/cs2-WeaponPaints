@@ -40,6 +40,19 @@
 
 	"wp_skin_weapon_not_found": "{lightred}Weapon '{0}' not found. Try: ak47, awp, glock, etc.",
 	"wp_skin_no_skins_found": "{lightred}No skins found for {0}",
-	
+
+	"wp_info_sticker": "Type {lime}!sticker{default} (or {lime}!sticker <id|name>{default}) to apply stickers to your held weapon",
+	"wp_sticker_no_weapon": "{lightred}You must be holding a weapon",
+	"wp_sticker_no_skin": "{lightred}Apply a skin first - stickers attach to skinned weapons only",
+	"wp_sticker_no_match": "{lightred}No stickers matched '{0}'",
+	"wp_sticker_slot_title": "Sticker - Pick slot",
+	"wp_sticker_slot_label": "Slot {0}",
+	"wp_sticker_remove_all": "Remove all stickers",
+	"wp_sticker_clear_slot": "Clear this slot",
+	"wp_sticker_menu_title": "Stickers - Slot {0}",
+	"wp_sticker_applied": "Applied {lime}{0}{default} to slot {lime}{1}",
+	"wp_sticker_cleared": "Cleared sticker in slot {lime}{0}",
+	"wp_sticker_cleared_all": "{lime}All stickers cleared on this weapon",
+
 	"None": "None"
 }
