@@ -78,6 +78,12 @@ public partial class WeaponPaints
     // any custom glove overwrites pawn.EconGloves. Used by RestorePlayerDefaultGloves when
     // the player picks "None" in the glove menu so we can revert without respawning.
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, NativeGloveSnapshot>> GPlayersNativeGlove = new();
+
+    // Tracks which players are mid chat-input for !seed / !float (no-arg form). The next
+    // non-command say message from these players is intercepted and parsed instead of
+    // hitting normal chat. Cleared on disconnect, on successful apply, and on cancel.
+    internal enum PendingSeedWearKind { Seed, Wear }
+    internal static readonly ConcurrentDictionary<int, PendingSeedWearKind> GPlayersPendingSeedWearInput = new();
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ushort>> GPlayersMusic = new();
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ushort>> GPlayersPin = new();
     // Snapshot of player's default (server-assigned) pin per team, captured once before

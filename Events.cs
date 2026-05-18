@@ -154,6 +154,7 @@ namespace WeaponPaints
 
             _temporaryPlayerWeaponWear.TryRemove(player.Slot, out _);
             _stickerCommandFilters.TryRemove(player.Slot, out _);
+            GPlayersPendingSeedWearInput.TryRemove(player.Slot, out _);
             CommandsCooldown.Remove(player.Slot);
             PlayersBySteamId.TryRemove(player.SteamID, out _);
             OriginalPawnModel.TryRemove(player.Slot, out _);

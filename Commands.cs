@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using CS2MenuManager.API.Class;
@@ -148,10 +149,9 @@ public partial class WeaponPaints
 
         if (command.ArgCount < 2)
         {
-            if (!string.IsNullOrEmpty(Localizer["wp_float_usage"]))
-            {
-                player.Print(Localizer["wp_float_usage"]);
-            }
+            // No arg form: stash pending-Wear state, prompt player, and intercept their
+            // next say message via OnPlayerChatSeedWearInput.
+            BeginSeedWearChatPrompt(player, PendingSeedWearKind.Wear);
             return;
         }
 
@@ -164,75 +164,7 @@ public partial class WeaponPaints
             return;
         }
 
-        // Clamp float value between 0.00 and 1.00
-        floatValue = Math.Clamp(floatValue, 0.00f, 1.00f);
-
-        var weapon = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
-
-        if (weapon == null || !weapon.IsValid)
-        {
-            if (!string.IsNullOrEmpty(Localizer["wp_float_no_weapon"]))
-            {
-                player.Print(Localizer["wp_float_no_weapon"]);
-            }
-            return;
-        }
-
-        var weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
-
-        // Check if it's a knife or default weapon
-        if (!HasChangedPaint(player, weaponDefIndex, out var existingWeaponInfo))
-        {
-            if (!string.IsNullOrEmpty(Localizer["wp_float_no_skin"]))
-            {
-                player.Print(Localizer["wp_float_no_skin"]);
-            }
-            return;
-        }
-
-        var playerSkins = GPlayerWeaponsInfo.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
-        var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [player.Team];
-
-        foreach (var team in teamsToCheck)
-        {
-            var teamWeapons = playerSkins.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>());
-            if (teamWeapons.TryGetValue(weaponDefIndex, out var weaponInfo))
-            {
-                weaponInfo.Wear = floatValue;
-            }
-        }
-
-        // Clear any temporary wear override for this weapon, so the next apply uses the new value
-        if (_temporaryPlayerWeaponWear.TryGetValue(player.Slot, out var tempWear))
-        {
-            tempWear.TryRemove(weaponDefIndex, out _);
-        }
-
-        var playerInfo = PlayerInfo.From(player);
-
-        // Refresh only this specific weapon; for knives, apply skin directly without kill/regive
-        if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
-        {
-            bool isKnife = weapon.DesignerName.Contains("knife") || weapon.DesignerName.Contains("bayonet");
-            if (isKnife)
-            {
-                RefreshKnife(player);
-            }
-            else
-            {
-                RefreshSingleWeapon(player, weaponDefIndex);
-            }
-        }
-
-        if (WeaponSync != null)
-        {
-            _ = Task.Run(async () => await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo));
-        }
-
-        if (!string.IsNullOrEmpty(Localizer["wp_float_set"]))
-        {
-            player.Print(Localizer["wp_float_set", floatValue.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)]);
-        }
+        ApplyHeldWeaponWear(player, floatValue);
     }
 
     private void OnCommandSeed(CCSPlayerController? player, CommandInfo command)
@@ -249,10 +181,9 @@ public partial class WeaponPaints
 
         if (command.ArgCount < 2)
         {
-            if (!string.IsNullOrEmpty(Localizer["wp_seed_usage"]))
-            {
-                player.Print(Localizer["wp_seed_usage"]);
-            }
+            // No arg form: stash pending-Seed state, prompt player, and intercept their
+            // next say message via OnPlayerChatSeedWearInput.
+            BeginSeedWearChatPrompt(player, PendingSeedWearKind.Seed);
             return;
         }
 
@@ -265,29 +196,29 @@ public partial class WeaponPaints
             return;
         }
 
-        // Clamp seed value between 0 and 1000
-        seedValue = Math.Clamp(seedValue, 0, 1000);
+        ApplyHeldWeaponSeed(player, seedValue);
+    }
+
+    // Shared apply path for !float/wear and the chat-input no-arg flow. Caller is
+    // responsible for the input parse + clamp; this assumes a sane value.
+    private void ApplyHeldWeaponWear(CCSPlayerController player, float floatValue)
+    {
+        floatValue = Math.Clamp(floatValue, 0.00f, 1.00f);
 
         var weapon = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
-
         if (weapon == null || !weapon.IsValid)
         {
-            if (!string.IsNullOrEmpty(Localizer["wp_seed_no_weapon"]))
-            {
-                player.Print(Localizer["wp_seed_no_weapon"]);
-            }
+            if (!string.IsNullOrEmpty(Localizer["wp_float_no_weapon"]))
+                player.Print(Localizer["wp_float_no_weapon"]);
             return;
         }
 
         var weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
 
-        // Check if the player has a skin on this weapon
-        if (!HasChangedPaint(player, weaponDefIndex, out var existingWeaponInfo))
+        if (!HasChangedPaint(player, weaponDefIndex, out _))
         {
-            if (!string.IsNullOrEmpty(Localizer["wp_seed_no_skin"]))
-            {
-                player.Print(Localizer["wp_seed_no_skin"]);
-            }
+            if (!string.IsNullOrEmpty(Localizer["wp_float_no_skin"]))
+                player.Print(Localizer["wp_float_no_skin"]);
             return;
         }
 
@@ -298,36 +229,151 @@ public partial class WeaponPaints
         {
             var teamWeapons = playerSkins.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>());
             if (teamWeapons.TryGetValue(weaponDefIndex, out var weaponInfo))
-            {
-                weaponInfo.Seed = seedValue;
-            }
+                weaponInfo.Wear = floatValue;
         }
+
+        // Clear any temporary wear override so the next apply uses the new value
+        if (_temporaryPlayerWeaponWear.TryGetValue(player.Slot, out var tempWear))
+            tempWear.TryRemove(weaponDefIndex, out _);
 
         var playerInfo = PlayerInfo.From(player);
 
-        // Refresh only this specific weapon; for knives, apply skin directly without kill/regive
         if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
         {
             bool isKnife = weapon.DesignerName.Contains("knife") || weapon.DesignerName.Contains("bayonet");
             if (isKnife)
-            {
                 RefreshKnife(player);
-            }
             else
-            {
                 RefreshSingleWeapon(player, weaponDefIndex);
-            }
         }
 
         if (WeaponSync != null)
-        {
             _ = Task.Run(async () => await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo));
+
+        if (!string.IsNullOrEmpty(Localizer["wp_float_set"]))
+            player.Print(Localizer["wp_float_set", floatValue.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)]);
+    }
+
+    private void ApplyHeldWeaponSeed(CCSPlayerController player, int seedValue)
+    {
+        seedValue = Math.Clamp(seedValue, 0, 1000);
+
+        var weapon = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
+        if (weapon == null || !weapon.IsValid)
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_seed_no_weapon"]))
+                player.Print(Localizer["wp_seed_no_weapon"]);
+            return;
         }
 
-        if (!string.IsNullOrEmpty(Localizer["wp_seed_set"]))
+        var weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
+
+        if (!HasChangedPaint(player, weaponDefIndex, out _))
         {
-            player.Print(Localizer["wp_seed_set", seedValue]);
+            if (!string.IsNullOrEmpty(Localizer["wp_seed_no_skin"]))
+                player.Print(Localizer["wp_seed_no_skin"]);
+            return;
         }
+
+        var playerSkins = GPlayerWeaponsInfo.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
+        var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [player.Team];
+
+        foreach (var team in teamsToCheck)
+        {
+            var teamWeapons = playerSkins.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>());
+            if (teamWeapons.TryGetValue(weaponDefIndex, out var weaponInfo))
+                weaponInfo.Seed = seedValue;
+        }
+
+        var playerInfo = PlayerInfo.From(player);
+
+        if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
+        {
+            bool isKnife = weapon.DesignerName.Contains("knife") || weapon.DesignerName.Contains("bayonet");
+            if (isKnife)
+                RefreshKnife(player);
+            else
+                RefreshSingleWeapon(player, weaponDefIndex);
+        }
+
+        if (WeaponSync != null)
+            _ = Task.Run(async () => await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo));
+
+        if (!string.IsNullOrEmpty(Localizer["wp_seed_set"]))
+            player.Print(Localizer["wp_seed_set", seedValue]);
+    }
+
+    private void BeginSeedWearChatPrompt(CCSPlayerController player, PendingSeedWearKind kind)
+    {
+        var weapon = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
+        if (weapon == null || !weapon.IsValid)
+        {
+            var noWeaponKey = kind == PendingSeedWearKind.Seed ? "wp_seed_no_weapon" : "wp_float_no_weapon";
+            if (!string.IsNullOrEmpty(Localizer[noWeaponKey]))
+                player.Print(Localizer[noWeaponKey]);
+            return;
+        }
+
+        if (!HasChangedPaint(player, weapon.AttributeManager.Item.ItemDefinitionIndex, out _))
+        {
+            var noSkinKey = kind == PendingSeedWearKind.Seed ? "wp_seed_no_skin" : "wp_float_no_skin";
+            if (!string.IsNullOrEmpty(Localizer[noSkinKey]))
+                player.Print(Localizer[noSkinKey]);
+            return;
+        }
+
+        GPlayersPendingSeedWearInput[player.Slot] = kind;
+
+        var promptKey = kind == PendingSeedWearKind.Seed ? "wp_seed_prompt" : "wp_float_prompt";
+        if (!string.IsNullOrEmpty(Localizer[promptKey]))
+            player.Print(Localizer[promptKey]);
+    }
+
+    // HookMode.Pre listener on say/say_team. Returns Continue normally so chat flows;
+    // returns Handled when we consumed the message (pending input present and parsed)
+    // so the value isn't echoed in public chat.
+    private HookResult OnPlayerChatSeedWearInput(CCSPlayerController? player, CommandInfo info)
+    {
+        if (!Utility.IsPlayerValid(player) || player is null)
+            return HookResult.Continue;
+        if (!GPlayersPendingSeedWearInput.TryGetValue(player.Slot, out var kind))
+            return HookResult.Continue;
+
+        var input = info.GetArg(1)?.Trim().Trim('"');
+        if (string.IsNullOrEmpty(input))
+            return HookResult.Continue;
+
+        // Let the player escape the prompt via another command; don't consume slashes.
+        if (input.StartsWith('!') || input.StartsWith('/'))
+        {
+            GPlayersPendingSeedWearInput.TryRemove(player.Slot, out _);
+            return HookResult.Continue;
+        }
+
+        if (kind == PendingSeedWearKind.Seed)
+        {
+            if (!int.TryParse(input, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var seedValue))
+            {
+                if (!string.IsNullOrEmpty(Localizer["wp_seed_invalid"]))
+                    player.Print(Localizer["wp_seed_invalid"]);
+                return HookResult.Handled;
+            }
+            ApplyHeldWeaponSeed(player, seedValue);
+        }
+        else
+        {
+            if (!float.TryParse(input, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var floatValue)
+                && !float.TryParse(input, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.CurrentCulture, out floatValue))
+            {
+                if (!string.IsNullOrEmpty(Localizer["wp_float_invalid"]))
+                    player.Print(Localizer["wp_float_invalid"]);
+                return HookResult.Handled;
+            }
+            ApplyHeldWeaponWear(player, floatValue);
+        }
+
+        GPlayersPendingSeedWearInput.TryRemove(player.Slot, out _);
+        return HookResult.Handled;
     }
 
     private void OnCommandDirectSkinSelection(CCSPlayerController? player, CommandInfo command)
@@ -655,6 +701,11 @@ public partial class WeaponPaints
                 }
             );
         });
+
+        // Chat-input interceptor for !seed / !float no-arg flow. Pre-hook so we can swallow
+        // the value message (HookResult.Handled) without it appearing in public chat.
+        AddCommandListener("say", OnPlayerChatSeedWearInput, HookMode.Pre);
+        AddCommandListener("say_team", OnPlayerChatSeedWearInput, HookMode.Pre);
 
         if (Config.Additional.CommandKillEnabled)
         {
