@@ -74,6 +74,10 @@ public partial class WeaponPaints
     public static IStringLocalizer? _localizer;
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, string>> GPlayersKnife = new();
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ushort>> GPlayersGlove = new();
+    // Snapshot of player's default (server-assigned) gloves per team, captured once before
+    // any custom glove overwrites pawn.EconGloves. Used by RestorePlayerDefaultGloves when
+    // the player picks "None" in the glove menu so we can revert without respawning.
+    internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, NativeGloveSnapshot>> GPlayersNativeGlove = new();
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ushort>> GPlayersMusic = new();
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ushort>> GPlayersPin = new();
     // Snapshot of player's default (server-assigned) pin per team, captured once before

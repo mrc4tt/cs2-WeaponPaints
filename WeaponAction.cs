@@ -729,6 +729,99 @@ namespace WeaponPaints
             }
         }
 
+        // First-write-wins snapshot of the player's server-assigned gloves for the current
+        // team. Safe to call repeatedly — the per-team key is only populated once. Must be
+        // called before any custom glove override mutates pawn.EconGloves.
+        private static void CacheCurrentNativeGloveSnapshot(CCSPlayerController player, CCSPlayerPawn pawn)
+        {
+            if (player.Team is not (CsTeam.Terrorist or CsTeam.CounterTerrorist))
+                return;
+
+            var snapshotsByTeam = GPlayersNativeGlove.GetOrAdd(player.Slot, _ => new ConcurrentDictionary<CsTeam, NativeGloveSnapshot>());
+            if (snapshotsByTeam.ContainsKey(player.Team))
+                return;
+
+            var item = pawn.EconGloves;
+            if (item == null || item.Handle == IntPtr.Zero)
+                return;
+
+            snapshotsByTeam[player.Team] = new NativeGloveSnapshot
+            {
+                ItemDefinitionIndex = item.ItemDefinitionIndex,
+                EntityQuality = item.EntityQuality,
+                EntityLevel = item.EntityLevel,
+                ItemID = item.ItemID,
+                ItemIDHigh = item.ItemIDHigh,
+                ItemIDLow = item.ItemIDLow,
+                AccountID = item.AccountID,
+                InventoryPosition = item.InventoryPosition,
+                Initialized = item.Initialized,
+                CustomName = item.CustomName ?? string.Empty,
+                CustomNameOverride = item.CustomNameOverride ?? string.Empty,
+            };
+        }
+
+        private void RestorePlayerDefaultGloves(CCSPlayerController player)
+        {
+            if (!Utility.IsPlayerValid(player) || player.PlayerPawn.Value == null)
+                return;
+
+            var pawn = player.PlayerPawn.Value;
+            CEconItemView item = pawn.EconGloves;
+            if (item == null || item.Handle == IntPtr.Zero)
+                return;
+
+            item.NetworkedDynamicAttributes.Attributes.RemoveAll();
+            item.AttributeList.Attributes.RemoveAll();
+
+            if (GPlayersNativeGlove.TryGetValue(player.Slot, out var snapshotsByTeam) && snapshotsByTeam.TryGetValue(player.Team, out var snapshot))
+            {
+                item.ItemDefinitionIndex = snapshot.ItemDefinitionIndex;
+                item.EntityQuality = snapshot.EntityQuality;
+                item.EntityLevel = snapshot.EntityLevel;
+                item.ItemID = snapshot.ItemID;
+                item.ItemIDHigh = snapshot.ItemIDHigh;
+                item.ItemIDLow = snapshot.ItemIDLow;
+                item.AccountID = snapshot.AccountID;
+                item.InventoryPosition = snapshot.InventoryPosition;
+                item.CustomName = snapshot.CustomName;
+                item.CustomNameOverride = snapshot.CustomNameOverride;
+                item.Initialized = snapshot.Initialized || snapshot.ItemDefinitionIndex != 0 || snapshot.ItemID != 0;
+            }
+            else
+            {
+                // No snapshot captured (player never had custom gloves applied this session,
+                // or joined as spectator) — fall back to zeroing the slot so the engine drops
+                // to whatever the map/agent default would assign next render.
+                item.ItemDefinitionIndex = 0;
+                item.ItemID = 0;
+                item.ItemIDHigh = 0;
+                item.ItemIDLow = 0;
+                item.Initialized = false;
+            }
+
+            Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInventoryServices");
+            TouchGloveState(pawn);
+        }
+
+        // Nudges the engine to re-render gloves without a full respawn: bumps
+        // m_nEconGlovesChanged so CCSPlayerPawn re-publishes the slot, then flips the
+        // first/third-person bodygroup (same trick GivePlayerGloves uses for paint redraws).
+        private void TouchGloveState(CCSPlayerPawn pawn)
+        {
+            unchecked
+            {
+                pawn.EconGlovesChanged++;
+            }
+            Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_nEconGlovesChanged");
+            SetBodygroup(pawn, "first_or_third_person", 0);
+            AddTimer(0.2f, () =>
+            {
+                if (pawn.IsValid)
+                    SetBodygroup(pawn, "first_or_third_person", 1);
+            }, TimerFlags.STOP_ON_MAPCHANGE);
+        }
+
         private static int GetRandomPaint(int defindex)
         {
             if (SkinsList.Count == 0)

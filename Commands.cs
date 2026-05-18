@@ -841,6 +841,14 @@ public partial class WeaponPaints
 
             if (paint != 0)
             {
+                // Snapshot the player's default gloves *before* the first custom override,
+                // so a later "None" pick can revert without respawn.
+                var pawn = player.PlayerPawn.Value;
+                if (pawn != null && pawn.IsValid)
+                {
+                    CacheCurrentNativeGloveSnapshot(player, pawn);
+                }
+
                 var playerWeapons = GPlayerWeaponsInfo.GetOrAdd(player.Slot, _ => new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
                 foreach (var team in teamsToCheck)
                 {
@@ -853,7 +861,14 @@ public partial class WeaponPaints
             }
             else
             {
-                GPlayersGlove.TryRemove(player.Slot, out _);
+                foreach (var team in teamsToCheck)
+                {
+                    playerGloves.TryRemove(team, out _);
+                }
+                if (playerGloves.IsEmpty)
+                {
+                    GPlayersGlove.TryRemove(player.Slot, out _);
+                }
             }
 
             if (WeaponSync == null)
@@ -866,7 +881,14 @@ public partial class WeaponPaints
                 await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo);
             });
 
-            AddTimer(0.1f, () => GivePlayerGloves(player));
+            if (paint == 0)
+            {
+                AddTimer(0.05f, () => RestorePlayerDefaultGloves(player), TimerFlags.STOP_ON_MAPCHANGE);
+            }
+            else
+            {
+                AddTimer(0.1f, () => GivePlayerGloves(player));
+            }
 
 			//force gloves model refresh to prevent model overlap
 			player.ExecuteClientCommand("lastinv");
