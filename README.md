@@ -16,6 +16,9 @@ Unfinished, unoptimized and not fully functional ugly demo weapon paints plugin 
 - Added command **`!music`** to show menu with music
 - Translations support, submit a PR if you want to share your translation
 
+## Images
+**Are you looking after images? - You can find them here: [WeaponPaints IMG](https://git.miksen.me/mikkel/weaponpaints-img)**
+
 ## ⚙️ Requirements
 **Ensure all the following dependencies are installed before proceeding**
 - [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
