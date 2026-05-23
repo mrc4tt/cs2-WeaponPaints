@@ -76,9 +76,11 @@ namespace WeaponPaints
                             {
                                 player.ExecuteClientCommand("slot3");
                             }
-                        }
+                        },
+                        CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE
                     );
-                }
+                },
+                CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE
             );
         }
     }

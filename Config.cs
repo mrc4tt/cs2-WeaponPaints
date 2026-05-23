@@ -84,7 +84,7 @@ namespace WeaponPaints
     public class WeaponPaintsConfig : BasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 14;
+        public override int Version { get; set; } = 15;
 
         [JsonPropertyName("DatabaseHost")]
         public string DatabaseHost { get; set; } = "";
@@ -100,6 +100,12 @@ namespace WeaponPaints
 
         [JsonPropertyName("DatabaseName")]
         public string DatabaseName { get; set; } = "";
+
+        // MySQL connection pool ceiling. Default raised to 32 to handle 64-player connect
+        // storms — at 16, simultaneous GetPlayerData calls on a full server queue up and
+        // back-pressure ThreadPool tasks. Lower on small servers (<24 slots) if memory matters.
+        [JsonPropertyName("DatabaseMaxPoolSize")]
+        public int DatabaseMaxPoolSize { get; set; } = 32;
 
         [JsonPropertyName("SkinsLanguage")]
         public string SkinsLanguage { get; set; } = "en";

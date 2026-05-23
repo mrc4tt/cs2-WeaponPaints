@@ -63,7 +63,7 @@ public partial class WeaponPaints
                         RefreshWeapons(player, excludeKnife: true);
                         GivePlayerAgent(player);
                         GivePlayerMusicKit(player);
-                        AddTimer(0.15f, () => GivePlayerPin(player));
+                        AddTimer(0.15f, () => GivePlayerPin(player), CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
                     });
                 }
                 catch (Exception)
@@ -75,7 +75,7 @@ public partial class WeaponPaints
                         RefreshWeapons(player);
                         GivePlayerAgent(player);
                         GivePlayerMusicKit(player);
-                        AddTimer(0.15f, () => GivePlayerPin(player));
+                        AddTimer(0.15f, () => GivePlayerPin(player), CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
                     });
                 }
             });
@@ -938,7 +938,7 @@ public partial class WeaponPaints
             }
             else
             {
-                AddTimer(0.1f, () => GivePlayerGloves(player));
+                AddTimer(0.1f, () => GivePlayerGloves(player), CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
             }
 
 			//force gloves model refresh to prevent model overlap
@@ -1043,8 +1043,8 @@ public partial class WeaponPaints
             if (!isDefault)
             {
                 GivePlayerAgent(player);
-                AddTimer(0.1f, () => GivePlayerAgent(player));
-                AddTimer(0.25f, () => GivePlayerAgent(player));
+                AddTimer(0.1f, () => GivePlayerAgent(player), CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
+                AddTimer(0.25f, () => GivePlayerAgent(player), CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
             }
             else if (player.PawnIsAlive && player.PlayerPawn.Value != null && OriginalPawnModel.TryGetValue(player.Slot, out var defaultModel))
             {

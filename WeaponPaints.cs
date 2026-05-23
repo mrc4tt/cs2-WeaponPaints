@@ -7,6 +7,7 @@ using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
+using CounterStrikeSharp.API.Modules.Memory;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 
@@ -42,6 +43,13 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             GPlayersPin.Clear();
             GPlayersNativePin.Clear();
             GPlayersMusic.Clear();
+            GPlayersPendingSeedWearInput.Clear();
+            OriginalPawnModel.Clear();
+            _temporaryPlayerWeaponWear.Clear();
+            _stickerCommandFilters.Clear();
+            _playerWeaponImage.Clear();
+            CommandsCooldown.Clear();
+            LastCommandTime.Clear();
             PlayersBySteamId.Clear();
 
             // Defer player enumeration — entity system may not be initialized yet during Load()
@@ -159,7 +167,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             Database = SqlConfig.DatabaseName,
             Port = (uint)SqlConfig.DatabasePort,
             Pooling = true,
-            MaximumPoolSize = 16,
+            MaximumPoolSize = (uint)Math.Max(4, config.DatabaseMaxPoolSize),
         };
 
         Database = new Database(builder.ConnectionString);
@@ -169,6 +177,25 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         _localizer = Localizer;
 
         Utility.Config = config;
+    }
+
+    // Unhook native function hooks before plugin unloads / hot-reloads. CSSharp tracks
+    // RegisterListener / RegisterEventHandler subscriptions and removes them automatically on
+    // unload, but VirtualFunctions.*.Hook(...) is registered against a process-wide static
+    // function pointer — without an explicit Unhook, every hot-reload stacks another hook
+    // and OnGiveNamedItemPost fires N times per weapon-give, leaking closures.
+    public override void Unload(bool hotReload)
+    {
+        try
+        {
+            VirtualFunctions.GiveNamedItemFunc.Unhook(OnGiveNamedItemPost, HookMode.Post);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning("Unhook GiveNamedItemFunc failed: {Message}", ex.Message);
+        }
+
+        base.Unload(hotReload);
     }
 
     public override void OnAllPluginsLoaded(bool hotReload)

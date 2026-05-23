@@ -84,7 +84,8 @@ namespace WeaponPaints
                                     if (player == null || !player.IsValid || !player.PawnIsAlive)
                                         return;
                                     player.GiveNamedItem(CsItem.Knife);
-                                }
+                                },
+                                TimerFlags.STOP_ON_MAPCHANGE
                             );
                         }
                     });
@@ -156,6 +157,8 @@ namespace WeaponPaints
             _stickerCommandFilters.TryRemove(player.Slot, out _);
             GPlayersPendingSeedWearInput.TryRemove(player.Slot, out _);
             CommandsCooldown.Remove(player.Slot);
+            LastCommandTime.Remove(player.Slot);
+            _playerWeaponImage.Remove(player.Slot);
             PlayersBySteamId.TryRemove(player.SteamID, out _);
             OriginalPawnModel.TryRemove(player.Slot, out _);
             Players.Remove(player);
