@@ -114,6 +114,22 @@ namespace WeaponPaints
                 if (fallbackPaintKit == 0)
                     return;
 
+                weapon.AttributeManager.Item.Initialized = true;
+                weapon.OriginalOwnerXuidLow = (uint)(player.SteamID & 0xFFFFFFFF);
+                weapon.OriginalOwnerXuidHigh = (uint)(player.SteamID >> 32);
+                try
+                {
+                    UpdateItemView.Invoke(weapon.AttributeManager.Item.Handle, nint.Zero);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning("UpdateItemView (random skin) failed (def {DefinitionIndex}): {Message}", weaponDefIndex, ex.Message);
+                }
+                Utilities.SetStateChanged(weapon, "CEconEntity", "m_OriginalOwnerXuidLow");
+                Utilities.SetStateChanged(weapon, "CEconEntity", "m_OriginalOwnerXuidHigh");
+                Utilities.SetStateChanged(weapon, "CEconEntity", "m_nFallbackPaintKit");
+                Utilities.SetStateChanged(weapon, "CEconEntity", "m_AttributeManager");
+
                 isLegacyModel = !SkinsLegacyModelIndex.TryGetValue((weaponDefIndex, fallbackPaintKit), out var legacyApply) || legacyApply;
                 UpdatePlayerWeaponMeshGroupMask(player, weapon, isLegacyModel);
                 return;
@@ -136,6 +152,19 @@ namespace WeaponPaints
             weapon.FallbackSeed = weaponInfo is { Paint: 38, Seed: 0 } ? _fadeSeed++ : weaponInfo.Seed;
 
             weapon.FallbackWear = weaponInfo.Wear;
+
+            // After RemoveAll(), the attribute list has no paint-kit entry so the HUD
+            // weapon-slot label can't resolve "Weapon | SkinName" and falls back to the
+            // bare weapon name. Re-add the same attributes the engine expects on a real
+            // econ item — also write to AttributeList so the client-side econ lookup hits
+            // a populated list (Steam-inventory weapons have both).
+            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "set item texture prefab", weapon.FallbackPaintKit);
+            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "set item texture seed", weapon.FallbackSeed);
+            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "set item texture wear", weapon.FallbackWear);
+
+            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.AttributeList.Handle, "set item texture prefab", weapon.FallbackPaintKit);
+            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.AttributeList.Handle, "set item texture seed", weapon.FallbackSeed);
+            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.AttributeList.Handle, "set item texture wear", weapon.FallbackWear);
             if (isKnife) { }
             else
             {
@@ -162,6 +191,30 @@ namespace WeaponPaints
                 SetKeychain(player, weapon);
             if (weaponInfo.Stickers.Count > 0)
                 SetStickers(player, weapon);
+
+            // Mark item as a real econ item and force CEconItemView::Update so the client
+            // refreshes its cached attribute view. Without this, the texture renders from
+            // FallbackPaintKit but the HUD weapon-slot label falls back to the base weapon
+            // name ("M4A4" instead of "M4A4 | Mainframe") after a kill+regive cycle (!wp).
+            weapon.AttributeManager.Item.Initialized = true;
+            // After kill+regive, GiveNamedItem leaves OriginalOwnerXuid* at 0 so the client
+            // treats the weapon as a non-econ pickup and skips the paint-kit name lookup.
+            // Set both halves and network the change so the HUD label resolves "Glock-18 |
+            // Fade" instead of bare "Glock-18".
+            weapon.OriginalOwnerXuidLow = (uint)(player.SteamID & 0xFFFFFFFF);
+            weapon.OriginalOwnerXuidHigh = (uint)(player.SteamID >> 32);
+            try
+            {
+                UpdateItemView.Invoke(weapon.AttributeManager.Item.Handle, nint.Zero);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning("UpdateItemView (weapon) failed (def {DefinitionIndex}): {Message}", weaponDefIndex, ex.Message);
+            }
+            Utilities.SetStateChanged(weapon, "CEconEntity", "m_OriginalOwnerXuidLow");
+            Utilities.SetStateChanged(weapon, "CEconEntity", "m_OriginalOwnerXuidHigh");
+            Utilities.SetStateChanged(weapon, "CEconEntity", "m_nFallbackPaintKit");
+            Utilities.SetStateChanged(weapon, "CEconEntity", "m_AttributeManager");
 
             isLegacyModel = !SkinsLegacyModelIndex.TryGetValue((weaponDefIndex, fallbackPaintKit), out var legacyApply2) || legacyApply2;
             UpdatePlayerWeaponMeshGroupMask(player, weapon, isLegacyModel);
@@ -1000,8 +1053,8 @@ namespace WeaponPaints
             var itemId = (ulong)System.Threading.Interlocked.Increment(ref _nextItemId);
 
             econItemView.ItemID = itemId;
-            econItemView.ItemIDLow = (uint)itemId & 0xFFFFFFFF;
-            econItemView.ItemIDHigh = (uint)itemId >> 32;
+            econItemView.ItemIDLow = (uint)(itemId & 0xFFFFFFFF);
+            econItemView.ItemIDHigh = (uint)(itemId >> 32);
         }
 
         private static CCSPlayerController? GetPlayerFromItemServices(CCSPlayer_ItemServices itemServices)

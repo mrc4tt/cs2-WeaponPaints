@@ -190,7 +190,11 @@ public partial class WeaponPaints
 
     private static readonly Dictionary<string, int> WeaponDefindexByName = WeaponDefindex.ToDictionary(kv => kv.Value, kv => kv.Key);
 
-    private const ulong MinimumCustomItemId = 65578;
+    // High 32 bits must be non-zero so the CS2 client treats the item as a real econ
+    // item — otherwise the HUD weapon-slot label skips the paint-kit name lookup and
+    // shows the base weapon name after a kill+regive cycle (!wp). 16384 is the
+    // commonly-used "fake inventory bucket" high half across CS2 paint plugins.
+    private const ulong MinimumCustomItemId = (16384UL << 32) | 65578UL;
     private ulong _nextItemId = MinimumCustomItemId;
     private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
