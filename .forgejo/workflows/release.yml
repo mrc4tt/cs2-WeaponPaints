@@ -41,7 +41,7 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build ${{ env.PROJECT_PATH }} -c Release -o ${{ env.OUTPUT_PATH }}
+        run: dotnet build ${{ env.PROJECT_PATH }} -c Release -o ${{ env.OUTPUT_PATH }} -p:BuildNumber=${{ env.BUILD_NUMBER }}
 
   publish:
     if: github.event_name == 'push'
@@ -65,7 +65,7 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build ${{ env.PROJECT_PATH }} -c Release -o ${{ env.OUTPUT_PATH }}
+        run: dotnet build ${{ env.PROJECT_PATH }} -c Release -o ${{ env.OUTPUT_PATH }} -p:BuildNumber=${{ env.BUILD_NUMBER }}
 
       - name: Clean CounterStrikeSharp references
         run: |
