@@ -27,6 +27,10 @@ namespace WeaponPaints
             // Null safety check for weapon AttributeManager
             if (weapon.AttributeManager?.Item == null)
                 return;
+            // Schema accessors can be null after a CS2/CSSharp update — guard before any
+            // RemoveAll()/Invoke that dereferences them, otherwise we throw an opaque NRE.
+            if (weapon.AttributeManager.Item.AttributeList == null || weapon.AttributeManager.Item.NetworkedDynamicAttributes == null)
+                return;
 
             bool isKnife = weapon.DesignerName.Contains("knife") || weapon.DesignerName.Contains("bayonet");
 
@@ -146,7 +150,10 @@ namespace WeaponPaints
 
             UpdatePlayerEconItemId(weapon.AttributeManager.Item);
 
-            weapon.AttributeManager.Item.CustomName = weaponInfo.Nametag;
+            // CSSharp >=1.0.369 SetStringBytes no longer null-tolerant: Encoding.UTF8.GetBytes(null)
+            // throws and aborts the whole apply (no paint/knife). Only set when we have a nametag.
+            if (!string.IsNullOrEmpty(weaponInfo.Nametag))
+                weapon.AttributeManager.Item.CustomName = weaponInfo.Nametag;
             weapon.FallbackPaintKit = weaponInfo.Paint;
 
             weapon.FallbackSeed = weaponInfo is { Paint: 38, Seed: 0 } ? _fadeSeed++ : weaponInfo.Seed;

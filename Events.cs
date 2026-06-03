@@ -298,7 +298,7 @@ namespace WeaponPaints
             }
             catch (Exception ex)
             {
-                Logger.LogError($"[OnGiveNamedItemPost] Exception: {ex.Message}");
+                Logger.LogError(ex, "[OnGiveNamedItemPost] Exception: {Message}", ex.Message);
             }
 
             return HookResult.Continue;
@@ -395,7 +395,7 @@ namespace WeaponPaints
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogWarning("OnEntityCreated apply failed: {Message}", ex.Message);
+                        Logger.LogWarning(ex, "OnEntityCreated apply failed: {Message}", ex.Message);
                     }
                 });
             }
