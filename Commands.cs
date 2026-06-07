@@ -56,6 +56,8 @@ public partial class WeaponPaints
                     // After DB sync, refresh player cosmetics and weapons
                     Server.NextFrame(() =>
                     {
+                        if (player == null || !player.IsValid) return;
+
                         GivePlayerGloves(player);
                         // Refresh knife to apply new knife model and skin from database
                         RefreshKnife(player);
@@ -71,6 +73,8 @@ public partial class WeaponPaints
                     // Fallback: even if DB fetch fails, still attempt a refresh (without skipping knife)
                     Server.NextFrame(() =>
                     {
+                        if (player == null || !player.IsValid) return;
+
                         GivePlayerGloves(player);
                         RefreshWeapons(player);
                         GivePlayerAgent(player);
