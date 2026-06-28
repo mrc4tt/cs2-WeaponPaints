@@ -59,10 +59,11 @@ public partial class WeaponPaints
                         if (player == null || !player.IsValid) return;
 
                         GivePlayerGloves(player);
-                        // Refresh knife to apply new knife model and skin from database
-                        RefreshKnife(player);
-                        // Refresh other weapons (excluding knife since we just refreshed it)
-                        RefreshWeapons(player, excludeKnife: true);
+                        // Single coordinated refresh (incl. knife). Splitting into RefreshKnife +
+                        // RefreshWeapons(excludeKnife:true) ran two regive cycles that raced and
+                        // dropped stickers (e.g. sticker slot 0 vanished after !wp while !sticker,
+                        // which uses this same full call, kept it).
+                        RefreshWeapons(player);
                         GivePlayerAgent(player);
                         GivePlayerMusicKit(player);
                         AddTimer(0.15f, () => GivePlayerPin(player), CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
@@ -1412,12 +1413,7 @@ public partial class WeaponPaints
 
         var weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
 
-        if (!HasChangedPaint(player, weaponDefIndex, out _))
-        {
-            if (!string.IsNullOrEmpty(Localizer["wp_sticker_no_skin"]))
-                player.Print(Localizer["wp_sticker_no_skin"]);
-            return;
-        }
+        // No skin requirement: stickers can be applied to a weapon with no custom paint.
 
         var query = "";
         if (command.ArgCount >= 2)
@@ -1567,10 +1563,13 @@ public partial class WeaponPaints
 
     private void ApplySticker(CCSPlayerController player, int weaponDefIndex, int slot, StickerInfo? sticker)
     {
-        if (!HasChangedPaint(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null)
-            return;
         if (slot < 0 || slot > 4)
             return;
+
+        // Sticker without skin: reuse the existing WeaponInfo if there is one (paint or not),
+        // otherwise create a paint-0 entry so the sticker can attach to the default weapon.
+        if (!TryGetWeaponInfo(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null)
+            weaponInfo = new WeaponInfo();
 
         // Pad list to 5 slots so we can write to any index.
         while (weaponInfo.Stickers.Count < 5)
@@ -1590,14 +1589,23 @@ public partial class WeaponPaints
             teamWeapons[weaponDefIndex] = weaponInfo;
         }
 
+        // Defer the refresh so the sticker menu has closed and the weapon is redrawn before the
+        // kill+regive. Refreshing from inside the menu callback (menu still open) applied the
+        // attributes but the weapon wasn't composited until a later !wp — typed in chat with the
+        // menu already closed. The short delay makes the live apply behave like that !wp.
         if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
         {
-            var active = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
-            var isKnife = active != null && active.IsValid && active.AttributeManager.Item.ItemDefinitionIndex == weaponDefIndex && (active.DesignerName.Contains("knife") || active.DesignerName.Contains("bayonet"));
-            if (isKnife)
-                RefreshKnife(player);
-            else
-                RefreshSingleWeapon(player, weaponDefIndex);
+            AddTimer(0.25f, () =>
+            {
+                if (!Utility.IsPlayerValid(player) || (LifeState_t)player.LifeState != LifeState_t.LIFE_ALIVE)
+                    return;
+                var active = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
+                var isKnife = active != null && active.IsValid && active.AttributeManager.Item.ItemDefinitionIndex == weaponDefIndex && (active.DesignerName.Contains("knife") || active.DesignerName.Contains("bayonet"));
+                if (isKnife)
+                    RefreshKnife(player);
+                else
+                    RefreshWeapons(player);
+            }, CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
         }
 
         if (WeaponSync != null)
@@ -1622,22 +1630,34 @@ public partial class WeaponPaints
 
     private void ClearAllStickers(CCSPlayerController player, int weaponDefIndex)
     {
-        if (!HasChangedPaint(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null)
+        if (!TryGetWeaponInfo(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null)
             return;
 
+        // Keep 5 empty (Id 0) slots — NOT an empty list. On the regive, SetStickers sees an
+        // all-empty list and writes "sticker slot N id 0" to every slot, which invalidates the
+        // client's cached composite so the old decals are actually removed. An empty list would
+        // write nothing and the stale decals would linger.
         weaponInfo.Stickers.Clear();
+        for (var i = 0; i < 5; i++)
+            weaponInfo.Stickers.Add(new StickerInfo());
 
         var playerInfo = PlayerInfo.From(player);
         var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : new[] { player.Team };
 
+        // Defer so the menu has closed and the weapon is redrawn before the regive (see ApplySticker).
         if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
         {
-            var active = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
-            var isKnife = active != null && active.IsValid && active.AttributeManager.Item.ItemDefinitionIndex == weaponDefIndex && (active.DesignerName.Contains("knife") || active.DesignerName.Contains("bayonet"));
-            if (isKnife)
-                RefreshKnife(player);
-            else
-                RefreshSingleWeapon(player, weaponDefIndex);
+            AddTimer(0.25f, () =>
+            {
+                if (!Utility.IsPlayerValid(player) || (LifeState_t)player.LifeState != LifeState_t.LIFE_ALIVE)
+                    return;
+                var active = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
+                var isKnife = active != null && active.IsValid && active.AttributeManager.Item.ItemDefinitionIndex == weaponDefIndex && (active.DesignerName.Contains("knife") || active.DesignerName.Contains("bayonet"));
+                if (isKnife)
+                    RefreshKnife(player);
+                else
+                    RefreshWeapons(player);
+            }, CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
         }
 
         if (WeaponSync != null)

@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this project is
 
-A CS2 server plugin (C#, .NET 8) built on [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) that lets players pick weapon paints, knives, gloves, agents, pins, and MVP music — persisted in MySQL and applied each spawn. Not a standalone program; it is loaded by the CSSharp runtime inside a CS2 dedicated server.
+A CS2 server plugin (C#, .NET 10) built on [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) that lets players pick weapon paints, knives, gloves, agents, pins, MVP music, stickers, and keychains — persisted in MySQL and applied each spawn. Not a standalone program; it is loaded by the CSSharp runtime inside a CS2 dedicated server.
 
-`MinimumApiVersion(338)` — CSSharp API ≥ 1.0.363 (see `WeaponPaints.csproj`).
+Targets `net10.0` and `CounterStrikeSharp.API` 1.0.369 (see `WeaponPaints.csproj`). There is no `MinimumApiVersion` attribute on the plugin class.
 
 ## Build and deploy
 
@@ -30,7 +30,7 @@ The plugin reads **two** JSON configs, split for security reasons:
 
 `WeaponPaintsConfig` also declares `DatabaseHost/Port/User/Password/Name` fields, but the runtime still reads DB credentials exclusively from `SqlConfig`. Those fields are currently unused — don't wire them up without a plan for migrating existing deployments off the split-file layout.
 
-MySQL tables (`wp_player_skins`, `wp_player_knife`, `wp_player_gloves`, `wp_player_agents`, `wp_player_music`, `wp_player_pins`) are auto-created by `Utility.CheckDatabaseTables()` on load. Don't ship manual migration SQL; extend that method instead.
+MySQL tables (`wp_player_skins`, `wp_player_knife`, `wp_player_gloves`, `wp_player_agents`, `wp_player_music`, `wp_player_pins`) are auto-created by `Utility.CheckDatabaseTables()` on load. Don't ship manual migration SQL; extend that method instead. `wp_player_skins` also carries the per-weapon sticker/keychain columns: `weapon_sticker_0`..`weapon_sticker_4` (each `id;schema;x;y;wear;scale;rotation`) and `weapon_keychain` (`id;x;y;z;seed`). A sticker/keychain row may exist with `weapon_paint_id = 0` (sticker without a skin) — readers must not filter those out.
 
 ## Code layout
 
@@ -40,7 +40,7 @@ The plugin is a single `partial class WeaponPaints : BasePlugin` split across fi
 - `Variables.cs` — **all** shared static state lives here (see below for detail).
 - `Events.cs` — CSSharp event handlers (`OnClientFullConnect`, `OnPlayerSpawn`, `OnPlayerDisconnect`, round/MVP hooks, `OnGiveNamedItemPost`, `OnEntityCreated`) and `RegisterListeners()`.
 - `Commands.cs` — chat/console commands and `RegisterCommands()`; also contains the menu setup (`SetupKnifeMenu` etc.) built on schwarper's CS2MenuManager (`CS2MenuManager.API.{Class,Interface,Menu}`). `Utility.CreateMenu` returns an `IMenu`; menus are populated with `AddItem(...)` and shown with `Display(player, 0)`.
-- `WeaponAction.cs` / `WeaponAction_RefreshKnife.cs` — actually applying skins, knife swaps, gloves, agents, pins, music to in-world entities.
+- `WeaponAction.cs` / `WeaponAction_RefreshKnife.cs` — actually applying skins, knife swaps, gloves, agents, pins, music, stickers, keychains to in-world entities. See **Stickers and keychains** below.
 - `WeaponSynchronization.cs` — all DB reads/writes via Dapper; populates the `GPlayers*` dictionaries on connect and writes them back on disconnect. DB reads use `async`/`await` and log warnings via the injected `Logger` on failure — don't swallow exceptions silently.
 - `Utility.cs` — DB table creation, skin/gloves/agents/music/pins JSON loaders, `CreateMenu` wrapper that returns a `PlayerMenu`. `PlayerMenu.Display(player, ...)` consults `MenuTypeManager.GetPlayerMenuType(player)` so each player sees the menu style they picked via MenuManagerCore's settings menu, falling back to MenuManagerCore's server-default. **`Config.MenuType` is deprecated and no longer read** — leave it in the class so old user configs still parse, but configure the default in MenuManagerCore. The `Load*FromFile` methods are also responsible for rebuilding the lookup indexes described below.
 - `PlayerInfo.cs` — lightweight DTO carrying player identity across thread boundaries. **Always construct via `PlayerInfo.From(CCSPlayerController)`**; do not inline-build new `PlayerInfo { ... }` objects (the factory is the single source of truth for which fields come off the controller, and it's safe to call on the main thread before handing the struct to a background task).
@@ -72,6 +72,17 @@ Static catalogs loaded from `data/*.json`:
 Other static infrastructure: `WeaponSync`, `Database`, `_localizer`, and the `CAttributeList_SetOrAddAttributeValueByName` memory function pointer loaded from `gamedata/weaponpaints.json`. (CS2MenuManager menus are constructed on demand inside `Utility.CreateMenu` — there is no shared `MenuApi` singleton.)
 
 Performance cache: `PlayersBySteamId` is a `ConcurrentDictionary<ulong, CCSPlayerController>` to avoid O(n) scans inside `OnEntityCreated` — keep it in sync with `Players` in every connect/disconnect/hot-reload path.
+
+## Stickers and keychains
+
+Stored on `WeaponInfo.Stickers` (`List<StickerInfo>`, defined in `WeaponInfo.cs`) and `WeaponInfo.KeyChain` (`KeyChainInfo`). Applied by `SetStickers` / `SetKeychain` in `WeaponAction.cs`, which write engine attributes via `CAttributeListSetOrAddAttributeValueByName` onto the weapon's `NetworkedDynamicAttributes`.
+
+Rules that are easy to break:
+
+- **`Stickers` is slot-indexed: `Stickers[i]` IS sticker slot `i` (0-4).** `SetStickers` writes `"sticker slot {i} id/wear/scale/rotation"` by absolute index. The DB loader pads to a fixed 5-element list so an empty/invalid middle column can't shift later stickers into earlier slots, and `ApplySticker` pads-then-assigns `Stickers[slot]`. Never `Add` a sticker without keeping the list slot-aligned. An empty slot is a `StickerInfo` with `Id == 0`, which `SetStickers` writes as `id 0` to clear that slot.
+- **Native anchor positions only — do NOT write `"sticker slot N offset x/y"` or `"schema"`.** Leaving offsets unset makes the engine place each sticker at the weapon model's built-in per-slot anchor (the "original" position). The old web-derived 2D→3D offsets were approximate and bunched stickers onto one spot; that path was removed. `OffsetX/Y`/`Schema` are still parsed and persisted for DB compatibility but are not applied.
+- **Sticker/keychain without a skin works.** `HasChangedPaint` rejects paint-0 entries; the sticker/keychain paths use `TryGetWeaponInfo` (paint-independent) instead. When a weapon has stickers/keychain but no custom paint, `GivePlayerWeaponSkin` calls `ApplyStickersAndKeychainOnly`, which applies just those attributes without `RemoveAll()` so a Steam-inventory/default skin stays intact. The `!sticker` command and `ApplySticker` no longer require an existing skin.
+- **Stickers only re-render when wear changes.** `IncrementWearForWeaponWithStickers` oscillates `FallbackWear` by a tiny jitter around the real value every refresh so the decals re-render without the float drifting forever. Don't replace it with a monotonic increment.
 
 ## Threading and lifetime rules — read before editing
 

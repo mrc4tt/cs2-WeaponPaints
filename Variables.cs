@@ -106,6 +106,9 @@ public partial class WeaponPaints
     internal static Dictionary<(string name, int team), JObject> AgentsByNameAndTeam = new();
     internal static Dictionary<int, List<JObject>> AgentsByTeam = new();
     internal static HashSet<string> AgentsModelSet = new();
+    // basename (filename after last '/') -> full catalog model. Heals legacy/web rows
+    // that lost their path prefix (e.g. "st6/ctm_st6_variantn" -> "ctm_st6/ctm_st6_variantn").
+    internal static Dictionary<string, string> AgentsModelByBasename = new();
     internal static Dictionary<uint, JObject> StickersById = new();
     internal static WeaponSynchronization? WeaponSync;
     private static bool _gBCommandsAllowed = true;

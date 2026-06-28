@@ -31,63 +31,22 @@ namespace WeaponPaints
                 {
                     await WeaponSync.GetPlayerData(playerInfo);
 
-                    // After DB data is loaded, schedule a knife refresh on the main thread.
-                    // On quick reconnect, the player may have already spawned and received a
-                    // vanilla knife before GetPlayerData completed (race condition).
-                    // We kill the existing knife and regive it so that both OnGiveNamedItemPost
-                    // and OnEntityCreated fire naturally — the dual-event mechanism ensures
-                    // SubclassChange happens on the first call and paint sticks on the second.
+                    // After DB data is loaded, refresh ALL weapons on the main thread — not just the
+                    // knife. Weapons are given at spawn BEFORE this background GetPlayerData finishes,
+                    // so the give-event apply (OnGiveNamedItemPost/OnEntityCreated) runs with no data
+                    // and pistols/rifles get no skin or stickers. The old code only re-applied the
+                    // knife here, which is why guns showed nothing until the player typed !wp.
+                    // RefreshWeapons regives every weapon (incl. knife) -> dual-event -> full apply:
+                    // the same thing !wp does, automatically once the data has landed. If the player
+                    // hasn't spawned yet, OnPlayerSpawn does the same refresh once they do.
                     Server.NextWorldUpdate(() =>
                     {
                         if (player == null || !player.IsValid || !player.PawnIsAlive)
                             return;
                         if (player.PlayerPawn.Value?.WeaponServices == null)
                             return;
-                        if (!Config.Additional.KnifeEnabled)
-                            return;
-                        if (!HasChangedKnife(player, out var knifeValue))
-                            return;
 
-                        // Check if the knife already has the correct type applied (normal connect)
-                        // Only kill+regive if it's still a default knife (reconnect race condition)
-                        if (knifeValue == null || !WeaponDefindexByName.TryGetValue(knifeValue, out var desiredDefIndex))
-                            return;
-
-                        bool needsRefresh = false;
-
-                        // Find and kill the player's current knife
-                        foreach (var weaponHandle in player.PlayerPawn.Value.WeaponServices.MyWeapons)
-                        {
-                            if (!weaponHandle.IsValid || weaponHandle.Value == null || !weaponHandle.Value.IsValid)
-                                continue;
-
-                            var designerName = weaponHandle.Value.DesignerName;
-                            if (designerName.Contains("knife") || designerName.Contains("bayonet"))
-                            {
-                                // If defindex already matches desired knife, skin was applied normally
-                                if (weaponHandle.Value.AttributeManager?.Item != null && weaponHandle.Value.AttributeManager.Item.ItemDefinitionIndex == (ushort)desiredDefIndex)
-                                    break;
-
-                                needsRefresh = true;
-                                weaponHandle.Value.AddEntityIOEvent("Kill", weaponHandle.Value, null, "", 0.01f);
-                                break;
-                            }
-                        }
-
-                        // Give a new knife — OnGiveNamedItemPost + OnEntityCreated will handle skin
-                        if (needsRefresh)
-                        {
-                            AddTimer(
-                                0.1f,
-                                () =>
-                                {
-                                    if (player == null || !player.IsValid || !player.PawnIsAlive)
-                                        return;
-                                    player.GiveNamedItem(CsItem.Knife);
-                                },
-                                TimerFlags.STOP_ON_MAPCHANGE
-                            );
-                        }
+                        RefreshWeapons(player);
                     });
                 });
             }
@@ -222,6 +181,13 @@ namespace WeaponPaints
                     GivePlayerAgent(player);
                     GivePlayerGloves(player);
                     GivePlayerPin(player);
+
+                    // Apply weapon skins + stickers on every spawn. The give-event apply
+                    // (OnGiveNamedItemPost/OnEntityCreated) does not reliably fire/land on every
+                    // server's spawn-loadout flow, leaving guns unskinned until a manual !wp.
+                    // RefreshWeapons regives the weapons -> dual-event -> full apply. No-ops when
+                    // the player has no custom cosmetics, so it's safe to run unconditionally.
+                    RefreshWeapons(player);
                 },
                 TimerFlags.STOP_ON_MAPCHANGE
             );
@@ -317,7 +283,7 @@ namespace WeaponPaints
                 return;
             }
 
-            if (designerName.Contains("weapon"))
+            if (!string.IsNullOrEmpty(designerName) && designerName.Contains("weapon"))
             {
                 // Capture entity index (a plain int) instead of the raw Handle pointer.
                 // Handle is an IntPtr into native CS2 memory — by the time the callback

@@ -199,6 +199,7 @@ namespace WeaponPaints
                 var byNameTeam = new Dictionary<(string, int), JObject>();
                 var byTeam = new Dictionary<int, List<JObject>>();
                 var modelSet = new HashSet<string>();
+                var byBasename = new Dictionary<string, string>();
 
                 foreach (var agent in WeaponPaints.AgentsList)
                 {
@@ -213,17 +214,41 @@ namespace WeaponPaints
 
                     var model = agent["model"]?.ToString();
                     if (!string.IsNullOrEmpty(model))
+                    {
                         modelSet.Add(model);
+                        var slash = model.LastIndexOf('/');
+                        var basename = slash >= 0 ? model.Substring(slash + 1) : model;
+                        byBasename[basename] = model;
+                    }
                 }
 
                 WeaponPaints.AgentsByNameAndTeam = byNameTeam;
                 WeaponPaints.AgentsByTeam = byTeam;
                 WeaponPaints.AgentsModelSet = modelSet;
+                WeaponPaints.AgentsModelByBasename = byBasename;
             }
             catch (Exception ex)
             {
                 logger?.LogError($"Failed to load agents from file: {ex.Message}");
             }
+        }
+
+        // Resolves a stored agent model to its canonical catalog model.
+        // Returns the model unchanged if already valid, the healed model if the basename
+        // matches a catalog entry (legacy/web rows that lost their path prefix), or null if unknown.
+        internal static string? NormalizeAgentModel(string? model)
+        {
+            if (string.IsNullOrEmpty(model) || model == "null")
+                return null;
+            if (WeaponPaints.AgentsModelSet.Contains(model))
+                return model;
+
+            var slash = model.LastIndexOf('/');
+            var basename = slash >= 0 ? model.Substring(slash + 1) : model;
+            if (WeaponPaints.AgentsModelByBasename.TryGetValue(basename, out var full))
+                return full;
+
+            return null;
         }
 
         internal static void LoadStickersFromFile(string filePath, ILogger logger)

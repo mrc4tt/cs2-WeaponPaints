@@ -42,8 +42,12 @@ namespace WeaponPaints
                 bool hasCustomSkin = HasChangedPaint(player, weaponDefIndex, out _);
                 bool giveRandomSkin = Config.Additional.GiveRandomSkin;
 
-                // If player has no custom skin and random skins are disabled, preserve their inventory skin
-                if (!hasCustomSkin && !giveRandomSkin)
+                // No custom skin and no random skin: preserve the player's inventory/default
+                // weapon — UNLESS they set stickers/keychain on it. In that case fall through to
+                // the full apply below, which runs with paintkit 0 (vanilla skin) + the stickers.
+                // Routing "sticker without skin" through the SAME path as a skinned weapon is what
+                // makes the decals composite reliably; a lighter in-place apply did not.
+                if (!hasCustomSkin && !giveRandomSkin && !HasStickersOrKeychain(player, weaponDefIndex))
                     return;
             }
 
@@ -139,7 +143,10 @@ namespace WeaponPaints
                 return;
             }
 
-            if (!HasChangedPaint(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null)
+            // TryGetWeaponInfo (not HasChangedPaint) so a paint-0 weapon that only has stickers/
+            // keychain still gets applied. The early no-skin guard above already returned for
+            // weapons with no cosmetics at all, so reaching here means skin OR stickers/keychain.
+            if (!TryGetWeaponInfo(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null)
             {
                 return;
             }
@@ -191,7 +198,10 @@ namespace WeaponPaints
 
             fallbackPaintKit = weapon.FallbackPaintKit;
 
-            if (fallbackPaintKit == 0)
+            // Paint 0 = vanilla skin. Bail only if there are also no stickers/keychain to apply;
+            // otherwise continue so "sticker without skin" weapons get the full composite below.
+            bool hasExtras = weaponInfo.Stickers.Any(s => s.Id != 0) || (weaponInfo.KeyChain != null && weaponInfo.KeyChain.Id != 0);
+            if (fallbackPaintKit == 0 && !hasExtras)
                 return;
 
             if (weaponInfo.KeyChain != null)
@@ -231,7 +241,10 @@ namespace WeaponPaints
         private void IncrementWearForWeaponWithStickers(CCSPlayerController player, CBasePlayerWeapon weapon)
         {
             int weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
-            if (!HasChangedPaint(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null || weaponInfo.Stickers.Count <= 0)
+            // Run whenever the list has slots (Count > 0), even if every slot is empty (Id 0):
+            // clearing stickers needs the wear nudge to force the client to re-bake the decals
+            // off, otherwise the old baked decals linger on a reused weapon entity.
+            if (!TryGetWeaponInfo(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null || weaponInfo.Stickers.Count == 0)
                 return;
 
             // The engine only re-renders sticker decals when the weapon's wear value changes.
@@ -267,21 +280,53 @@ namespace WeaponPaints
 
             int weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
 
-            if (!HasChangedPaint(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null)
+            if (!TryGetWeaponInfo(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null)
                 return;
 
-            foreach (var sticker in weaponInfo.Stickers)
-            {
-                int stickerSlot = weaponInfo.Stickers.IndexOf(sticker);
+            // Dual-write to BOTH attribute lists. Stickers written only to NetworkedDynamicAttributes
+            // get dropped when UpdateItemView (CEconItemView::Update) rebuilds the client econ view
+            // from AttributeList — the same reason the paint kit is written to both lists above. Without
+            // this, stickers don't render on the live !sticker apply (kill+regive runs UpdateItemView).
+            var networked = weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle;
+            var attributeList = weapon.AttributeManager.Item.AttributeList.Handle;
 
-                CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, $"sticker slot {stickerSlot} id", ViewAsFloat(sticker.Id));
-                if (sticker.OffsetX != 0 || sticker.OffsetY != 0)
-                    CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, $"sticker slot {stickerSlot} schema", 0);
-                CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, $"sticker slot {stickerSlot} offset x", sticker.OffsetX);
-                CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, $"sticker slot {stickerSlot} offset y", sticker.OffsetY);
-                CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, $"sticker slot {stickerSlot} wear", sticker.Wear);
-                CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, $"sticker slot {stickerSlot} scale", sticker.Scale);
-                CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, $"sticker slot {stickerSlot} rotation", sticker.Rotation);
+            // When at least one real sticker is present we SKIP empty slots (do not write id 0):
+            // writing id 0 to unused slots disrupts the compositor and drops an animated foil/holo
+            // sticker in another slot. But when the list is ALL empty (a full clear) we DO write
+            // id 0 to every slot — that's what invalidates the client's cached paint composite so
+            // the old baked decals actually disappear (the paintkit is unchanged, so without this
+            // the client reuses the stale composite that still has the stickers baked in).
+            bool anyReal = weaponInfo.Stickers.Any(s => s.Id != 0);
+
+            for (int stickerSlot = 0; stickerSlot < weaponInfo.Stickers.Count; stickerSlot++)
+            {
+                var sticker = weaponInfo.Stickers[stickerSlot];
+
+                if (sticker.Id == 0)
+                {
+                    if (!anyReal)
+                    {
+                        CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} id", ViewAsFloat(0));
+                        CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} id", ViewAsFloat(0));
+                    }
+                    continue;
+                }
+
+                // Write the id by absolute slot index (0-4). The list is slot-indexed.
+                CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} id", ViewAsFloat(sticker.Id));
+                CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} id", ViewAsFloat(sticker.Id));
+
+                // Intentionally do NOT write "offset x/y" or "schema": leaving them unset makes
+                // the engine place the sticker at the weapon model's native per-slot anchor (the
+                // "original" position). The old web-derived 2D->3D offsets were approximate and
+                // bunched stickers onto one spot.
+                float scale = sticker.Scale <= 0f ? 1f : sticker.Scale;
+                CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} wear", sticker.Wear);
+                CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} scale", scale);
+                CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} rotation", sticker.Rotation);
+                CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} wear", sticker.Wear);
+                CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} scale", scale);
+                CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} rotation", sticker.Rotation);
             }
 
             if (_temporaryPlayerWeaponWear.TryGetValue(player.Slot, out var playerWear) && playerWear.TryGetValue(weaponDefIndex, out float storedWear))
@@ -297,16 +342,23 @@ namespace WeaponPaints
 
             int weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
 
-            if (!HasChangedPaint(player, weaponDefIndex, out var value) || value?.KeyChain == null)
+            if (!TryGetWeaponInfo(player, weaponDefIndex, out var value) || value?.KeyChain == null || value.KeyChain.Id == 0)
                 return;
 
             var keyChain = value.KeyChain;
 
-            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "keychain slot 0 id", ViewAsFloat(keyChain.Id));
-            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "keychain slot 0 offset x", keyChain.OffsetX);
-            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "keychain slot 0 offset y", keyChain.OffsetY);
-            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "keychain slot 0 offset z", keyChain.OffsetZ);
-            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "keychain slot 0 seed", ViewAsFloat(keyChain.Seed));
+            // Dual-write to both attribute lists so UpdateItemView doesn't drop the keychain
+            // (see SetStickers for the rationale).
+            var networked = weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle;
+            var attributeList = weapon.AttributeManager.Item.AttributeList.Handle;
+            foreach (var handle in new[] { networked, attributeList })
+            {
+                CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 id", ViewAsFloat(keyChain.Id));
+                CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 offset x", keyChain.OffsetX);
+                CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 offset y", keyChain.OffsetY);
+                CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 offset z", keyChain.OffsetZ);
+                CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 seed", ViewAsFloat(keyChain.Seed));
+            }
         }
 
         // Returns a "slotN" command that switches the player back to whatever they had drawn,
@@ -645,6 +697,9 @@ namespace WeaponPaints
                 () =>
                 {
                     if (!_gBCommandsAllowed)
+                        return;
+
+                    if (player == null || !player.IsValid || !player.PlayerPawn.IsValid)
                         return;
 
                     if (!PlayerHasKnife(player) && hasKnife)
@@ -1116,6 +1171,34 @@ namespace WeaponPaints
 
             weaponInfo = value; // Assign the out variable when it exists
             return true;
+        }
+
+        // Paint-independent lookup: returns the player's WeaponInfo for this weapon even when
+        // the weapon has no custom paint (Paint <= 0). HasChangedPaint deliberately rejects
+        // paint-0 entries, but stickers/keychains can exist without a skin ("sticker without
+        // skin"), so the sticker/keychain paths must use this instead.
+        private static bool TryGetWeaponInfo(CCSPlayerController player, int weaponDefIndex, out WeaponInfo? weaponInfo)
+        {
+            weaponInfo = null;
+
+            if (!GPlayerWeaponsInfo.TryGetValue(player.Slot, out var teamInfo) || !teamInfo.TryGetValue(player.Team, out var teamWeapons))
+                return false;
+
+            if (!teamWeapons.TryGetValue(weaponDefIndex, out var value))
+                return false;
+
+            weaponInfo = value;
+            return true;
+        }
+
+        // True when the player has at least one real sticker or a keychain on this weapon,
+        // regardless of whether a custom paint is set. Drives the "apply stickers without a
+        // skin" path.
+        private static bool HasStickersOrKeychain(CCSPlayerController player, int weaponDefIndex)
+        {
+            if (!TryGetWeaponInfo(player, weaponDefIndex, out var info) || info == null)
+                return false;
+            return (info.KeyChain != null && info.KeyChain.Id != 0) || info.Stickers.Any(s => s.Id != 0);
         }
 
         private static float ViewAsFloat(uint value)
