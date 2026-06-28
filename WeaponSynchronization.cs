@@ -155,8 +155,16 @@ internal class WeaponSynchronization
                 return;
             }
 
-            var agentCT = agentData.Item1;
-            var agentT = agentData.Item2;
+            // Heal legacy/web rows that lost their path prefix by remapping to the catalog model.
+            var agentCT = Utility.NormalizeAgentModel(agentData.Item1);
+            var agentT = Utility.NormalizeAgentModel(agentData.Item2);
+
+            // Persist the healed values back so each row is fixed once and reused.
+            if (agentCT != agentData.Item1 || agentT != agentData.Item2)
+            {
+                const string update = "UPDATE `wp_player_agents` SET `agent_ct` = @agent_ct, `agent_t` = @agent_t WHERE `steamid` = @steamid";
+                await connection.ExecuteAsync(update, new { agent_ct = agentCT, agent_t = agentT, steamid = player.SteamId });
+            }
 
             if (!string.IsNullOrEmpty(agentCT) || !string.IsNullOrEmpty(agentT))
             {
@@ -249,9 +257,16 @@ internal class WeaponSynchronization
                     StatTrakCount = weaponStatTrakCount,
                 };
 
-                // Retrieve and parse sticker data (up to 5 slots)
+                // Retrieve and parse sticker data (up to 5 slots). The list MUST stay slot-indexed
+                // (index i == column weapon_sticker_i) because SetStickers writes by absolute slot
+                // index. Parse into a fixed 5-element array so an empty/invalid middle column does
+                // not shift later stickers into earlier slots.
+                var parsedStickers = new StickerInfo[5];
+                bool anySticker = false;
                 for (int i = 0; i <= 4; i++)
                 {
+                    parsedStickers[i] = new StickerInfo();
+
                     // Access the sticker data dynamically using reflection
                     string stickerColumn = $"weapon_sticker_{i}";
                     var stickerData = ((IDictionary<string, object>)row!)[stickerColumn];
@@ -274,7 +289,7 @@ internal class WeaponSynchronization
                     )
                         continue;
 
-                    StickerInfo stickerInfo = new StickerInfo
+                    parsedStickers[i] = new StickerInfo
                     {
                         Id = stickerId,
                         Schema = stickerSchema,
@@ -285,8 +300,14 @@ internal class WeaponSynchronization
                         Rotation = stickerRotation,
                     };
 
-                    weaponInfo.Stickers.Add(stickerInfo);
+                    if (stickerId != 0)
+                        anySticker = true;
                 }
+
+                // Only populate the list when there is at least one real sticker, so weapons with
+                // no stickers skip the per-slot attribute writes entirely.
+                if (anySticker)
+                    weaponInfo.Stickers.AddRange(parsedStickers);
 
                 var teamWeapons = playerWeapons.GetOrAdd(weaponTeam, _ => new ConcurrentDictionary<int, WeaponInfo>());
                 teamWeapons[weaponDefIndex] = weaponInfo;
