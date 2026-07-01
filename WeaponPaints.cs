@@ -51,6 +51,8 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             CommandsCooldown.Clear();
             LastCommandTime.Clear();
             PlayersBySteamId.Clear();
+            _weaponDataReady.Clear();
+            _lastWeaponRefresh.Clear();
 
             // Defer player enumeration — entity system may not be initialized yet during Load()
             Server.NextWorldUpdate(() =>
@@ -69,6 +71,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
                         {
                             if (WeaponSync != null)
                                 await WeaponSync.GetPlayerData(playerInfo);
+                            _weaponDataReady[playerInfo.Slot] = true;
                         });
 
                         PlayersBySteamId[player.SteamID] = player;

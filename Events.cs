@@ -31,6 +31,10 @@ namespace WeaponPaints
                 {
                     await WeaponSync.GetPlayerData(playerInfo);
 
+                    // Mark data ready so OnPlayerSpawn's refresh runs (and does so with data, not
+                    // empty). If the player hasn't spawned yet, that timer does the first refresh.
+                    _weaponDataReady[playerInfo.Slot] = true;
+
                     // After DB data is loaded, refresh ALL weapons on the main thread — not just the
                     // knife. Weapons are given at spawn BEFORE this background GetPlayerData finishes,
                     // so the give-event apply (OnGiveNamedItemPost/OnEntityCreated) runs with no data
@@ -46,7 +50,11 @@ namespace WeaponPaints
                         if (player.PlayerPawn.Value?.WeaponServices == null)
                             return;
 
-                        RefreshWeapons(player);
+                        // Reconnect race: player already spawned before data landed, so their guns
+                        // are unskinned. Apply in place (no flicker) + swap the knife model.
+                        ApplyGunSkinsInPlace(player);
+                        if (HasChangedKnife(player, out _))
+                            RefreshKnife(player, switchToKnife: false);
                     });
                 });
             }
@@ -120,6 +128,8 @@ namespace WeaponPaints
             _playerWeaponImage.Remove(player.Slot);
             PlayersBySteamId.TryRemove(player.SteamID, out _);
             OriginalPawnModel.TryRemove(player.Slot, out _);
+            _weaponDataReady.TryRemove(player.Slot, out _);
+            _lastWeaponRefresh.TryRemove(player.Slot, out _);
             Players.Remove(player);
 
             return HookResult.Continue;
@@ -185,9 +195,19 @@ namespace WeaponPaints
                     // Apply weapon skins + stickers on every spawn. The give-event apply
                     // (OnGiveNamedItemPost/OnEntityCreated) does not reliably fire/land on every
                     // server's spawn-loadout flow, leaving guns unskinned until a manual !wp.
-                    // RefreshWeapons regives the weapons -> dual-event -> full apply. No-ops when
-                    // the player has no custom cosmetics, so it's safe to run unconditionally.
-                    RefreshWeapons(player);
+                    // Apply gun skins in place (no kill+regive -> no flicker) over the weapons the
+                    // spawn give-loop already handed out, then swap the knife model (needs a regive).
+                    // Only after GetPlayerData has landed, else there's nothing to apply yet; the
+                    // connect-path does the first apply once data is ready.
+                    if (_weaponDataReady.TryGetValue(player.Slot, out var ready) && ready)
+                    {
+                        ApplyGunSkinsInPlace(player);
+                        // Only swap the knife when the player actually picked a custom one — otherwise
+                        // regiving the default knife just flickers it for nothing. Don't force slot3
+                        // on spawn: keep the player on whatever weapon they spawned holding.
+                        if (HasChangedKnife(player, out _))
+                            RefreshKnife(player, switchToKnife: false);
+                    }
                 },
                 TimerFlags.STOP_ON_MAPCHANGE
             );

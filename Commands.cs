@@ -53,6 +53,7 @@ public partial class WeaponPaints
                 try
                 {
                     await WeaponSync.GetPlayerData(playerInfo);
+                    _weaponDataReady[playerInfo.Slot] = true;
                     // After DB sync, refresh player cosmetics and weapons
                     Server.NextFrame(() =>
                     {

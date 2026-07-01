@@ -9,7 +9,10 @@ namespace WeaponPaints
 {
     public partial class WeaponPaints
     {
-        private void RefreshKnife(CCSPlayerController? player)
+        // switchToKnife: force the client to slot3 after the swap so the new knife is shown.
+        // Wanted when the player picks a knife from the menu (preview it), NOT on spawn/connect
+        // refresh — there it would yank the player off their primary onto the knife every respawn.
+        private void RefreshKnife(CCSPlayerController? player, bool switchToKnife = true)
         {
             if (!_gBCommandsAllowed)
             {
@@ -67,18 +70,21 @@ namespace WeaponPaints
                         return;
                     }
 
-                    // Switch to knife slot
-                    AddTimer(
-                        0.05f,
-                        () =>
-                        {
-                            if (player != null && player.IsValid)
+                    // Switch to knife slot (menu preview only)
+                    if (switchToKnife)
+                    {
+                        AddTimer(
+                            0.05f,
+                            () =>
                             {
-                                player.ExecuteClientCommand("slot3");
-                            }
-                        },
-                        CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE
-                    );
+                                if (player != null && player.IsValid)
+                                {
+                                    player.ExecuteClientCommand("slot3");
+                                }
+                            },
+                            CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE
+                        );
+                    }
                 },
                 CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE
             );

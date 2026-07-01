@@ -136,7 +136,11 @@ namespace WeaponPaints
                 Utilities.SetStateChanged(weapon, "CEconEntity", "m_OriginalOwnerXuidLow");
                 Utilities.SetStateChanged(weapon, "CEconEntity", "m_OriginalOwnerXuidHigh");
                 Utilities.SetStateChanged(weapon, "CEconEntity", "m_nFallbackPaintKit");
-                Utilities.SetStateChanged(weapon, "CEconEntity", "m_AttributeManager");
+                // NOTE: do NOT SetStateChanged("m_AttributeManager"). m_AttributeManager is the
+                // container base (offset 3128 on CWeaponM4A1), not a networked field, so the engine
+                // logs "Couldn't resolve offset 3128 ... 3128 not resolved" every apply. It's
+                // redundant: UpdateItemView + the FallbackPaintKit/Xuid marks + the native attribute
+                // writes on NetworkedDynamicAttributes already network the visible change.
 
                 isLegacyModel = !SkinsLegacyModelIndex.TryGetValue((weaponDefIndex, fallbackPaintKit), out var legacyApply) || legacyApply;
                 UpdatePlayerWeaponMeshGroupMask(player, weapon, isLegacyModel);
@@ -231,7 +235,9 @@ namespace WeaponPaints
             Utilities.SetStateChanged(weapon, "CEconEntity", "m_OriginalOwnerXuidLow");
             Utilities.SetStateChanged(weapon, "CEconEntity", "m_OriginalOwnerXuidHigh");
             Utilities.SetStateChanged(weapon, "CEconEntity", "m_nFallbackPaintKit");
-            Utilities.SetStateChanged(weapon, "CEconEntity", "m_AttributeManager");
+            // NOTE: m_AttributeManager mark removed — container base (offset 3128), not a networked
+            // field, caused "Couldn't resolve offset 3128 ... 3128 not resolved" spam. Redundant with
+            // UpdateItemView + FallbackPaintKit/Xuid marks + native NetworkedDynamicAttributes writes.
 
             isLegacyModel = !SkinsLegacyModelIndex.TryGetValue((weaponDefIndex, fallbackPaintKit), out var legacyApply2) || legacyApply2;
             UpdatePlayerWeaponMeshGroupMask(player, weapon, isLegacyModel);
@@ -607,6 +613,45 @@ namespace WeaponPaints
             );
         }
 
+        // Apply gun skins/stickers/keychains to the weapons the player ALREADY holds, in place —
+        // no kill+regive, so no visible weapon flicker. On spawn the engine's give-loop already
+        // handed the player their weapons (and the OnGiveNamedItemPost/OnEntityCreated dual-event
+        // skinned them if data was ready); re-giving every gun via RefreshWeapons just to skin them
+        // made them drop+reappear a second time. This re-applies over the existing entities instead,
+        // which also covers servers where the give-events didn't land (GivePlayerWeaponSkin is the
+        // same call OnEntityCreated makes). Knives still need RefreshKnife because swapping the knife
+        // model is a subclass/model change, not a plain attribute write.
+        private void ApplyGunSkinsInPlace(CCSPlayerController? player)
+        {
+            if (!_gBCommandsAllowed)
+                return;
+            if (player == null || !player.IsValid || player.PlayerPawn.Value == null || (LifeState_t)player.LifeState != LifeState_t.LIFE_ALIVE)
+                return;
+            if (player.PlayerPawn.Value.WeaponServices == null)
+                return;
+            if (player.Team is CsTeam.None or CsTeam.Spectator)
+                return;
+
+            // Same graveyard guard as RefreshWeapons: don't touch weapon entities while the pawn is
+            // still at the pre-spawn origin, or the engine snapshots them at an invalid cell.
+            var origin = player.PlayerPawn.Value.AbsOrigin;
+            if (origin == null || origin.Z < -16000f)
+                return;
+
+            foreach (var weapon in player.PlayerPawn.Value.WeaponServices.MyWeapons)
+            {
+                if (!weapon.IsValid || weapon.Value == null || !weapon.Value.IsValid)
+                    continue;
+                var designerName = weapon.Value.DesignerName;
+                if (!designerName.Contains("weapon_"))
+                    continue;
+                if (designerName.Contains("knife") || designerName.Contains("bayonet"))
+                    continue;
+
+                GivePlayerWeaponSkin(player, weapon.Value);
+            }
+        }
+
         private void RefreshWeapons(CCSPlayerController? player, bool excludeKnife)
         {
             if (!_gBCommandsAllowed)
@@ -615,6 +660,22 @@ namespace WeaponPaints
                 return;
             if (player.PlayerPawn.Value.WeaponServices == null || player.PlayerPawn.Value.ItemServices == null)
                 return;
+
+            // Skip while the pawn is still at the engine graveyard origin (pre-spawn teleport
+            // window). Killing/regiving weapons now forces a network snapshot of the pawn at an
+            // invalid cell -> "m_vecOrigin ... cell 0 is outside of cell bounds" spam. The 0.15s
+            // OnPlayerSpawn timer re-runs this once the pawn has been placed at its spawn point.
+            var origin = player.PlayerPawn.Value.AbsOrigin;
+            if (origin == null || origin.Z < -16000f)
+                return;
+
+            // Coalesce: a second full kill+regive cycle inside the ~0.23s window of the first one
+            // races it (duplicated weapons, doubled origin spam). Drop the overlapping caller.
+            int slot = player.Slot;
+            var now = DateTime.UtcNow;
+            if (_lastWeaponRefresh.TryGetValue(slot, out var last) && (now - last).TotalSeconds < 0.5)
+                return;
+            _lastWeaponRefresh[slot] = now;
 
             var weapons = player.PlayerPawn.Value.WeaponServices.MyWeapons;
 

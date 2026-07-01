@@ -231,6 +231,14 @@ public partial class WeaponPaints
 
     private readonly ConcurrentDictionary<int, ConcurrentDictionary<int, float>> _temporaryPlayerWeaponWear = new();
 
+    // Coalesce overlapping RefreshWeapons kill+regive cycles (connect-path GetPlayerData +
+    // OnPlayerSpawn timer both fire on first spawn). Value = last cycle start time per slot.
+    private readonly ConcurrentDictionary<int, DateTime> _lastWeaponRefresh = new();
+
+    // Set true once GetPlayerData has landed for a slot. OnPlayerSpawn only refreshes weapons
+    // once data is ready, so the first-spawn refresh doesn't run empty and get coalesced away.
+    internal readonly ConcurrentDictionary<int, bool> _weaponDataReady = new();
+
     private int _fadeSeed;
 
     internal List<CCSPlayerController> Players = [];
