@@ -2380,11 +2380,6 @@
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5179.png"
     },
     {
-        "id": "5180",
-        "name": "Banmynt: (Redacted)",
-        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5180.png"
-    },
-    {
         "id": "5209",
         "name": "Budapest 2025 – åskådarpass",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5209.png"
@@ -2676,32 +2671,32 @@
     },
     {
         "id": "5310",
-        "name": "Cologne 2026 Viewer Pass",
+        "name": "Cologne 2026 – åskådarpass",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5310.png"
     },
     {
         "id": "5311",
-        "name": "Cologne 2026 Viewer Pass + 900 Tokens",
+        "name": "Cologne 2026 – åskådarpass + 900 polletter",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5311.png"
     },
     {
         "id": "5312",
-        "name": "Cologne 2026 Coin",
+        "name": "Cologne 2026 – mynt",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5312.png"
     },
     {
         "id": "5313",
-        "name": "Cologne 2026 Silver Coin",
+        "name": "Cologne 2026 – silvermynt",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5313.png"
     },
     {
         "id": "5314",
-        "name": "Cologne 2026 Gold Coin",
+        "name": "Cologne 2026 – guldmynt",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5314.png"
     },
     {
         "id": "5315",
-        "name": "Cologne 2026 Diamond Coin",
+        "name": "Cologne 2026 – diamantmynt",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5315.png"
     },
     {

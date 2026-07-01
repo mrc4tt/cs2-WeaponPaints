@@ -1331,12 +1331,12 @@
     },
     {
         "id": "4627",
-        "name": "Pase de espectador de Berlín 2019 + 3 fichas regalo",
+        "name": "Pase de espectador de Berlín 2019 + 3 fichas souvenir",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-4627.png"
     },
     {
         "id": "4628",
-        "name": "Ficha regalo de Berlín 2019",
+        "name": "Ficha souvenir de Berlín 2019",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-4628.png"
     },
     {
@@ -1531,12 +1531,12 @@
     },
     {
         "id": "4801",
-        "name": "Pase de espectador de Estocolmo 2021 + 3 fichas regalo",
+        "name": "Pase de espectador de Estocolmo 2021 + 3 fichas souvenir",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-4801.png"
     },
     {
         "id": "4802",
-        "name": "Ficha regalo de Estocolmo 2021",
+        "name": "Ficha souvenir de Estocolmo 2021",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-4802.png"
     },
     {
@@ -1596,12 +1596,12 @@
     },
     {
         "id": "4830",
-        "name": "Pase de espectador de Amberes 2022 + 3 fichas regalo",
+        "name": "Pase de espectador de Amberes 2022 + 3 fichas souvenir",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-4830.png"
     },
     {
         "id": "4831",
-        "name": "Ficha regalo de Amberes 2022",
+        "name": "Ficha souvenir de Amberes 2022",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-4831.png"
     },
     {
@@ -1631,12 +1631,12 @@
     },
     {
         "id": "4855",
-        "name": "Pase de espectador de Río 2022 + 3 fichas regalo",
+        "name": "Pase de espectador de Río 2022 + 3 fichas souvenir",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-4855.png"
     },
     {
         "id": "4856",
-        "name": "Ficha regalo de Río 2022",
+        "name": "Ficha souvenir de Río 2022",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-4856.png"
     },
     {
@@ -1696,12 +1696,12 @@
     },
     {
         "id": "4888",
-        "name": "Pase de espectador de París 2023 + 3 fichas regalo",
+        "name": "Pase de espectador de París 2023 + 3 fichas souvenir",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-4888.png"
     },
     {
         "id": "4889",
-        "name": "Ficha regalo de París 2023",
+        "name": "Ficha souvenir de París 2023",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-4889.png"
     },
     {
@@ -1761,12 +1761,12 @@
     },
     {
         "id": "4921",
-        "name": "Pase de espectador de Copenhague 2024 + 3 fichas regalo",
+        "name": "Pase de espectador de Copenhague 2024 + 3 fichas souvenir",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-4921.png"
     },
     {
         "id": "4922",
-        "name": "Paquete regalo de Copenhague 2024",
+        "name": "Paquete souvenir de Copenhague 2024",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-4922.png"
     },
     {
@@ -1871,12 +1871,12 @@
     },
     {
         "id": "4962",
-        "name": "Pase de espectador de Shanghái 2024 + 3 fichas regalo",
+        "name": "Pase de espectador de Shanghái 2024 + 3 fichas souvenir",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-4962.png"
     },
     {
         "id": "4963",
-        "name": "Paquete regalo de Shanghái 2024",
+        "name": "Paquete souvenir de Shanghái 2024",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-4963.png"
     },
     {
@@ -2131,12 +2131,12 @@
     },
     {
         "id": "5115",
-        "name": "Pase de espectador de Austin 2025 + 3 fichas regalo",
+        "name": "Pase de espectador de Austin 2025 + 3 fichas souvenir",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5115.png"
     },
     {
         "id": "5116",
-        "name": "Paquete regalo de Austin 2025",
+        "name": "Paquete souvenir de Austin 2025",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5116.png"
     },
     {
@@ -2380,11 +2380,6 @@
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5179.png"
     },
     {
-        "id": "5180",
-        "name": "Moneda del mapa (Clasificado)",
-        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5180.png"
-    },
-    {
         "id": "5209",
         "name": "Pase de espectador de Budapest 2025",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5209.png"
@@ -2411,12 +2406,12 @@
     },
     {
         "id": "5214",
-        "name": "Pase de espectador de Budapest 2025 + 3 fichas regalo",
+        "name": "Pase de espectador de Budapest 2025 + 3 fichas souvenir",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5214.png"
     },
     {
         "id": "5215",
-        "name": "Paquete regalo de Budapest 2025",
+        "name": "Paquete souvenir de Budapest 2025",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5215.png"
     },
     {
@@ -2676,57 +2671,57 @@
     },
     {
         "id": "5310",
-        "name": "Cologne 2026 Viewer Pass",
+        "name": "Pase de espectador de Colonia 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5310.png"
     },
     {
         "id": "5311",
-        "name": "Cologne 2026 Viewer Pass + 900 Tokens",
+        "name": "Pase de espectador de Colonia 2026 + 900 fichas",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5311.png"
     },
     {
         "id": "5312",
-        "name": "Cologne 2026 Coin",
+        "name": "Moneda de Colonia 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5312.png"
     },
     {
         "id": "5313",
-        "name": "Cologne 2026 Silver Coin",
+        "name": "Moneda de plata de Colonia 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5313.png"
     },
     {
         "id": "5314",
-        "name": "Cologne 2026 Gold Coin",
+        "name": "Moneda de oro de Colonia 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5314.png"
     },
     {
         "id": "5315",
-        "name": "Cologne 2026 Diamond Coin",
+        "name": "Moneda de diamante de Colonia 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5315.png"
     },
     {
         "id": "5319",
-        "name": "Champion at IEM Cologne 2026",
+        "name": "Campeón del IEM de Colonia 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5319.png"
     },
     {
         "id": "5320",
-        "name": "Finalist at IEM Cologne 2026",
+        "name": "Finalista del IEM de Colonia 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5320.png"
     },
     {
         "id": "5321",
-        "name": "Semifinalist at IEM Cologne 2026",
+        "name": "Semifinalista del IEM de Colonia 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5321.png"
     },
     {
         "id": "5322",
-        "name": "Quarterfinalist at IEM Cologne 2026",
+        "name": "Cuartofinalista del IEM de Colonia 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5322.png"
     },
     {
         "id": "6001",
-        "name": "Pin de Dust II de aspecto genuino",
+        "name": "Pin de Dust II de aspecto genuino",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-6001.png"
     },
     {
@@ -2896,7 +2891,7 @@
     },
     {
         "id": "6101",
-        "name": "Pin de Dust II",
+        "name": "Pin de Dust II",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-6101.png"
     },
     {

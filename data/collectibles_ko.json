@@ -2380,11 +2380,6 @@
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5179.png"
     },
     {
-        "id": "5180",
-        "name": "제거된 맵 주화",
-        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5180.png"
-    },
-    {
         "id": "5209",
         "name": "부다페스트 2025 관전자 패스",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5209.png"
@@ -2676,52 +2671,52 @@
     },
     {
         "id": "5310",
-        "name": "Cologne 2026 Viewer Pass",
+        "name": "쾰른 2026 관전자 패스",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5310.png"
     },
     {
         "id": "5311",
-        "name": "Cologne 2026 Viewer Pass + 900 Tokens",
+        "name": "쾰른 2026 관전자 패스 + 토큰 900개",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5311.png"
     },
     {
         "id": "5312",
-        "name": "Cologne 2026 Coin",
+        "name": "쾰른 2026 주화",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5312.png"
     },
     {
         "id": "5313",
-        "name": "Cologne 2026 Silver Coin",
+        "name": "쾰른 2026 은 주화",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5313.png"
     },
     {
         "id": "5314",
-        "name": "Cologne 2026 Gold Coin",
+        "name": "쾰른 2026 금 주화",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5314.png"
     },
     {
         "id": "5315",
-        "name": "Cologne 2026 Diamond Coin",
+        "name": "쾰른 2026 다이아몬드 주화",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5315.png"
     },
     {
         "id": "5319",
-        "name": "Champion at IEM Cologne 2026",
+        "name": "IEM 쾰른 2026 우승팀",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5319.png"
     },
     {
         "id": "5320",
-        "name": "Finalist at IEM Cologne 2026",
+        "name": "IEM 쾰른 2026 결승 진출팀",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5320.png"
     },
     {
         "id": "5321",
-        "name": "Semifinalist at IEM Cologne 2026",
+        "name": "IEM 쾰른 2026 4강 진출팀",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5321.png"
     },
     {
         "id": "5322",
-        "name": "Quarterfinalist at IEM Cologne 2026",
+        "name": "IEM 쾰른 2026 8강 진출팀",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5322.png"
     },
     {

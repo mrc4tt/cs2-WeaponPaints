@@ -2380,11 +2380,6 @@
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5179.png"
     },
     {
-        "id": "5180",
-        "name": "(削除済み) Map Coin",
-        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5180.png"
-    },
-    {
         "id": "5209",
         "name": "Budapest 2025 視聴者パス",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5209.png"
@@ -2676,52 +2671,52 @@
     },
     {
         "id": "5310",
-        "name": "Cologne 2026 Viewer Pass",
+        "name": "Cologne 2026 視聴者パス",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5310.png"
     },
     {
         "id": "5311",
-        "name": "Cologne 2026 Viewer Pass + 900 Tokens",
+        "name": "Cologne 2026 視聴者パス + トークン x 900",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5311.png"
     },
     {
         "id": "5312",
-        "name": "Cologne 2026 Coin",
+        "name": "Cologne 2026 コイン",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5312.png"
     },
     {
         "id": "5313",
-        "name": "Cologne 2026 Silver Coin",
+        "name": "Cologne 2026 シルバーコイン",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5313.png"
     },
     {
         "id": "5314",
-        "name": "Cologne 2026 Gold Coin",
+        "name": "Cologne 2026 ゴールドコイン",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5314.png"
     },
     {
         "id": "5315",
-        "name": "Cologne 2026 Diamond Coin",
+        "name": "Cologne 2026 ダイヤモンドコイン",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5315.png"
     },
     {
         "id": "5319",
-        "name": "Champion at IEM Cologne 2026",
+        "name": "IEM Cologne 2026 優勝",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5319.png"
     },
     {
         "id": "5320",
-        "name": "Finalist at IEM Cologne 2026",
+        "name": "IEM Cologne 2026 決勝進出",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5320.png"
     },
     {
         "id": "5321",
-        "name": "Semifinalist at IEM Cologne 2026",
+        "name": "IEM Cologne 2026 準決勝進出",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5321.png"
     },
     {
         "id": "5322",
-        "name": "Quarterfinalist at IEM Cologne 2026",
+        "name": "IEM Cologne 2026 準々決勝進出",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/collectible-5322.png"
     },
     {
