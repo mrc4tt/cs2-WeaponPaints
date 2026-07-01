@@ -21,6 +21,13 @@
 	"wp_pins_menu_title": "Menuja e Kunjave (Pins)",
 	"wp_pins_menu_select": "Ju keni zgjedhur {lime}{0}{default} si kunjin tuaj",
 	"wp_skin_menu_weapon_title": "Menuja e Armëve",
+	"wp_skin_menu_category_title": "Kategoria e Armës",
+	"wp_cat_rifles": "Pushkët",
+	"wp_cat_pistols": "Pistoletat",
+	"wp_cat_smgs": "Nënmitralozët",
+	"wp_cat_snipers": "Snajperët",
+	"wp_cat_heavy": "Armët e Rënda",
+	"wp_cat_knives": "Thikat",
 	"wp_skin_menu_skin_title": "Zgjidhni skin-in për {lime}{0}{default}",
 	"wp_skin_menu_select": "Ju keni zgjedhur {lime}{0}{default} si skin-in tuaj",
 

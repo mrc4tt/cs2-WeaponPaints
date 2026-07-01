@@ -462,32 +462,65 @@ public partial class WeaponPaints
         OpenSkinSelectionMenuForWeapon(player, selectedWeaponClassname, selectedWeaponName!);
     }
 
+    // Weapons that belong to a category. Knives are matched by classname prefix so all
+    // knife/bayonet variants land under the "Knives" category regardless of WeaponCategory.
+    private static List<KeyValuePair<string, string>> GetWeaponsInCategory(string category)
+    {
+        return WeaponList.Where(kvp =>
+        {
+            if (category == "Knives")
+                return kvp.Key.StartsWith("weapon_knife") || kvp.Key.StartsWith("weapon_bayonet");
+            return WeaponCategory.TryGetValue(kvp.Key, out var c) && c == category;
+        }).ToList();
+    }
+
+    // Top level of the organized skin menu: pick a category (Rifles/Pistols/...).
     private void OpenWeaponSelectionMenu(CCSPlayerController player)
     {
-        var classNamesByWeapon = WeaponList.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
-
-        var weaponSelectionMenu = Utility.CreateMenu(Localizer["wp_skin_menu_weapon_title"]);
-        if (weaponSelectionMenu == null)
+        var categoryMenu = Utility.CreateMenu(Localizer["wp_skin_menu_category_title"]);
+        if (categoryMenu == null)
             return;
 
-        var handleWeaponSelection = (CCSPlayerController p, ItemOption option) =>
+        foreach (var category in WeaponCategoryOrder)
         {
-            if (!Utility.IsPlayerValid(p) || p == null)
-                return;
+            var weaponsInCategory = GetWeaponsInCategory(category);
+            if (weaponsInCategory.Count == 0)
+                continue;
 
-            var selectedWeapon = option.Text;
-            if (!classNamesByWeapon.TryGetValue(selectedWeapon, out var selectedWeaponClassname))
-                return;
+            var cat = category;
+            categoryMenu.AddItem(Localizer["wp_cat_" + cat.ToLower()], (p, option) =>
+            {
+                if (!Utility.IsPlayerValid(p) || p == null)
+                    return;
 
-            OpenSkinSelectionMenuForWeapon(p, selectedWeaponClassname, selectedWeapon);
-        };
-
-        foreach (var weaponName in WeaponList.Select(kvp => kvp.Value))
-        {
-            weaponSelectionMenu.AddItem(weaponName, handleWeaponSelection);
+                OpenWeaponCategoryMenu(p, cat, weaponsInCategory);
+            });
         }
 
-        weaponSelectionMenu.Display(player, 0);
+        categoryMenu.Display(player, 0);
+    }
+
+    // Second level: weapons within a chosen category → skin submenu.
+    private void OpenWeaponCategoryMenu(CCSPlayerController player, string category, List<KeyValuePair<string, string>> weapons)
+    {
+        var weaponMenu = Utility.CreateMenu(Localizer["wp_cat_" + category.ToLower()]);
+        if (weaponMenu == null)
+            return;
+
+        foreach (var kvp in weapons)
+        {
+            var weaponClassname = kvp.Key;
+            var weaponName = kvp.Value;
+            weaponMenu.AddItem(weaponName, (p, option) =>
+            {
+                if (!Utility.IsPlayerValid(p) || p == null)
+                    return;
+
+                OpenSkinSelectionMenuForWeapon(p, weaponClassname, weaponName);
+            });
+        }
+
+        weaponMenu.Display(player, 0);
     }
 
     private void OpenSkinSelectionMenuForWeapon(CCSPlayerController player, string weaponClassname, string weaponDisplayName)

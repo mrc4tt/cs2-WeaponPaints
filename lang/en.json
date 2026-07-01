@@ -21,6 +21,13 @@
 	"wp_pins_menu_title": "Pins Menu",
 	"wp_pins_menu_select": "You have chosen {lime}{0}{default} as your pin",
 	"wp_skin_menu_weapon_title": "Weapon Menu",
+	"wp_skin_menu_category_title": "Weapon Category",
+	"wp_cat_rifles": "Rifles",
+	"wp_cat_pistols": "Pistols",
+	"wp_cat_smgs": "SMGs",
+	"wp_cat_snipers": "Snipers",
+	"wp_cat_heavy": "Heavy",
+	"wp_cat_knives": "Knives",
 	"wp_skin_menu_skin_title": "Select skin for {lime}{0}{default}",
 	"wp_skin_menu_select": "You have chosen {lime}{0}{default} as your skin",
 

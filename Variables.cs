@@ -71,6 +71,34 @@ public partial class WeaponPaints
         { "weapon_knife_kukri", "Kukri Knife" },
     };
 
+    // Maps a weapon classname to its display category for the organized skin menu
+    // (top-level = category → weapon → skins). Knives are matched by classname prefix
+    // in GetWeaponsInCategory instead of being listed here. Categories mirror the
+    // in-game buy-menu groupings. Order shown to players is WeaponCategoryOrder.
+    private static readonly Dictionary<string, string> WeaponCategory = new()
+    {
+        // Rifles
+        { "weapon_ak47", "Rifles" }, { "weapon_aug", "Rifles" }, { "weapon_famas", "Rifles" },
+        { "weapon_galilar", "Rifles" }, { "weapon_m4a1", "Rifles" }, { "weapon_sg556", "Rifles" },
+        { "weapon_m4a1_silencer", "Rifles" },
+        // Pistols
+        { "weapon_deagle", "Pistols" }, { "weapon_elite", "Pistols" }, { "weapon_fiveseven", "Pistols" },
+        { "weapon_glock", "Pistols" }, { "weapon_tec9", "Pistols" }, { "weapon_hkp2000", "Pistols" },
+        { "weapon_p250", "Pistols" }, { "weapon_usp_silencer", "Pistols" }, { "weapon_cz75a", "Pistols" },
+        { "weapon_revolver", "Pistols" },
+        // SMGs
+        { "weapon_mac10", "SMGs" }, { "weapon_p90", "SMGs" }, { "weapon_mp5sd", "SMGs" },
+        { "weapon_ump45", "SMGs" }, { "weapon_bizon", "SMGs" }, { "weapon_mp7", "SMGs" }, { "weapon_mp9", "SMGs" },
+        // Snipers
+        { "weapon_awp", "Snipers" }, { "weapon_g3sg1", "Snipers" }, { "weapon_scar20", "Snipers" }, { "weapon_ssg08", "Snipers" },
+        // Heavy
+        { "weapon_m249", "Heavy" }, { "weapon_xm1014", "Heavy" }, { "weapon_nova", "Heavy" },
+        { "weapon_mag7", "Heavy" }, { "weapon_negev", "Heavy" }, { "weapon_sawedoff", "Heavy" }, { "weapon_taser", "Heavy" },
+    };
+
+    // Display order of the top-level weapon categories in the organized skin menu.
+    private static readonly string[] WeaponCategoryOrder = { "Rifles", "Pistols", "SMGs", "Snipers", "Heavy", "Knives" };
+
     public static IStringLocalizer? _localizer;
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, string>> GPlayersKnife = new();
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ushort>> GPlayersGlove = new();
