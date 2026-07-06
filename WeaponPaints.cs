@@ -171,6 +171,8 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             Port = (uint)SqlConfig.DatabasePort,
             Pooling = true,
             MaximumPoolSize = (uint)Math.Max(4, config.DatabaseMaxPoolSize),
+            SslMode = MySqlSslMode.None,
+            AllowPublicKeyRetrieval = true,
         };
 
         Database = new Database(builder.ConnectionString);
