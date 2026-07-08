@@ -322,10 +322,21 @@ namespace WeaponPaints
                 CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} id", ViewAsFloat(sticker.Id));
                 CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} id", ViewAsFloat(sticker.Id));
 
-                // Intentionally do NOT write "offset x/y" or "schema": leaving them unset makes
-                // the engine place the sticker at the weapon model's native per-slot anchor (the
-                // "original" position). The old web-derived 2D->3D offsets were approximate and
-                // bunched stickers onto one spot.
+                // Custom placement (offset x/y + schema). Only written when the sticker actually
+                // carries an offset — a sticker with offset 0/0 is left at the model's native
+                // per-slot anchor (writing 0/0 for every sticker used to bunch them onto one spot).
+                // schema must be non-zero for the engine to honour the custom offset/rotation;
+                // default to 1 when the DB value is 0 but an offset is present.
+                if (sticker.OffsetX != 0f || sticker.OffsetY != 0f)
+                {
+                    uint schema = sticker.Schema != 0 ? sticker.Schema : 1u;
+                    CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} schema", ViewAsFloat(schema));
+                    CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} offset x", sticker.OffsetX);
+                    CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} offset y", sticker.OffsetY);
+                    CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} schema", ViewAsFloat(schema));
+                    CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} offset x", sticker.OffsetX);
+                    CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} offset y", sticker.OffsetY);
+                }
                 float scale = sticker.Scale <= 0f ? 1f : sticker.Scale;
                 CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} wear", sticker.Wear);
                 CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} scale", scale);
