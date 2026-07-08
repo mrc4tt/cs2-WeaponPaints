@@ -375,6 +375,9 @@ namespace WeaponPaints
                 CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 offset y", keyChain.OffsetY);
                 CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 offset z", keyChain.OffsetZ);
                 CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 seed", ViewAsFloat(keyChain.Seed));
+                // Charm rotation (degrees): initial orientation of the hook; Source 2 physics
+                // then swings the pendant freely.
+                CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 rotation", keyChain.Rotation);
             }
         }
 

@@ -30,6 +30,7 @@
         public float OffsetY { get; set; }
         public float OffsetZ { get; set; }
         public uint Seed { get; set; }
+        public float Rotation { get; set; }
     }
 
     // Snapshot of CEconItemView fields read off pawn.EconGloves before any custom glove

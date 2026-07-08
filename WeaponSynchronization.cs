@@ -222,8 +222,10 @@ internal class WeaponSynchronization
 
                 KeyChainInfo keyChainInfo = new KeyChainInfo();
 
+                // Format: "id;x;y;z;seed" or (with charm rotation) "id;x;y;z;seed;rotation".
                 if (
-                    keyChainParts!.Length == 5
+                    keyChainParts != null
+                    && keyChainParts.Length >= 5
                     && uint.TryParse(keyChainParts[0], out uint keyChainId)
                     && float.TryParse(keyChainParts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float keyChainOffsetX)
                     && float.TryParse(keyChainParts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float keyChainOffsetY)
@@ -236,6 +238,10 @@ internal class WeaponSynchronization
                     keyChainInfo.OffsetY = keyChainOffsetY;
                     keyChainInfo.OffsetZ = keyChainOffsetZ;
                     keyChainInfo.Seed = keyChainSeed;
+                    // Optional 6th field: charm rotation in degrees (back-compat with 5-field rows).
+                    if (keyChainParts.Length >= 6
+                        && float.TryParse(keyChainParts[5], NumberStyles.Float, CultureInfo.InvariantCulture, out float keyChainRotation))
+                        keyChainInfo.Rotation = keyChainRotation;
                 }
                 else
                 {
@@ -244,6 +250,7 @@ internal class WeaponSynchronization
                     keyChainInfo.OffsetY = 0f;
                     keyChainInfo.OffsetZ = 0f;
                     keyChainInfo.Seed = 0;
+                    keyChainInfo.Rotation = 0f;
                 }
 
                 WeaponInfo weaponInfo = new WeaponInfo
