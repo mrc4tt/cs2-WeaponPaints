@@ -2,6 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Critical rules (violating these crashes the server or breaks live loads)
+
+These are the highest-severity invariants. Each is expanded in the section named in parentheses.
+
+1. **Never do heavy work on the main thread inside `Load` / event handlers / listeners.** `Load(bool hotReload)` runs on the game's main simulation thread, so a live `css_plugins reload` freezes the current tick for the whole duration (a big synchronous JSON parse or DB call shows up in-console as `UNEXPECTED LONG FRAME DETECTED ... Server Simulation`). The large `data/` catalogs — `skins_*.json` (~0.6MB) and `stickers_*.json` (~2.1MB) — are parsed off-thread via `Task.Run` because nothing reads them during menu build; only the small catalogs the `OnAllPluginsLoaded` menu builder iterates (gloves/agents/music/pins) are parsed synchronously. Keep that split — do not move the big parses back onto the main thread, and don't add new synchronous file/DB/native work to `Load`. (see **Threading and lifetime rules**)
+2. **Marshal back to the main thread before touching entities from any `Task.Run`/DB callback** — `Server.NextFrame` / `Server.NextWorldUpdate`. Reads/writes on `CCSPlayerController`, pawns, or weapons off-thread crash natively. (see **Threading and lifetime rules**)
+3. **`OnPlayerSpawn` cosmetics are deferred with `AddTimer(0.15f, ...)` on purpose** — applying on spawn or on `NextFrame` crashes in native `SetModel`/`SetBodygroup` (pawn scene nodes not initialized). Don't "simplify". (see **Threading and lifetime rules**)
+4. **Clear every `player.Slot`-keyed state in `OnPlayerDisconnect`.** New per-player dictionaries must be added to that block or they leak across the slot's next occupant. (see **Threading and lifetime rules**)
+5. **`Stickers` is slot-indexed (`Stickers[i]` == sticker slot i).** Never `Add` without keeping the list 5-slot-aligned; empty slot = `StickerInfo` with `Id == 0`. (see **Stickers and keychains**)
+6. **Bump `WeaponPaintsConfig.Version` on any `Config.cs` change** so CSSharp migrates existing user configs. (see **Runtime configuration layout** / **Conventions**)
+7. **`gamedata/weaponpaints.json` ships to `addons/counterstrikesharp/gamedata/`, never inside the plugin folder**, and the runtime-provided DLLs (`CounterStrikeSharp.API.dll`, `CS2MenuManager.dll`, etc.) must be deleted from the release. Without the gamedata sig the plugin refuses to load. (see **Build and deploy**)
+8. **Build `PlayerInfo` via `PlayerInfo.From(player)` only; use `.Print()` (not `PrintToChat`) for chat.** (see **Code layout**)
+
 ## What this project is
 
 A CS2 server plugin (C#, .NET 10) built on [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) that lets players pick weapon paints, knives, gloves, agents, pins, MVP music, stickers, and keychains — persisted in MySQL and applied each spawn. Not a standalone program; it is loaded by the CSSharp runtime inside a CS2 dedicated server.

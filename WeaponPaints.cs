@@ -84,12 +84,23 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             });
         }
 
-        Utility.LoadSkinsFromFile(ModuleDirectory + $"/data/skins_{Config.SkinsLanguage}.json", Logger);
+        // Small catalogs that the menu builder (OnAllPluginsLoaded, which runs immediately after
+        // Load) iterates at build time — parse these synchronously so the menus are populated.
         Utility.LoadGlovesFromFile(ModuleDirectory + $"/data/gloves_{Config.SkinsLanguage}.json", Logger);
         Utility.LoadAgentsFromFile(ModuleDirectory + $"/data/agents_{Config.SkinsLanguage}.json", Logger);
         Utility.LoadMusicFromFile(ModuleDirectory + $"/data/music_{Config.SkinsLanguage}.json", Logger);
         Utility.LoadPinsFromFile(ModuleDirectory + $"/data/collectibles_{Config.SkinsLanguage}.json", Logger);
-        Utility.LoadStickersFromFile(ModuleDirectory + $"/data/stickers_{Config.SkinsLanguage}.json", Logger);
+
+        // Big catalogs (skins ~0.6MB, stickers ~2.1MB = ~93% of catalog bytes) are only read
+        // on demand — gun-skin apply, the !skins menu (built lazily per-invoke), and !sticker —
+        // never during menu build. Parsing them on the main thread freezes the current sim tick
+        // (~200ms "UNEXPECTED LONG FRAME") on a live `css_plugins reload`. Parse off-thread; the
+        // readers all tolerate the brief empty window (guns apply on next spawn once ready).
+        Task.Run(() =>
+        {
+            Utility.LoadSkinsFromFile(ModuleDirectory + $"/data/skins_{Config.SkinsLanguage}.json", Logger);
+            Utility.LoadStickersFromFile(ModuleDirectory + $"/data/stickers_{Config.SkinsLanguage}.json", Logger);
+        });
 
         RegisterListeners();
     }
