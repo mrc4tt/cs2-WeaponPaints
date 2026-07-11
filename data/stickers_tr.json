@@ -48345,6 +48345,271 @@
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10313.png"
     },
     {
+        "id": "10314",
+        "name": "Çıkartma | Muz Saldırısı",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10314.png"
+    },
+    {
+        "id": "10315",
+        "name": "Çıkartma | Ajan salatalıK",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10315.png"
+    },
+    {
+        "id": "10316",
+        "name": "Çıkartma | Kutu Logosu",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10316.png"
+    },
+    {
+        "id": "10317",
+        "name": "Çıkartma | Ağlak",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10317.png"
+    },
+    {
+        "id": "10318",
+        "name": "Çıkartma | Taze Kesilmiş",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10318.png"
+    },
+    {
+        "id": "10319",
+        "name": "Çıkartma | Kaynaktan",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10319.png"
+    },
+    {
+        "id": "10320",
+        "name": "Çıkartma | Alaycı",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10320.png"
+    },
+    {
+        "id": "10321",
+        "name": "Çıkartma | Limon",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10321.png"
+    },
+    {
+        "id": "10322",
+        "name": "Çıkartma | Turşu",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10322.png"
+    },
+    {
+        "id": "10323",
+        "name": "Çıkartma | Leş Gibi İletişim",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10323.png"
+    },
+    {
+        "id": "10324",
+        "name": "Çıkartma | Turp K",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10324.png"
+    },
+    {
+        "id": "10325",
+        "name": "Çıkartma | Kazı Kokla",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10325.png"
+    },
+    {
+        "id": "10326",
+        "name": "Çıkartma | Ölü Meyve (Parıltılı)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10326.png"
+    },
+    {
+        "id": "10327",
+        "name": "Çıkartma | Günde Bir Elma (Parıltılı)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10327.png"
+    },
+    {
+        "id": "10328",
+        "name": "Çıkartma | Meyve Suyu Kutusu (Holo)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10328.png"
+    },
+    {
+        "id": "10329",
+        "name": "Çıkartma | Bıçak Serisi (Holo)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10329.png"
+    },
+    {
+        "id": "10330",
+        "name": "Çıkartma | Sarmaşıktan (Holo)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10330.png"
+    },
+    {
+        "id": "10331",
+        "name": "Çıkartma | Acı Biber (Holo)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10331.png"
+    },
+    {
+        "id": "10332",
+        "name": "Çıkartma | Kalite Kontrol (Holo)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10332.png"
+    },
+    {
+        "id": "10333",
+        "name": "Çıkartma | Meyve Tadında (Holo)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10333.png"
+    },
+    {
+        "id": "10334",
+        "name": "Çıkartma | M-U-Z-L-A-R (Parlak)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10334.png"
+    },
+    {
+        "id": "10335",
+        "name": "Çıkartma | Muz Sanatı (Parlak)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10335.png"
+    },
+    {
+        "id": "10336",
+        "name": "Çıkartma | Ejder Meyvesi (Parlak)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10336.png"
+    },
+    {
+        "id": "10337",
+        "name": "Çıkartma | Erkenci (Parlak)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10337.png"
+    },
+    {
+        "id": "10338",
+        "name": "Çıkartma | Meyve Sineği (Parlak)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10338.png"
+    },
+    {
+        "id": "10339",
+        "name": "Çıkartma | Ananaslı Pizza (Merceksi)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10339.png"
+    },
+    {
+        "id": "10340",
+        "name": "Çıkartma | Acı Namlu (Merceksi)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10340.png"
+    },
+    {
+        "id": "10341",
+        "name": "Çıkartma | Alev Esintisi",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10341.png"
+    },
+    {
+        "id": "10342",
+        "name": "Çıkartma | Sırtımda Bomba Var",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10342.png"
+    },
+    {
+        "id": "10343",
+        "name": "Çıkartma | Kuzey Ormanı Esintisi",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10343.png"
+    },
+    {
+        "id": "10344",
+        "name": "Çıkartma | Bunnyhop Hydraulics",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10344.png"
+    },
+    {
+        "id": "10345",
+        "name": "Çıkartma | Damalı Kukri",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10345.png"
+    },
+    {
+        "id": "10346",
+        "name": "Çıkartma | Defusal Sprint",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10346.png"
+    },
+    {
+        "id": "10347",
+        "name": "Çıkartma | Kilometre",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10347.png"
+    },
+    {
+        "id": "10348",
+        "name": "Çıkartma | Röntgen Yarış Kulübü",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10348.png"
+    },
+    {
+        "id": "10349",
+        "name": "Çıkartma | Koşarak Destekli Zıplama Kitleri",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10349.png"
+    },
+    {
+        "id": "10350",
+        "name": "Çıkartma | Safari Parlaklığı",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10350.png"
+    },
+    {
+        "id": "10351",
+        "name": "Çıkartma | Kumul Baja Turu",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10351.png"
+    },
+    {
+        "id": "10353",
+        "name": "Çıkartma | W Performans Lastikleri",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10353.png"
+    },
+    {
+        "id": "10354",
+        "name": "Çıkartma | Koni Bölgesi (Holo)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10354.png"
+    },
+    {
+        "id": "10355",
+        "name": "Çıkartma | Engine Start (Holo)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10355.png"
+    },
+    {
+        "id": "10356",
+        "name": "Çıkartma | İlk Tur (Holo)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10356.png"
+    },
+    {
+        "id": "10357",
+        "name": "Çıkartma | Neo-Hold (Holo)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10357.png"
+    },
+    {
+        "id": "10358",
+        "name": "Çıkartma | Neo-Rush (Holo)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10358.png"
+    },
+    {
+        "id": "10359",
+        "name": "Çıkartma | Önce Güvenlik (Holo)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10359.png"
+    },
+    {
+        "id": "10360",
+        "name": "Çıkartma | Eco Mode (Parlak)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10360.png"
+    },
+    {
+        "id": "10361",
+        "name": "Çıkartma | Uğurlu Süsler (Parlak)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10361.png"
+    },
+    {
+        "id": "10363",
+        "name": "Çıkartma | Turbo Peek (Parlak)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10363.png"
+    },
+    {
+        "id": "10364",
+        "name": "Çıkartma | Keskin Nişancı Var (Parlak)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10364.png"
+    },
+    {
+        "id": "10365",
+        "name": "Çıkartma | Yanan Lastik (Merceksi)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10365.png"
+    },
+    {
+        "id": "10366",
+        "name": "Çıkartma | Dijital Gösterge (Merceksi)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10366.png"
+    },
+    {
+        "id": "10367",
+        "name": "Çıkartma | El C4'ü (Merceksi)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10367.png"
+    },
+    {
+        "id": "10368",
+        "name": "Çıkartma | NITRO! (Merceksi)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10368.png"
+    },
+    {
         "id": "10369",
         "name": "Çıkartma | Vitality | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-10369.png"
@@ -52206,107 +52471,117 @@
     },
     {
         "id": "11174",
-        "name": "Çıkartma | NiKo (Champion) | Cologne 2026",
+        "name": "Çıkartma | NiKo (Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11174.png"
     },
     {
         "id": "11175",
-        "name": "Çıkartma | NiKo (Foil, Champion) | Cologne 2026",
+        "name": "Çıkartma | NiKo (Parlak, Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11175.png"
     },
     {
         "id": "11176",
-        "name": "Çıkartma | NiKo (Holo, Champion) | Cologne 2026",
+        "name": "Çıkartma | NiKo (Holo, Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11176.png"
     },
     {
         "id": "11177",
-        "name": "Çıkartma | NiKo (Gold, Champion) | Cologne 2026",
+        "name": "Çıkartma | NiKo (Altın, Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11177.png"
     },
     {
         "id": "11178",
-        "name": "Çıkartma | kyxsan (Champion) | Cologne 2026",
+        "name": "Çıkartma | kyxsan (Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11178.png"
     },
     {
         "id": "11179",
-        "name": "Çıkartma | kyxsan (Foil, Champion) | Cologne 2026",
+        "name": "Çıkartma | kyxsan (Parlak, Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11179.png"
     },
     {
         "id": "11180",
-        "name": "Çıkartma | kyxsan (Holo, Champion) | Cologne 2026",
+        "name": "Çıkartma | kyxsan (Holo, Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11180.png"
     },
     {
         "id": "11181",
-        "name": "Çıkartma | kyxsan (Gold, Champion) | Cologne 2026",
+        "name": "Çıkartma | kyxsan (Altın, Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11181.png"
     },
     {
         "id": "11182",
-        "name": "Çıkartma | m0NESY (Champion) | Cologne 2026",
+        "name": "Çıkartma | m0NESY (Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11182.png"
     },
     {
         "id": "11183",
-        "name": "Çıkartma | m0NESY (Foil, Champion) | Cologne 2026",
+        "name": "Çıkartma | m0NESY (Parlak, Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11183.png"
     },
     {
         "id": "11184",
-        "name": "Çıkartma | m0NESY (Holo, Champion) | Cologne 2026",
+        "name": "Çıkartma | m0NESY (Holo, Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11184.png"
     },
     {
         "id": "11185",
-        "name": "Çıkartma | m0NESY (Gold, Champion) | Cologne 2026",
+        "name": "Çıkartma | m0NESY (Altın, Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11185.png"
     },
     {
         "id": "11186",
-        "name": "Çıkartma | TeSeS (Champion) | Cologne 2026",
+        "name": "Çıkartma | TeSeS (Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11186.png"
     },
     {
         "id": "11187",
-        "name": "Çıkartma | TeSeS (Foil, Champion) | Cologne 2026",
+        "name": "Çıkartma | TeSeS (Parlak, Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11187.png"
     },
     {
         "id": "11188",
-        "name": "Çıkartma | TeSeS (Holo, Champion) | Cologne 2026",
+        "name": "Çıkartma | TeSeS (Holo, Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11188.png"
     },
     {
         "id": "11189",
-        "name": "Çıkartma | TeSeS (Gold, Champion) | Cologne 2026",
+        "name": "Çıkartma | TeSeS (Altın, Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11189.png"
     },
     {
         "id": "11190",
-        "name": "Çıkartma | kyousuke (Champion) | Cologne 2026",
+        "name": "Çıkartma | kyousuke (Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11190.png"
     },
     {
         "id": "11191",
-        "name": "Çıkartma | kyousuke (Foil, Champion) | Cologne 2026",
+        "name": "Çıkartma | kyousuke (Parlak, Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11191.png"
     },
     {
         "id": "11192",
-        "name": "Çıkartma | kyousuke (Holo, Champion) | Cologne 2026",
+        "name": "Çıkartma | kyousuke (Holo, Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11192.png"
     },
     {
         "id": "11193",
-        "name": "Çıkartma | kyousuke (Gold, Champion) | Cologne 2026",
+        "name": "Çıkartma | kyousuke (Altın, Şampiyon) | Köln 2026",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11193.png"
     },
     {
+        "id": "11194",
+        "name": "Çıkartma | Lütfen Sabırlı Olun",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11194.png"
+    },
+    {
+        "id": "11195",
+        "name": "Çıkartma | Born To Peek (Parlak)",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11195.png"
+    },
+    {
         "id": "11196",
-        "name": "Çıkartma | Airhorn",
+        "name": "Çıkartma | Havalı Korna",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11196.png"
     },
     {
@@ -52316,42 +52591,42 @@
     },
     {
         "id": "11198",
-        "name": "Çıkartma | Big Red Rocket",
+        "name": "Çıkartma | Büyük Kırmızı Roket",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11198.png"
     },
     {
         "id": "11199",
-        "name": "Çıkartma | Boner Snap",
+        "name": "Çıkartma | Kemik Kırılması",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11199.png"
     },
     {
         "id": "11200",
-        "name": "Çıkartma | Censored",
+        "name": "Çıkartma | Sansürlü",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11200.png"
     },
     {
         "id": "11201",
-        "name": "Çıkartma | Explosives",
+        "name": "Çıkartma | Patlayıcılar",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11201.png"
     },
     {
         "id": "11202",
-        "name": "Çıkartma | Golf Cart",
+        "name": "Çıkartma | Golf Arabası",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11202.png"
     },
     {
         "id": "11203",
-        "name": "Çıkartma | Gonna Leave A Mark",
+        "name": "Çıkartma | İz Bırakır",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11203.png"
     },
     {
         "id": "11204",
-        "name": "Çıkartma | Head In Hands",
+        "name": "Çıkartma | Kafa Ellerde",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11204.png"
     },
     {
         "id": "11205",
-        "name": "Çıkartma | High Five!",
+        "name": "Çıkartma | Çak Bi' Beşlik!",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11205.png"
     },
     {
@@ -52361,32 +52636,32 @@
     },
     {
         "id": "11207",
-        "name": "Çıkartma | Partyboy",
+        "name": "Çıkartma | Partici",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11207.png"
     },
     {
         "id": "11208",
-        "name": "Çıkartma | Radiograph",
+        "name": "Çıkartma | Radyograf",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11208.png"
     },
     {
         "id": "11209",
-        "name": "Çıkartma | Rocket Skates",
+        "name": "Çıkartma | Roket Patenler",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11209.png"
     },
     {
         "id": "11210",
-        "name": "Çıkartma | Skull Bunny",
+        "name": "Çıkartma | Tavşan Kafatası",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11210.png"
     },
     {
         "id": "11211",
-        "name": "Çıkartma | The Magic Trick",
+        "name": "Çıkartma | Sihirli Numara",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11211.png"
     },
     {
         "id": "11212",
-        "name": "Çıkartma | WARNING",
+        "name": "Çıkartma | UYARI",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11212.png"
     },
     {
@@ -52396,42 +52671,42 @@
     },
     {
         "id": "11214",
-        "name": "Çıkartma | Airhorn (Glitter)",
+        "name": "Çıkartma | Havalı Korna (Parıltılı)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11214.png"
     },
     {
         "id": "11215",
-        "name": "Çıkartma | Assterisk (Glitter)",
+        "name": "Çıkartma | Assterisk (Parıltılı)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11215.png"
     },
     {
         "id": "11216",
-        "name": "Çıkartma | Big Red Rocket (Glitter)",
+        "name": "Çıkartma | Büyük Kırmızı Roket (Parıltılı)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11216.png"
     },
     {
         "id": "11217",
-        "name": "Çıkartma | Head In Hands (Glitter)",
+        "name": "Çıkartma | Kafa Ellerde (Parıltılı)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11217.png"
     },
     {
         "id": "11218",
-        "name": "Çıkartma | High Five! (Glitter)",
+        "name": "Çıkartma | Çak Bi' Beşlik! (Parıltılı)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11218.png"
     },
     {
         "id": "11219",
-        "name": "Çıkartma | Skull Bunny (Glitter)",
+        "name": "Çıkartma | Tavşan Kafatası (Parıltılı)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11219.png"
     },
     {
         "id": "11220",
-        "name": "Çıkartma | The Magic Trick (Glitter)",
+        "name": "Çıkartma | Sihirli Numara (Parıltılı)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11220.png"
     },
     {
         "id": "11221",
-        "name": "Çıkartma | Boner Snap (Holo)",
+        "name": "Çıkartma | Kemik Kırılması (Holo)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11221.png"
     },
     {
@@ -52441,22 +52716,22 @@
     },
     {
         "id": "11223",
-        "name": "Çıkartma | Gonna Leave A Mark (Holo)",
+        "name": "Çıkartma | İz Bırakır (Holo)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11223.png"
     },
     {
         "id": "11224",
-        "name": "Çıkartma | Partyboy (Lenticular)",
+        "name": "Çıkartma | Partici (Merceksi)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11224.png"
     },
     {
         "id": "11225",
-        "name": "Çıkartma | Radiograph (Holo)",
+        "name": "Çıkartma | Radyograf (Holo)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11225.png"
     },
     {
         "id": "11226",
-        "name": "Çıkartma | Rocket Skates (Holo)",
+        "name": "Çıkartma | Roket Patenler (Holo)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11226.png"
     },
     {
@@ -52466,37 +52741,37 @@
     },
     {
         "id": "11228",
-        "name": "Çıkartma | Assterisk (Foil)",
+        "name": "Çıkartma | Assterisk (Parlak)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11228.png"
     },
     {
         "id": "11229",
-        "name": "Çıkartma | Censored (Foil)",
+        "name": "Çıkartma | Sansürlü (Parlak)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11229.png"
     },
     {
         "id": "11230",
-        "name": "Çıkartma | Explosives (Foil)",
+        "name": "Çıkartma | Patlayıcılar (Parlak)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11230.png"
     },
     {
         "id": "11231",
-        "name": "Çıkartma | Radiograph (Foil)",
+        "name": "Çıkartma | Radyograf (Parlak)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11231.png"
     },
     {
         "id": "11232",
-        "name": "Çıkartma | WARNING (Foil)",
+        "name": "Çıkartma | UYARI (Parlak)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11232.png"
     },
     {
         "id": "11233",
-        "name": "Çıkartma | Electric Avenue (Lenticular)",
+        "name": "Çıkartma | Electric Avenue (Merceksi)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11233.png"
     },
     {
         "id": "11234",
-        "name": "Çıkartma | Poo Cocktail Supreme (Lenticular)",
+        "name": "Çıkartma | Spesiyal Kaka Kokteyli (Merceksi)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11234.png"
     }
 ]

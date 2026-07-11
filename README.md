@@ -36,7 +36,8 @@ Unfinished, unoptimized and not fully functional ugly demo weapon paints plugin 
 ## Plugin Configuration
 <details>
   <summary>Click to expand</summary>
-<code><pre>{
+<code>
+{
 	"Version": 4, // Don't touch
 	"DatabaseHost": "", // MySQL host
 	"DatabasePort": 3306, // MySQL port
@@ -72,7 +73,7 @@ Unfinished, unoptimized and not fully functional ugly demo weapon paints plugin 
 	"GiveRandomKnife": false,  // Give random knife to players if they didn't choose
 	"GiveRandomSkins": false  // Give random skins to players if they didn't choose
 },
-</pre></code>
+</code>
 </details>
 
 ## Troubleshooting

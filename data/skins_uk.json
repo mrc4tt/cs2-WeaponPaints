@@ -10,6 +10,14 @@
     {
         "weapon_defindex": 7,
         "weapon_name": "weapon_ak47",
+        "paint": "1449",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_ak47-1449.png",
+        "paint_name": "АК-47 | АВТОВИКОНАННЯ",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 7,
+        "weapon_name": "weapon_ak47",
         "paint": "1425",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_ak47-1425.png",
         "paint_name": "АК-47 | Політ журавля",
@@ -21,6 +29,14 @@
         "paint": "1207",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_ak47-1207.png",
         "paint_name": "АК-47 | Палюча лють",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 7,
+        "weapon_name": "weapon_ak47",
+        "paint": "1466",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_ak47-1466.png",
+        "paint_name": "АК-47 | Вплив джина",
         "legacy_model": false
     },
     {
@@ -578,6 +594,22 @@
     {
         "weapon_defindex": 8,
         "weapon_name": "weapon_aug",
+        "paint": "1452",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_aug-1452.png",
+        "paint_name": "АУГ | Сканер сигналів",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 8,
+        "weapon_name": "weapon_aug",
+        "paint": "1464",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_aug-1464.png",
+        "paint_name": "АУГ | Ляпіс-лазур",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 8,
+        "weapon_name": "weapon_aug",
         "paint": "121",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_aug-121.png",
         "paint_name": "АУГ | Розкіш",
@@ -906,6 +938,14 @@
     {
         "weapon_defindex": 9,
         "weapon_name": "weapon_awp",
+        "paint": "1467",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_awp-1467.png",
+        "paint_name": "АВП | Чорний ящик",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 9,
+        "weapon_name": "weapon_awp",
         "paint": "1346",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_awp-1346.png",
         "paint_name": "АВП | Крижане вугілля",
@@ -933,6 +973,14 @@
         "paint": "1422",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_awp-1422.png",
         "paint_name": "АВП | Хід королеви",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 9,
+        "weapon_name": "weapon_awp",
+        "paint": "1465",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_awp-1465.png",
+        "paint_name": "АВП | Полум’я суверена",
         "legacy_model": false
     },
     {
@@ -1586,6 +1634,14 @@
     {
         "weapon_defindex": 26,
         "weapon_name": "weapon_bizon",
+        "paint": "1472",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_bizon-1472.png",
+        "paint_name": "ПП «Бізон» | Зрадник",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 26,
+        "weapon_name": "weapon_bizon",
         "paint": "349",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_bizon-349.png",
         "paint_name": "ПП «Бізон» | Осіріс",
@@ -2002,6 +2058,14 @@
     {
         "weapon_defindex": 63,
         "weapon_name": "weapon_cz75a",
+        "paint": "1443",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_cz75a-1443.png",
+        "paint_name": "ЧЗ-75 авто | Гідравліка",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 63,
+        "weapon_name": "weapon_cz75a",
         "paint": "687",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_cz75a-687.png",
         "paint_name": "ЧЗ-75 авто | Тактикіт",
@@ -2378,6 +2442,14 @@
     {
         "weapon_defindex": 1,
         "weapon_name": "weapon_deagle",
+        "paint": "1458",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_deagle-1458.png",
+        "paint_name": "Пустельний орел | Орієнтальна загадка",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 1,
+        "weapon_name": "weapon_deagle",
         "paint": "1430",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_deagle-1430.png",
         "paint_name": "Пустельний орел | Полум’яне дихання",
@@ -2645,6 +2717,14 @@
         "paint": "112",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_elite-112.png",
         "paint_name": "Подвійні «Беретти» | Гідроудар",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 2,
+        "weapon_name": "weapon_elite",
+        "paint": "1459",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_elite-1459.png",
+        "paint_name": "Подвійні «Беретти» | Містичне об’єднання",
         "legacy_model": false
     },
     {
@@ -2981,6 +3061,22 @@
         "paint": "1184",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_famas-1184.png",
         "paint_name": "ФАМАС | Погана подорож",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 10,
+        "weapon_name": "weapon_famas",
+        "paint": "1477",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_famas-1477.png",
+        "paint_name": "ФАМАС | Корпоративний захист",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 10,
+        "weapon_name": "weapon_famas",
+        "paint": "1461",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_famas-1461.png",
+        "paint_name": "ФАМАС | Зміїна пісня",
         "legacy_model": false
     },
     {
@@ -3350,6 +3446,14 @@
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_fiveseven-1082.png",
         "paint_name": "Five-seveN | Загроза падіння",
         "legacy_model": true
+    },
+    {
+        "weapon_defindex": 3,
+        "weapon_name": "weapon_fiveseven",
+        "paint": "1457",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_fiveseven-1457.png",
+        "paint_name": "Five-seveN | Пустельна печатка",
+        "legacy_model": false
     },
     {
         "weapon_defindex": 3,
@@ -4397,6 +4501,22 @@
         "paint": "129",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_glock-129.png",
         "paint_name": "Ґлок-18 | Золотий зуб",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 4,
+        "weapon_name": "weapon_glock",
+        "paint": "1450",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_glock-1450.png",
+        "paint_name": "Ґлок-18 | Примарний протокол",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 4,
+        "weapon_name": "weapon_glock",
+        "paint": "1460",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_glock-1460.png",
+        "paint_name": "Ґлок-18 | Іфритова ґратка",
         "legacy_model": false
     },
     {
@@ -9746,6 +9866,22 @@
     {
         "weapon_defindex": 16,
         "weapon_name": "weapon_m4a1",
+        "paint": "1446",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_m4a1-1446.png",
+        "paint_name": "М4А4 | Темний агент",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 16,
+        "weapon_name": "weapon_m4a1",
+        "paint": "1463",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_m4a1-1463.png",
+        "paint_name": "М4А4 | Фалак",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 16,
+        "weapon_name": "weapon_m4a1",
         "paint": "118",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_m4a1-118.png",
         "paint_name": "М4А4 | Турбіна",
@@ -10093,6 +10229,14 @@
         "paint": "1376",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_m4a1_silencer-1376.png",
         "paint_name": "М4А1-С | Неонові джунглі",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 60,
+        "weapon_name": "weapon_m4a1_silencer",
+        "paint": "1476",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_m4a1_silencer-1476.png",
+        "paint_name": "М4А1-С | Фатальний збій",
         "legacy_model": false
     },
     {
@@ -10554,6 +10698,14 @@
     {
         "weapon_defindex": 17,
         "weapon_name": "weapon_mac10",
+        "paint": "1454",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_mac10-1454.png",
+        "paint_name": "МАК-10 | Арабська мозаїка",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 17,
+        "weapon_name": "weapon_mac10",
         "paint": "1164",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_mac10-1164.png",
         "paint_name": "МАК-10 | Світловий ящик",
@@ -10581,6 +10733,14 @@
         "paint": "1204",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_mac10-1204.png",
         "paint_name": "МАК-10 | Схід із рейок",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 17,
+        "weapon_name": "weapon_mac10",
+        "paint": "1448",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_mac10-1448.png",
+        "paint_name": "МАК-10 | Відеокамера",
         "legacy_model": false
     },
     {
@@ -11378,6 +11538,14 @@
     {
         "weapon_defindex": 33,
         "weapon_name": "weapon_mp7",
+        "paint": "1468",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_mp7-1468.png",
+        "paint_name": "МП7 | Двійковість",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 33,
+        "weapon_name": "weapon_mp7",
         "paint": "1163",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_mp7-1163.png",
         "paint_name": "МП7 | Просто посмішка",
@@ -11754,9 +11922,25 @@
     {
         "weapon_defindex": 34,
         "weapon_name": "weapon_mp9",
+        "paint": "1473",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_mp9-1473.png",
+        "paint_name": "МП9 | Піщаний аспид",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 34,
+        "weapon_name": "weapon_mp9",
         "paint": "1193",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_mp9-1193.png",
         "paint_name": "МП9 | Нексус",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 34,
+        "weapon_name": "weapon_mp9",
+        "paint": "1469",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_mp9-1469.png",
+        "paint_name": "МП9 | Шпигунський прототип",
         "legacy_model": false
     },
     {
@@ -12322,6 +12506,14 @@
     {
         "weapon_defindex": 35,
         "weapon_name": "weapon_nova",
+        "paint": "1474",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_nova-1474.png",
+        "paint_name": "Нова | Ранкове сонце",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 35,
+        "weapon_name": "weapon_nova",
         "paint": "1350",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_nova-1350.png",
         "paint_name": "Нова | Окуляр",
@@ -12333,6 +12525,14 @@
         "paint": "1192",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_nova-1192.png",
         "paint_name": "Нова | Схід сонця",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 35,
+        "weapon_name": "weapon_nova",
+        "paint": "1442",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_nova-1442.png",
+        "paint_name": "Нова | Розумна пушка",
         "legacy_model": false
     },
     {
@@ -12797,6 +12997,14 @@
         "paint": "1420",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_p250-1420.png",
         "paint_name": "П250 | Кінцуґі",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 36,
+        "weapon_name": "weapon_p250",
+        "paint": "1455",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_p250-1455.png",
+        "paint_name": "П250 | Відбиток лотоса",
         "legacy_model": false
     },
     {
@@ -13466,6 +13674,14 @@
     {
         "weapon_defindex": 64,
         "weapon_name": "weapon_revolver",
+        "paint": "1445",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_revolver-1445.png",
+        "paint_name": "Револьвер Р8 | Монарх",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 64,
+        "weapon_name": "weapon_revolver",
         "paint": "123",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_revolver-123.png",
         "paint_name": "Револьвер Р8 | Танго",
@@ -13786,6 +14002,14 @@
     {
         "weapon_defindex": 29,
         "weapon_name": "weapon_sawedoff",
+        "paint": "1475",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_sawedoff-1475.png",
+        "paint_name": "Обріз | Місячний змій",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 29,
+        "weapon_name": "weapon_sawedoff",
         "paint": "171",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_sawedoff-171.png",
         "paint_name": "Обріз | Радіоактивне зараження",
@@ -14010,9 +14234,25 @@
     {
         "weapon_defindex": 38,
         "weapon_name": "weapon_scar20",
+        "paint": "1470",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_scar20-1470.png",
+        "paint_name": "СКАР-20 | Арктичний камуфляж",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 38,
+        "weapon_name": "weapon_scar20",
         "paint": "1343",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_scar20-1343.png",
         "paint_name": "СКАР-20 | У клітці",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 38,
+        "weapon_name": "weapon_scar20",
+        "paint": "1453",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_scar20-1453.png",
+        "paint_name": "СКАР-20 | Манускрипт сироко",
         "legacy_model": false
     },
     {
@@ -15176,6 +15416,22 @@
         "legacy_model": false
     },
     {
+        "weapon_defindex": 30,
+        "weapon_name": "weapon_tec9",
+        "paint": "1447",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_tec9-1447.png",
+        "paint_name": "ТЕК-9 | Периметр",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 30,
+        "weapon_name": "weapon_tec9",
+        "paint": "1462",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_tec9-1462.png",
+        "paint_name": "ТЕК-9 | Султан",
+        "legacy_model": false
+    },
+    {
         "weapon_defindex": 24,
         "weapon_name": "weapon_ump45",
         "paint": 0,
@@ -15904,6 +16160,14 @@
         "legacy_model": false
     },
     {
+        "weapon_defindex": 61,
+        "weapon_name": "weapon_usp_silencer",
+        "paint": "1451",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_usp_silencer-1451.png",
+        "paint_name": "УСП-С | Спіральні перешкоди",
+        "legacy_model": false
+    },
+    {
         "weapon_defindex": 25,
         "weapon_name": "weapon_xm1014",
         "paint": 0,
@@ -16237,6 +16501,14 @@
         "paint": "1078",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_xm1014-1078.png",
         "paint_name": "М1014 | Синя шина",
+        "legacy_model": false
+    },
+    {
+        "weapon_defindex": 25,
+        "weapon_name": "weapon_xm1014",
+        "paint": "1471",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_xm1014-1471.png",
+        "paint_name": "М1014 | Чорна мітка",
         "legacy_model": false
     },
     {
