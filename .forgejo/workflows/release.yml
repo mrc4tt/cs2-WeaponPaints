@@ -111,6 +111,18 @@ jobs:
           TAG="build-${BUILD_NUMBER}"
           ZIP="./${PROJECT_NAME}.zip"
 
+          # Create the tag first so the release references an existing tag.
+          # Forgejo returns "Release has no Tag" when it can't create the tag
+          # from target_commitish during release creation.
+          curl -sS -X POST \
+            -H "Authorization: token ${FORGEJO_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg tag "$TAG" \
+              --arg target "${GITHUB_SHA}" \
+              '{tag_name:$tag, target:$target}')" \
+            "${API}/tags" >/dev/null || true
+
           RELEASE_RESPONSE=$(curl -sS -X POST \
             -H "Authorization: token ${FORGEJO_TOKEN}" \
             -H "Content-Type: application/json" \
