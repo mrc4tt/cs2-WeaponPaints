@@ -36,6 +36,8 @@
     "wp_float_no_weapon": "{lightred}你必须手持武器",
     "wp_float_no_skin": "{lightred}这把武器没有皮肤",
     "wp_float_set": "磨损值已设置为 {lime}{0}",
+    "wp_glove_no_glove": "{lightred}你没有选择任何手套",
+    "wp_glove_no_skin": "{lightred}你的手套没有皮肤",
     "wp_seed_usage": "用法: {lime}!seed <0-1000>{default} - 例如: !seed 661",
     "wp_seed_invalid": "{lightred}模板编号无效。请使用 0 到 1000 之间的数字",
     "wp_seed_no_weapon": "{lightred}你必须手持武器",

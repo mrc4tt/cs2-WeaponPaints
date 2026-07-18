@@ -36,6 +36,8 @@
     "wp_float_no_weapon": "{lightred}Musisz trzymać broń",
     "wp_float_no_skin": "{lightred}Nie masz skina na tej broni",
     "wp_float_set": "Float ustawiony na {lime}{0}",
+    "wp_glove_no_glove": "{lightred}Nie masz wybranych żadnych rękawic",
+    "wp_glove_no_skin": "{lightred}Nie masz skina na rękawicach",
     "wp_seed_usage": "Użycie: {lime}!seed <0-1000>{default} - Przykład: !seed 661",
     "wp_seed_invalid": "{lightred}Nieprawidłowa wartość seed. Użyj liczby od 0 do 1000",
     "wp_seed_no_weapon": "{lightred}Musisz trzymać broń",

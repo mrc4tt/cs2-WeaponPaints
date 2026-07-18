@@ -36,6 +36,8 @@
     "wp_float_no_weapon": "{lightred}Precisas de estar a segurar numa arma",
     "wp_float_no_skin": "{lightred}Não tens uma skin nesta arma",
     "wp_float_set": "Float definido para {lime}{0}",
+    "wp_glove_no_glove": "{lightred}Não tens luvas selecionadas",
+    "wp_glove_no_skin": "{lightred}Não tens skin nas luvas",
     "wp_seed_usage": "Uso: {lime}!seed <0-1000>{default} - Exemplo: !seed 661",
     "wp_seed_invalid": "{lightred}Valor de seed inválido. Usa um número entre 0 e 1000",
     "wp_seed_no_weapon": "{lightred}Precisas de estar a segurar numa arma",

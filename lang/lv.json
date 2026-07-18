@@ -36,6 +36,8 @@
     "wp_float_no_weapon": "{lightred}Jums rokās jātur ierocis",
     "wp_float_no_skin": "{lightred}Šim ierocim nav uzstādīta āda",
     "wp_float_set": "Float/Wear iestatīts uz {lime}{0}",
+    "wp_glove_no_glove": "{lightred}Nav izvēlēti cimdi",
+    "wp_glove_no_skin": "{lightred}Taviem cimdiem nav skina",
     "wp_seed_usage": "Lietošana: {lime}!seed <0-1000>{default} - Piemērs: !seed 661",
     "wp_seed_invalid": "{lightred}Nederīga seed vērtība. Izmantojiet skaitli starp 0 un 1000",
     "wp_seed_no_weapon": "{lightred}Jums rokās jātur ierocis",

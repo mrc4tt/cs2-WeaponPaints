@@ -36,6 +36,8 @@
     "wp_float_no_weapon": "{lightred}Вы должны держать оружие в руках",
     "wp_float_no_skin": "{lightred}На этом оружии нет скина",
     "wp_float_set": "Float/Износ установлен на {lime}{0}",
+    "wp_glove_no_glove": "{lightred}У вас не выбраны перчатки",
+    "wp_glove_no_skin": "{lightred}На ваших перчатках нет скина",
     "wp_seed_usage": "Использование: {lime}!seed <0-1000>{default} - Пример: !seed 661",
     "wp_seed_invalid": "{lightred}Неверное значение seed. Используйте число от 0 до 1000",
     "wp_seed_no_weapon": "{lightred}Вы должны держать оружие в руках",

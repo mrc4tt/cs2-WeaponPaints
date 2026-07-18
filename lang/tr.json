@@ -36,6 +36,8 @@
     "wp_float_no_weapon": "{lightred}Elinizde bir silah olmalı",
     "wp_float_no_skin": "{lightred}Bu silahta bir skin yok",
     "wp_float_set": "Float/Aşınma değeri {lime}{0} olarak ayarlandı",
+    "wp_glove_no_glove": "{lightred}Seçili eldiveniniz yok",
+    "wp_glove_no_skin": "{lightred}Eldivenlerinizde kaplama yok",
     "wp_seed_usage": "Kullanım: {lime}!seed <0-1000>{default} - Örnek: !seed 661",
     "wp_seed_invalid": "{lightred}Geçersiz seed değeri. 0 ile 1000 arasında bir sayı kullanın",
     "wp_seed_no_weapon": "{lightred}Elinizde bir silah olmalı",

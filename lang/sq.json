@@ -38,6 +38,8 @@
 	"wp_float_no_weapon": "{lightred}Duhet të keni një armë në dorë",
 	"wp_float_no_skin": "{lightred}Ju nuk keni një skin në këtë armë",
 	"wp_float_set": "Vlera Float/Wear u vendos në {lime}{0}",
+	"wp_glove_no_glove": "{lightred}Nuk keni zgjedhur asnjë dorezë",
+	"wp_glove_no_skin": "{lightred}Nuk keni skin në dorezat tuaja",
 
 	"wp_seed_usage": "Përdorimi: {lime}!seed <0-1000>{default} - Shembull: !seed 661",
 	"wp_seed_invalid": "{lightred}Vlerë e pasaktë e seed. Përdorni një numër midis 0 dhe 1000",
