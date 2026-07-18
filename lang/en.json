@@ -46,6 +46,8 @@
 	"wp_seed_set": "Pattern seed set to {lime}{0}",
 	"wp_seed_prompt": "{lime}Type a pattern seed (0-1000) in chat now. Send any {default}!cmd{lime} (e.g. {default}!wp{lime}) to cancel.",
 	"wp_float_prompt": "{lime}Type a wear value (0.00-1.00) in chat now. Send any {default}!cmd{lime} (e.g. {default}!wp{lime}) to cancel.",
+	"wp_glove_no_glove": "{lightred}You don't have any gloves selected",
+	"wp_glove_no_skin": "{lightred}You don't have a skin on your gloves",
 
 	"wp_skin_weapon_not_found": "{lightred}Weapon '{0}' not found. Try: ak47, awp, glock, etc.",
 	"wp_skin_no_skins_found": "{lightred}No skins found for {0}",

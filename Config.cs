@@ -68,6 +68,12 @@ namespace WeaponPaints
         [JsonPropertyName("CommandSeed")]
         public List<string> CommandSeed { get; set; } = ["seed", "pattern"];
 
+        [JsonPropertyName("CommandGloveFloat")]
+        public List<string> CommandGloveFloat { get; set; } = ["gfloat", "gwear"];
+
+        [JsonPropertyName("CommandGloveSeed")]
+        public List<string> CommandGloveSeed { get; set; } = ["gseed", "gpattern"];
+
         [JsonPropertyName("CommandMenu")]
         public List<string> CommandMenu { get; set; } = ["menu"];
 
@@ -84,7 +90,7 @@ namespace WeaponPaints
     public class WeaponPaintsConfig : BasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 15;
+        public override int Version { get; set; } = 17;
 
         [JsonPropertyName("DatabaseHost")]
         public string DatabaseHost { get; set; } = "";

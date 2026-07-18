@@ -309,6 +309,195 @@ public partial class WeaponPaints
             player.Print(Localizer["wp_seed_set", seedValue]);
     }
 
+    private void OnCommandGloveFloat(CCSPlayerController? player, CommandInfo command)
+    {
+        if (!Config.Additional.GloveEnabled || !_gBCommandsAllowed)
+            return;
+        if (!Utility.IsPlayerValid(player) || player == null)
+            return;
+
+        // Prevent double-call from chat/console trigger
+        if (LastCommandTime.TryGetValue(player.Slot, out var lastTime) && (DateTime.UtcNow - lastTime).TotalMilliseconds < 100)
+            return;
+        LastCommandTime[player.Slot] = DateTime.UtcNow;
+
+        if (command.ArgCount < 2)
+        {
+            BeginGloveSeedWearChatPrompt(player, PendingSeedWearKind.GloveWear);
+            return;
+        }
+
+        if (!float.TryParse(command.GetArg(1), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var floatValue))
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_float_invalid"]))
+                player.Print(Localizer["wp_float_invalid"]);
+            return;
+        }
+
+        ApplyGloveWear(player, floatValue);
+    }
+
+    private void OnCommandGloveSeed(CCSPlayerController? player, CommandInfo command)
+    {
+        if (!Config.Additional.GloveEnabled || !_gBCommandsAllowed)
+            return;
+        if (!Utility.IsPlayerValid(player) || player == null)
+            return;
+
+        // Prevent double-call from chat/console trigger
+        if (LastCommandTime.TryGetValue(player.Slot, out var lastTime) && (DateTime.UtcNow - lastTime).TotalMilliseconds < 100)
+            return;
+        LastCommandTime[player.Slot] = DateTime.UtcNow;
+
+        if (command.ArgCount < 2)
+        {
+            BeginGloveSeedWearChatPrompt(player, PendingSeedWearKind.GloveSeed);
+            return;
+        }
+
+        if (!int.TryParse(command.GetArg(1), out var seedValue))
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_seed_invalid"]))
+                player.Print(Localizer["wp_seed_invalid"]);
+            return;
+        }
+
+        ApplyGloveSeed(player, seedValue);
+    }
+
+    // Resolve the glove def index the player currently wears. Prefers the active team's
+    // glove; falls back to any non-zero team entry (e.g. player still in warmup/spectator
+    // when they picked). Returns false when the player has no custom glove applied.
+    private bool TryGetCurrentGloveDefIndex(CCSPlayerController player, out int gloveDefIndex)
+    {
+        gloveDefIndex = 0;
+        if (!GPlayersGlove.TryGetValue(player.Slot, out var gloves))
+            return false;
+
+        if (player.Team is CsTeam.Terrorist or CsTeam.CounterTerrorist
+            && gloves.TryGetValue(player.Team, out var teamGlove) && teamGlove != 0)
+        {
+            gloveDefIndex = teamGlove;
+            return true;
+        }
+
+        foreach (var kv in gloves)
+        {
+            if (kv.Value != 0)
+            {
+                gloveDefIndex = kv.Value;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Shared apply path for glove !glovefloat and its chat-input no-arg flow. Gloves are
+    // never the "held" active weapon, so unlike ApplyHeldWeaponWear the target def index
+    // comes from GPlayersGlove, and the refresh goes through GivePlayerGloves.
+    private void ApplyGloveWear(CCSPlayerController player, float floatValue)
+    {
+        floatValue = Math.Clamp(floatValue, 0.00f, 1.00f);
+
+        if (!TryGetCurrentGloveDefIndex(player, out var gloveDefIndex))
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_glove_no_glove"]))
+                player.Print(Localizer["wp_glove_no_glove"]);
+            return;
+        }
+
+        if (!HasChangedPaint(player, gloveDefIndex, out _))
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_glove_no_skin"]))
+                player.Print(Localizer["wp_glove_no_skin"]);
+            return;
+        }
+
+        var playerSkins = GPlayerWeaponsInfo.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
+        var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [player.Team];
+
+        foreach (var team in teamsToCheck)
+        {
+            var teamWeapons = playerSkins.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>());
+            if (teamWeapons.TryGetValue(gloveDefIndex, out var weaponInfo))
+                weaponInfo.Wear = floatValue;
+        }
+
+        var playerInfo = PlayerInfo.From(player);
+
+        if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
+            GivePlayerGloves(player);
+
+        if (WeaponSync != null)
+            _ = Task.Run(async () => await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo));
+
+        if (!string.IsNullOrEmpty(Localizer["wp_float_set"]))
+            player.Print(Localizer["wp_float_set", floatValue.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)]);
+    }
+
+    private void ApplyGloveSeed(CCSPlayerController player, int seedValue)
+    {
+        seedValue = Math.Clamp(seedValue, 0, 1000);
+
+        if (!TryGetCurrentGloveDefIndex(player, out var gloveDefIndex))
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_glove_no_glove"]))
+                player.Print(Localizer["wp_glove_no_glove"]);
+            return;
+        }
+
+        if (!HasChangedPaint(player, gloveDefIndex, out _))
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_glove_no_skin"]))
+                player.Print(Localizer["wp_glove_no_skin"]);
+            return;
+        }
+
+        var playerSkins = GPlayerWeaponsInfo.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
+        var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [player.Team];
+
+        foreach (var team in teamsToCheck)
+        {
+            var teamWeapons = playerSkins.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>());
+            if (teamWeapons.TryGetValue(gloveDefIndex, out var weaponInfo))
+                weaponInfo.Seed = seedValue;
+        }
+
+        var playerInfo = PlayerInfo.From(player);
+
+        if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
+            GivePlayerGloves(player);
+
+        if (WeaponSync != null)
+            _ = Task.Run(async () => await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo));
+
+        if (!string.IsNullOrEmpty(Localizer["wp_seed_set"]))
+            player.Print(Localizer["wp_seed_set", seedValue]);
+    }
+
+    private void BeginGloveSeedWearChatPrompt(CCSPlayerController player, PendingSeedWearKind kind)
+    {
+        if (!TryGetCurrentGloveDefIndex(player, out var gloveDefIndex))
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_glove_no_glove"]))
+                player.Print(Localizer["wp_glove_no_glove"]);
+            return;
+        }
+
+        if (!HasChangedPaint(player, gloveDefIndex, out _))
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_glove_no_skin"]))
+                player.Print(Localizer["wp_glove_no_skin"]);
+            return;
+        }
+
+        GPlayersPendingSeedWearInput[player.Slot] = kind;
+
+        var promptKey = kind == PendingSeedWearKind.GloveSeed ? "wp_seed_prompt" : "wp_float_prompt";
+        if (!string.IsNullOrEmpty(Localizer[promptKey]))
+            player.Print(Localizer[promptKey]);
+    }
+
     private void BeginSeedWearChatPrompt(CCSPlayerController player, PendingSeedWearKind kind)
     {
         var weapon = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
@@ -356,7 +545,7 @@ public partial class WeaponPaints
             return HookResult.Continue;
         }
 
-        if (kind == PendingSeedWearKind.Seed)
+        if (kind is PendingSeedWearKind.Seed or PendingSeedWearKind.GloveSeed)
         {
             if (!int.TryParse(input, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var seedValue))
             {
@@ -364,7 +553,10 @@ public partial class WeaponPaints
                     player.Print(Localizer["wp_seed_invalid"]);
                 return HookResult.Handled;
             }
-            ApplyHeldWeaponSeed(player, seedValue);
+            if (kind == PendingSeedWearKind.GloveSeed)
+                ApplyGloveSeed(player, seedValue);
+            else
+                ApplyHeldWeaponSeed(player, seedValue);
         }
         else
         {
@@ -375,7 +567,10 @@ public partial class WeaponPaints
                     player.Print(Localizer["wp_float_invalid"]);
                 return HookResult.Handled;
             }
-            ApplyHeldWeaponWear(player, floatValue);
+            if (kind == PendingSeedWearKind.GloveWear)
+                ApplyGloveWear(player, floatValue);
+            else
+                ApplyHeldWeaponWear(player, floatValue);
         }
 
         GPlayersPendingSeedWearInput.TryRemove(player.Slot, out _);
@@ -722,6 +917,36 @@ public partial class WeaponPaints
                     if (!Utility.IsPlayerValid(player))
                         return;
                     OnCommandSeed(player, info);
+                }
+            );
+        });
+
+        // Register glove float command
+        Config.Additional.CommandGloveFloat.ForEach(c =>
+        {
+            AddCommand(
+                $"css_{c}",
+                "Set glove float/wear value",
+                (player, info) =>
+                {
+                    if (!Utility.IsPlayerValid(player))
+                        return;
+                    OnCommandGloveFloat(player, info);
+                }
+            );
+        });
+
+        // Register glove seed command
+        Config.Additional.CommandGloveSeed.ForEach(c =>
+        {
+            AddCommand(
+                $"css_{c}",
+                "Set glove pattern seed",
+                (player, info) =>
+                {
+                    if (!Utility.IsPlayerValid(player))
+                        return;
+                    OnCommandGloveSeed(player, info);
                 }
             );
         });

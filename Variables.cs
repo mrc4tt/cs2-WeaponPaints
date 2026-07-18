@@ -110,7 +110,7 @@ public partial class WeaponPaints
     // Tracks which players are mid chat-input for !seed / !float (no-arg form). The next
     // non-command say message from these players is intercepted and parsed instead of
     // hitting normal chat. Cleared on disconnect, on successful apply, and on cancel.
-    internal enum PendingSeedWearKind { Seed, Wear }
+    internal enum PendingSeedWearKind { Seed, Wear, GloveSeed, GloveWear }
     internal static readonly ConcurrentDictionary<int, PendingSeedWearKind> GPlayersPendingSeedWearInput = new();
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ushort>> GPlayersMusic = new();
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ushort>> GPlayersPin = new();
