@@ -12,7 +12,7 @@
         "weapon_name": "weapon_ak47",
         "paint": "1449",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_ak47-1449.png",
-        "paint_name": "AK-47 | AUTOEXEC",
+        "paint_name": "AK-47 | АВТ. ИЗПЪЛНЯВАНЕ",
         "legacy_model": false
     },
     {
@@ -36,7 +36,7 @@
         "weapon_name": "weapon_ak47",
         "paint": "1466",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_ak47-1466.png",
-        "paint_name": "AK-47 | Consequence of the Jinn",
+        "paint_name": "AK-47 | Последствието от духа",
         "legacy_model": false
     },
     {
@@ -596,7 +596,7 @@
         "weapon_name": "weapon_aug",
         "paint": "1452",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_aug-1452.png",
-        "paint_name": "AUG | Signal Scanner",
+        "paint_name": "AUG | Сигнален скенер",
         "legacy_model": false
     },
     {
@@ -604,7 +604,7 @@
         "weapon_name": "weapon_aug",
         "paint": "1464",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_aug-1464.png",
-        "paint_name": "AUG | Lapis Lazuli",
+        "paint_name": "AUG | Лапис лазули",
         "legacy_model": false
     },
     {
@@ -940,7 +940,7 @@
         "weapon_name": "weapon_awp",
         "paint": "1467",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_awp-1467.png",
-        "paint_name": "AWP | Black Box",
+        "paint_name": "AWP | Черна кутия",
         "legacy_model": false
     },
     {
@@ -980,7 +980,7 @@
         "weapon_name": "weapon_awp",
         "paint": "1465",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_awp-1465.png",
-        "paint_name": "AWP | Sovereign Flame",
+        "paint_name": "AWP | Суверенен пламък",
         "legacy_model": false
     },
     {
@@ -1636,7 +1636,7 @@
         "weapon_name": "weapon_bizon",
         "paint": "1472",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_bizon-1472.png",
-        "paint_name": "PP-Bizon | Traitor",
+        "paint_name": "PP-Bizon | Изменник",
         "legacy_model": false
     },
     {
@@ -2060,7 +2060,7 @@
         "weapon_name": "weapon_cz75a",
         "paint": "1443",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_cz75a-1443.png",
-        "paint_name": "CZ75-Auto | Hydraulics",
+        "paint_name": "CZ75-Auto | Хидравлика",
         "legacy_model": false
     },
     {
@@ -2444,7 +2444,7 @@
         "weapon_name": "weapon_deagle",
         "paint": "1458",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_deagle-1458.png",
-        "paint_name": "Desert Eagle | Eastern Enigma",
+        "paint_name": "Desert Eagle | Източна енигма",
         "legacy_model": false
     },
     {
@@ -2724,7 +2724,7 @@
         "weapon_name": "weapon_elite",
         "paint": "1459",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_elite-1459.png",
-        "paint_name": "Два Beretta | Mystic Conjunction",
+        "paint_name": "Два Beretta | Мистично съединение",
         "legacy_model": false
     },
     {
@@ -3068,7 +3068,7 @@
         "weapon_name": "weapon_famas",
         "paint": "1477",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_famas-1477.png",
-        "paint_name": "FAMAS | Corp Defense",
+        "paint_name": "FAMAS | Корпоративна отбрана",
         "legacy_model": false
     },
     {
@@ -3076,7 +3076,7 @@
         "weapon_name": "weapon_famas",
         "paint": "1461",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_famas-1461.png",
-        "paint_name": "FAMAS | Snake Song",
+        "paint_name": "FAMAS | Змийска песен",
         "legacy_model": false
     },
     {
@@ -3452,7 +3452,7 @@
         "weapon_name": "weapon_fiveseven",
         "paint": "1457",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_fiveseven-1457.png",
-        "paint_name": "Five-SeveN | Desert Seal",
+        "paint_name": "Five-SeveN | Пустинно клеймо",
         "legacy_model": false
     },
     {
@@ -4508,7 +4508,7 @@
         "weapon_name": "weapon_glock",
         "paint": "1450",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_glock-1450.png",
-        "paint_name": "Glock-18 | Ghost Protocol",
+        "paint_name": "Glock-18 | Призрачен протокол",
         "legacy_model": false
     },
     {
@@ -4516,7 +4516,7 @@
         "weapon_name": "weapon_glock",
         "paint": "1460",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_glock-1460.png",
-        "paint_name": "Glock-18 | Ifrit Lattice",
+        "paint_name": "Glock-18 | Ифритова решетка",
         "legacy_model": false
     },
     {
@@ -9868,7 +9868,7 @@
         "weapon_name": "weapon_m4a1",
         "paint": "1446",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_m4a1-1446.png",
-        "paint_name": "M4A4 | Dark Operative",
+        "paint_name": "M4A4 | Мрачен оператор",
         "legacy_model": false
     },
     {
@@ -9876,7 +9876,7 @@
         "weapon_name": "weapon_m4a1",
         "paint": "1463",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_m4a1-1463.png",
-        "paint_name": "M4A4 | Falak",
+        "paint_name": "M4A4 | Фалак",
         "legacy_model": false
     },
     {
@@ -10236,7 +10236,7 @@
         "weapon_name": "weapon_m4a1_silencer",
         "paint": "1476",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_m4a1_silencer-1476.png",
-        "paint_name": "M4A1-S | Fatal Glitch",
+        "paint_name": "M4A1-S | Фатална неизправност",
         "legacy_model": false
     },
     {
@@ -10700,7 +10700,7 @@
         "weapon_name": "weapon_mac10",
         "paint": "1454",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_mac10-1454.png",
-        "paint_name": "MAC-10 | Arabesque Mosaic",
+        "paint_name": "MAC-10 | Арабеска мозайка",
         "legacy_model": false
     },
     {
@@ -10740,7 +10740,7 @@
         "weapon_name": "weapon_mac10",
         "paint": "1448",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_mac10-1448.png",
-        "paint_name": "MAC-10 | Video Cam",
+        "paint_name": "MAC-10 | Видео камера",
         "legacy_model": false
     },
     {
@@ -11540,7 +11540,7 @@
         "weapon_name": "weapon_mp7",
         "paint": "1468",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_mp7-1468.png",
-        "paint_name": "MP7 | Base-2",
+        "paint_name": "MP7 | База 2",
         "legacy_model": false
     },
     {
@@ -11924,7 +11924,7 @@
         "weapon_name": "weapon_mp9",
         "paint": "1473",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_mp9-1473.png",
-        "paint_name": "MP9 | Dune Asp",
+        "paint_name": "MP9 | Дюнна пепелянка",
         "legacy_model": false
     },
     {
@@ -11940,7 +11940,7 @@
         "weapon_name": "weapon_mp9",
         "paint": "1469",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_mp9-1469.png",
-        "paint_name": "MP9 | Spy Prototype",
+        "paint_name": "MP9 | Шпионски прототип",
         "legacy_model": false
     },
     {
@@ -12508,7 +12508,7 @@
         "weapon_name": "weapon_nova",
         "paint": "1474",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_nova-1474.png",
-        "paint_name": "Nova | Morning Sun",
+        "paint_name": "Nova | Утринно слънце",
         "legacy_model": false
     },
     {
@@ -12532,7 +12532,7 @@
         "weapon_name": "weapon_nova",
         "paint": "1442",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_nova-1442.png",
-        "paint_name": "Nova | Smart Gun",
+        "paint_name": "Nova | Умно оръжие",
         "legacy_model": false
     },
     {
@@ -13004,7 +13004,7 @@
         "weapon_name": "weapon_p250",
         "paint": "1455",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_p250-1455.png",
-        "paint_name": "P250 | Lotus Imprint",
+        "paint_name": "P250 | Лотосов отпечатък",
         "legacy_model": false
     },
     {
@@ -13676,7 +13676,7 @@
         "weapon_name": "weapon_revolver",
         "paint": "1445",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_revolver-1445.png",
-        "paint_name": "Револвер R8 | Monarch",
+        "paint_name": "Револвер R8 | Монарх",
         "legacy_model": false
     },
     {
@@ -14004,7 +14004,7 @@
         "weapon_name": "weapon_sawedoff",
         "paint": "1475",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_sawedoff-1475.png",
-        "paint_name": "Скъсена цев | Lunar Wyrm",
+        "paint_name": "Скъсена цев | Лунен змей",
         "legacy_model": false
     },
     {
@@ -14236,7 +14236,7 @@
         "weapon_name": "weapon_scar20",
         "paint": "1470",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_scar20-1470.png",
-        "paint_name": "SCAR-20 | Arctic Camo Panels",
+        "paint_name": "SCAR-20 | Арктически камуфлажни панели",
         "legacy_model": false
     },
     {
@@ -14252,7 +14252,7 @@
         "weapon_name": "weapon_scar20",
         "paint": "1453",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_scar20-1453.png",
-        "paint_name": "SCAR-20 | Sirocco Script",
+        "paint_name": "SCAR-20 | Сироко ръкопис",
         "legacy_model": false
     },
     {
@@ -15420,7 +15420,7 @@
         "weapon_name": "weapon_tec9",
         "paint": "1447",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_tec9-1447.png",
-        "paint_name": "Tec-9 | Perimeter",
+        "paint_name": "Tec-9 | Периметър",
         "legacy_model": false
     },
     {
@@ -15428,7 +15428,7 @@
         "weapon_name": "weapon_tec9",
         "paint": "1462",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_tec9-1462.png",
-        "paint_name": "Tec-9 | Sultan",
+        "paint_name": "Tec-9 | Султан",
         "legacy_model": false
     },
     {
@@ -16164,7 +16164,7 @@
         "weapon_name": "weapon_usp_silencer",
         "paint": "1451",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_usp_silencer-1451.png",
-        "paint_name": "USP-S | Spiral Glitch",
+        "paint_name": "USP-S | Спирална неизправност",
         "legacy_model": false
     },
     {
@@ -16508,7 +16508,7 @@
         "weapon_name": "weapon_xm1014",
         "paint": "1471",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_xm1014-1471.png",
-        "paint_name": "XM1014 | Black Site",
+        "paint_name": "XM1014 | Таен обект",
         "legacy_model": false
     },
     {
