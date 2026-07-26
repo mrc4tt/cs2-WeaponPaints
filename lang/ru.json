@@ -4,6 +4,7 @@
     "wp_info_refresh": "Введите {lime}!wp{default}, чтобы синхронизировать выбранные скины",
     "wp_info_knife": "Введите {lime}!knife{default}, чтобы открыть меню ножей",
     "wp_info_glove": "Введите {lime}!gloves{default}, чтобы открыть меню перчаток",
+    "wp_info_glove_floatseed": "Введите {lime}!gfloat{default} / {lime}!gseed{default}, чтобы задать износ и номер паттерна перчаток",
     "wp_info_agent": "Введите {lime}!agents{default}, чтобы открыть меню агентов",
     "wp_info_music": "Введите {lime}!music{default}, чтобы открыть меню музыки",
     "wp_info_pin": "Введите {lime}!pins{default}, чтобы открыть меню значков",

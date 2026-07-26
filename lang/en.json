@@ -4,6 +4,7 @@
 	"wp_info_refresh": "Type {lime}!wp{default} to synchronize chosen skins",
 	"wp_info_knife": "Type {lime}!knife{default} to open knife menu",
 	"wp_info_glove": "Type {lime}!gloves{default} to open gloves menu",
+	"wp_info_glove_floatseed": "Type {lime}!gfloat{default} / {lime}!gseed{default} to set glove float and pattern seed",
 	"wp_info_agent": "Type {lime}!agents{default} to open agents menu",
 	"wp_info_music": "Type {lime}!music{default} to open music menu",
 	"wp_info_pin": "Type {lime}!pins{default} to open pins menu",

@@ -4,6 +4,7 @@
     "wp_info_refresh": "输入 {lime}!wp{default} 同步所选皮肤",
     "wp_info_knife": "输入 {lime}!knife{default} 打开小刀菜单",
     "wp_info_glove": "输入 {lime}!gloves{default} 打开手套菜单",
+    "wp_info_glove_floatseed": "输入 {lime}!gfloat{default} / {lime}!gseed{default} 设置手套磨损值和模板编号",
     "wp_info_agent": "输入 {lime}!agents{default} 打开探员菜单",
     "wp_info_music": "输入 {lime}!music{default} 打开音乐盒菜单",
     "wp_info_pin": "输入 {lime}!pins{default} 打开胸章菜单",

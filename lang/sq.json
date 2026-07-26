@@ -4,6 +4,7 @@
 	"wp_info_refresh": "Shkruani {lime}!wp{default} për të sinkronizuar skin-et e zgjedhura",
 	"wp_info_knife": "Shkruani {lime}!knife{default} për të hapur menunë e thikave",
 	"wp_info_glove": "Shkruani {lime}!gloves{default} për të hapur menunë e dorezave",
+	"wp_info_glove_floatseed": "Shkruaj {lime}!gfloat{default} / {lime}!gseed{default} për të vendosur konsumimin dhe modelin e dorezave",
 	"wp_info_agent": "Shkruani {lime}!agents{default} për të hapur menunë e agjentëve",
 	"wp_info_music": "Shkruani {lime}!music{default} për të hapur menunë e muzikës",
 	"wp_info_pin": "Shkruani {lime}!pins{default} për të hapur menunë e kunjave (pins)",

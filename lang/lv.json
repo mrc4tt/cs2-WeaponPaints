@@ -4,6 +4,7 @@
     "wp_info_refresh": "Rakstiet {lime}!wp{default}, lai sinhronizētu izvēlētās ādas",
     "wp_info_knife": "Rakstiet {lime}!knife{default}, lai atvērtu nažu izvēlni",
     "wp_info_glove": "Rakstiet {lime}!gloves{default}, lai atvērtu cimdu izvēlni",
+    "wp_info_glove_floatseed": "Ieraksti {lime}!gfloat{default} / {lime}!gseed{default}, lai iestatītu cimdu nolietojumu un raksta numuru",
     "wp_info_agent": "Rakstiet {lime}!agents{default}, lai atvērtu aģentu izvēlni",
     "wp_info_music": "Rakstiet {lime}!music{default}, lai atvērtu mūzikas izvēlni",
     "wp_info_pin": "Rakstiet {lime}!pins{default}, lai atvērtu piespraužu izvēlni",

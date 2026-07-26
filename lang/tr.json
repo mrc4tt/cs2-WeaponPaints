@@ -4,6 +4,7 @@
     "wp_info_refresh": "Seçilen skinleri senkronize etmek için {lime}!wp{default} yazın",
     "wp_info_knife": "Bıçak menüsünü açmak için {lime}!knife{default} yazın",
     "wp_info_glove": "Eldiven menüsünü açmak için {lime}!gloves{default} yazın",
+    "wp_info_glove_floatseed": "Eldiven aşınma ve desen değerini ayarlamak için {lime}!gfloat{default} / {lime}!gseed{default} yazın",
     "wp_info_agent": "Ajan menüsünü açmak için {lime}!agents{default} yazın",
     "wp_info_music": "Müzik menüsünü açmak için {lime}!music{default} yazın",
     "wp_info_pin": "Rozet menüsünü açmak için {lime}!pins{default} yazın",

@@ -4,6 +4,7 @@
     "wp_info_refresh": "Введіть {lime}!wp{default}, щоб синхронізувати обрані скіни",
     "wp_info_knife": "Введіть {lime}!knife{default}, щоб відкрити меню ножів",
     "wp_info_glove": "Введіть {lime}!gloves{default}, щоб відкрити меню рукавичок",
+    "wp_info_glove_floatseed": "Введіть {lime}!gfloat{default} / {lime}!gseed{default}, щоб задати зношення та номер патерну рукавичок",
     "wp_info_agent": "Введіть {lime}!agents{default}, щоб відкрити меню агентів",
     "wp_info_music": "Введіть {lime}!music{default}, щоб відкрити музичне меню",
     "wp_info_pin": "Введіть {lime}!pins{default}, щоб відкрити меню значків",

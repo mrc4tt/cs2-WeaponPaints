@@ -4,6 +4,7 @@
     "wp_info_refresh": "Digite {lime}!wp{default} para sincronizar as skins escolhidas",
     "wp_info_knife": "Digite {lime}!knife{default} para abrir o menu de facas",
     "wp_info_glove": "Digite {lime}!gloves{default} para abrir o menu de luvas",
+    "wp_info_glove_floatseed": "Digite {lime}!gfloat{default} / {lime}!gseed{default} para definir o desgaste e o padrão das luvas",
     "wp_info_agent": "Digite {lime}!agents{default} para abrir o menu de agentes",
     "wp_info_music": "Digite {lime}!music{default} para abrir o menu de músicas",
     "wp_info_pin": "Digite {lime}!pins{default} para abrir o menu de broches",

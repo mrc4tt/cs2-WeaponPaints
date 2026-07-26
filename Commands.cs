@@ -110,10 +110,17 @@ public partial class WeaponPaints
         }
 
         if (Config.Additional.GloveEnabled)
+        {
             if (!string.IsNullOrEmpty(Localizer["wp_info_glove"]))
             {
                 player!.Print(Localizer["wp_info_glove"]);
             }
+
+            if (_gBCommandsAllowed && !string.IsNullOrEmpty(Localizer["wp_info_glove_floatseed"]))
+            {
+                player!.Print(Localizer["wp_info_glove_floatseed"]);
+            }
+        }
 
         if (Config.Additional.AgentEnabled)
             if (!string.IsNullOrEmpty(Localizer["wp_info_agent"]))
