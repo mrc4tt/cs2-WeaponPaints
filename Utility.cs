@@ -81,6 +81,11 @@ namespace WeaponPaints
 					        `id` int(11) NOT NULL,
 					        UNIQUE (`steamid`, `weapon_team`) -- Unique constraint
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
+                        @"
+					    CREATE TABLE IF NOT EXISTS `wp_player_refresh` (
+					        `steamid` VARCHAR(32) NOT NULL PRIMARY KEY,
+					        `stamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
                     ];
 
                     foreach (var query in createTableQueries)

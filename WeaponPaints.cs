@@ -103,6 +103,74 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         });
 
         RegisterListeners();
+
+        if (Config.WebRefreshEnabled)
+        {
+            var interval = Math.Max(1f, Config.WebRefreshIntervalSeconds);
+            AddTimer(interval, PollWebRefresh, CounterStrikeSharp.API.Modules.Timers.TimerFlags.REPEAT);
+        }
+    }
+
+    // Guards against overlapping polls when a DB hiccup makes one run longer than the interval.
+    private int _webRefreshPollBusy;
+
+    // Polls wp_player_refresh (written by the website on loadout changes). For online players:
+    // reload their wp_player_* rows into the cache and re-apply, then delete the processed row
+    // stamp-matched. Offline players' rows are deleted outright — the connect flow reads fresh
+    // from the database anyway.
+    private void PollWebRefresh()
+    {
+        if (WeaponSync == null || Database == null)
+            return;
+        if (Interlocked.CompareExchange(ref _webRefreshPollBusy, 1, 0) != 0)
+            return;
+
+        // Snapshot online players here on the main thread — PlayerInfo.From must not run off it.
+        var online = new Dictionary<string, PlayerInfo>();
+        foreach (var player in Utilities.GetPlayers())
+        {
+            if (player is { IsValid: true, IsBot: false, IsHLTV: false, Connected: PlayerConnectedState.Connected })
+                online[player.SteamID.ToString()] = PlayerInfo.From(player);
+        }
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var rows = await WeaponSync.GetWebRefreshRows();
+                foreach (var row in rows)
+                {
+                    if (online.TryGetValue(row.SteamId, out var playerInfo))
+                    {
+                        await WeaponSync.GetPlayerData(playerInfo);
+                        _weaponDataReady[playerInfo.Slot] = true;
+                        await WeaponSync.DeleteWebRefreshRow(row.SteamId, row.Stamp);
+
+                        Server.NextFrame(() =>
+                        {
+                            if (!ulong.TryParse(row.SteamId, out var steamId64))
+                                return;
+                            if (!PlayersBySteamId.TryGetValue(steamId64, out var player) || !player.IsValid)
+                                return;
+
+                            ApplyRefreshedCosmetics(player);
+                        });
+                    }
+                    else
+                    {
+                        await WeaponSync.DeleteWebRefreshRow(row.SteamId, null);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning("Web refresh poll failed: {Message}", ex.Message);
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _webRefreshPollBusy, 0);
+            }
+        });
     }
 
     public void OnConfigParsed(WeaponPaintsConfig config)

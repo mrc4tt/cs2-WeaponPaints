@@ -59,15 +59,7 @@ public partial class WeaponPaints
                     {
                         if (player == null || !player.IsValid) return;
 
-                        GivePlayerGloves(player);
-                        // Single coordinated refresh (incl. knife). Splitting into RefreshKnife +
-                        // RefreshWeapons(excludeKnife:true) ran two regive cycles that raced and
-                        // dropped stickers (e.g. sticker slot 0 vanished after !wp while !sticker,
-                        // which uses this same full call, kept it).
-                        RefreshWeapons(player);
-                        GivePlayerAgent(player);
-                        GivePlayerMusicKit(player);
-                        AddTimer(0.15f, () => GivePlayerPin(player), CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
+                        ApplyRefreshedCosmetics(player);
                     });
                 }
                 catch (Exception)
@@ -77,11 +69,7 @@ public partial class WeaponPaints
                     {
                         if (player == null || !player.IsValid) return;
 
-                        GivePlayerGloves(player);
-                        RefreshWeapons(player);
-                        GivePlayerAgent(player);
-                        GivePlayerMusicKit(player);
-                        AddTimer(0.15f, () => GivePlayerPin(player), CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
+                        ApplyRefreshedCosmetics(player);
                     });
                 }
             });
@@ -91,6 +79,21 @@ public partial class WeaponPaints
         {
             player.Print(Localizer["wp_command_refresh_done"]);
         }
+    }
+
+    // Main-thread only. Shared by !wp and the web-refresh poller — call after GetPlayerData
+    // has repopulated the caches.
+    internal void ApplyRefreshedCosmetics(CCSPlayerController player)
+    {
+        GivePlayerGloves(player);
+        // Single coordinated refresh (incl. knife). Splitting into RefreshKnife +
+        // RefreshWeapons(excludeKnife:true) ran two regive cycles that raced and
+        // dropped stickers (e.g. sticker slot 0 vanished after !wp while !sticker,
+        // which uses this same full call, kept it).
+        RefreshWeapons(player);
+        GivePlayerAgent(player);
+        GivePlayerMusicKit(player);
+        AddTimer(0.15f, () => GivePlayerPin(player), CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
     }
 
     private void OnCommandWS(CCSPlayerController? player, CommandInfo command)

@@ -90,7 +90,7 @@ namespace WeaponPaints
     public class WeaponPaintsConfig : BasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 17;
+        public override int Version { get; set; } = 18;
 
         [JsonPropertyName("DatabaseHost")]
         public string DatabaseHost { get; set; } = "";
@@ -121,6 +121,15 @@ namespace WeaponPaints
 
         [JsonPropertyName("Website")]
         public string Website { get; set; } = "example.com/skins";
+
+        // Live web refresh: the website upserts a row into wp_player_refresh whenever a player
+        // changes their loadout; the plugin polls that table and re-applies the player's skins
+        // without them typing !wp.
+        [JsonPropertyName("WebRefreshEnabled")]
+        public bool WebRefreshEnabled { get; set; } = true;
+
+        [JsonPropertyName("WebRefreshIntervalSeconds")]
+        public int WebRefreshIntervalSeconds { get; set; } = 4;
 
         [JsonPropertyName("SkinApiURL")]
         public string SkinApiURL { get; set; } = "https://cdn.jsdelivr.net/gh/ByMykel/CSGO-API@main/public/api";

@@ -54,6 +54,32 @@ internal class WeaponSynchronization
         }
     }
 
+    internal record struct WebRefreshRow(string SteamId, DateTime Stamp);
+
+    internal async Task<List<WebRefreshRow>> GetWebRefreshRows()
+    {
+        await using var connection = await _database.GetConnectionAsync();
+        var rows = await connection.QueryAsync<(string SteamId, DateTime Stamp)>(
+            "SELECT `steamid`, `stamp` FROM `wp_player_refresh`");
+        return rows.Select(r => new WebRefreshRow(r.SteamId, r.Stamp)).ToList();
+    }
+
+    // stamp == null → unconditional delete (offline players). With stamp, the delete only
+    // removes the exact row we processed — a newer web edit that bumped `stamp` mid-refresh
+    // keeps its row and gets picked up on the next poll.
+    internal async Task DeleteWebRefreshRow(string steamId, DateTime? stamp)
+    {
+        await using var connection = await _database.GetConnectionAsync();
+        if (stamp is null)
+            await connection.ExecuteAsync(
+                "DELETE FROM `wp_player_refresh` WHERE `steamid` = @steamId",
+                new { steamId });
+        else
+            await connection.ExecuteAsync(
+                "DELETE FROM `wp_player_refresh` WHERE `steamid` = @steamId AND `stamp` = @stamp",
+                new { steamId, stamp });
+    }
+
     private async Task GetKnifeFromDatabaseAsync(PlayerInfo? player, MySqlConnection connection)
     {
         try
