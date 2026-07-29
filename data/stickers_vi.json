@@ -52773,5 +52773,2900 @@
         "id": "11234",
         "name": "Hình dán | Poo Cocktail Supreme (Ảnh nổi 3 chiều)",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11234.png"
+    },
+    {
+        "id": "11235",
+        "name": "Hình dán | Vitality (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11235.png"
+    },
+    {
+        "id": "11236",
+        "name": "Hình dán | Vitality (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11236.png"
+    },
+    {
+        "id": "11237",
+        "name": "Hình dán | Vitality (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11237.png"
+    },
+    {
+        "id": "11238",
+        "name": "Hình dán | Natus Vincere (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11238.png"
+    },
+    {
+        "id": "11239",
+        "name": "Hình dán | Natus Vincere (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11239.png"
+    },
+    {
+        "id": "11240",
+        "name": "Hình dán | Natus Vincere (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11240.png"
+    },
+    {
+        "id": "11241",
+        "name": "Hình dán | Falcons (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11241.png"
+    },
+    {
+        "id": "11242",
+        "name": "Hình dán | Falcons (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11242.png"
+    },
+    {
+        "id": "11243",
+        "name": "Hình dán | Falcons (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11243.png"
+    },
+    {
+        "id": "11244",
+        "name": "Hình dán | The Mongolz (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11244.png"
+    },
+    {
+        "id": "11245",
+        "name": "Hình dán | The Mongolz (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11245.png"
+    },
+    {
+        "id": "11246",
+        "name": "Hình dán | The Mongolz (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11246.png"
+    },
+    {
+        "id": "11247",
+        "name": "Hình dán | PARIVISION (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11247.png"
+    },
+    {
+        "id": "11248",
+        "name": "Hình dán | PARIVISION (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11248.png"
+    },
+    {
+        "id": "11249",
+        "name": "Hình dán | PARIVISION (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11249.png"
+    },
+    {
+        "id": "11250",
+        "name": "Hình dán | Aurora (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11250.png"
+    },
+    {
+        "id": "11251",
+        "name": "Hình dán | Aurora (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11251.png"
+    },
+    {
+        "id": "11252",
+        "name": "Hình dán | Aurora (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11252.png"
+    },
+    {
+        "id": "11253",
+        "name": "Hình dán | FURIA (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11253.png"
+    },
+    {
+        "id": "11254",
+        "name": "Hình dán | FURIA (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11254.png"
+    },
+    {
+        "id": "11255",
+        "name": "Hình dán | FURIA (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11255.png"
+    },
+    {
+        "id": "11256",
+        "name": "Hình dán | MOUZ (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11256.png"
+    },
+    {
+        "id": "11257",
+        "name": "Hình dán | MOUZ (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11257.png"
+    },
+    {
+        "id": "11258",
+        "name": "Hình dán | MOUZ (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11258.png"
+    },
+    {
+        "id": "11259",
+        "name": "Hình dán | FUT (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11259.png"
+    },
+    {
+        "id": "11260",
+        "name": "Hình dán | FUT (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11260.png"
+    },
+    {
+        "id": "11261",
+        "name": "Hình dán | FUT (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11261.png"
+    },
+    {
+        "id": "11262",
+        "name": "Hình dán | Team Spirit (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11262.png"
+    },
+    {
+        "id": "11263",
+        "name": "Hình dán | Team Spirit (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11263.png"
+    },
+    {
+        "id": "11264",
+        "name": "Hình dán | Team Spirit (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11264.png"
+    },
+    {
+        "id": "11265",
+        "name": "Hình dán | Astralis (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11265.png"
+    },
+    {
+        "id": "11266",
+        "name": "Hình dán | Astralis (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11266.png"
+    },
+    {
+        "id": "11267",
+        "name": "Hình dán | Astralis (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11267.png"
+    },
+    {
+        "id": "11268",
+        "name": "Hình dán | G2 esports (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11268.png"
+    },
+    {
+        "id": "11269",
+        "name": "Hình dán | G2 esports (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11269.png"
+    },
+    {
+        "id": "11270",
+        "name": "Hình dán | G2 esports (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11270.png"
+    },
+    {
+        "id": "11271",
+        "name": "Hình dán | Legacy (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11271.png"
+    },
+    {
+        "id": "11272",
+        "name": "Hình dán | Legacy (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11272.png"
+    },
+    {
+        "id": "11273",
+        "name": "Hình dán | Legacy (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11273.png"
+    },
+    {
+        "id": "11274",
+        "name": "Hình dán | paiN Gaming (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11274.png"
+    },
+    {
+        "id": "11275",
+        "name": "Hình dán | paiN Gaming (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11275.png"
+    },
+    {
+        "id": "11276",
+        "name": "Hình dán | paiN Gaming (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11276.png"
+    },
+    {
+        "id": "11277",
+        "name": "Hình dán | Monte (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11277.png"
+    },
+    {
+        "id": "11278",
+        "name": "Hình dán | Monte (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11278.png"
+    },
+    {
+        "id": "11279",
+        "name": "Hình dán | Monte (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11279.png"
+    },
+    {
+        "id": "11280",
+        "name": "Hình dán | 9z Team (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11280.png"
+    },
+    {
+        "id": "11281",
+        "name": "Hình dán | 9z Team (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11281.png"
+    },
+    {
+        "id": "11282",
+        "name": "Hình dán | 9z Team (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11282.png"
+    },
+    {
+        "id": "11283",
+        "name": "Hình dán | GamerLegion (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11283.png"
+    },
+    {
+        "id": "11284",
+        "name": "Hình dán | GamerLegion (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11284.png"
+    },
+    {
+        "id": "11285",
+        "name": "Hình dán | GamerLegion (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11285.png"
+    },
+    {
+        "id": "11286",
+        "name": "Hình dán | B8 (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11286.png"
+    },
+    {
+        "id": "11287",
+        "name": "Hình dán | B8 (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11287.png"
+    },
+    {
+        "id": "11288",
+        "name": "Hình dán | B8 (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11288.png"
+    },
+    {
+        "id": "11289",
+        "name": "Hình dán | HEROIC (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11289.png"
+    },
+    {
+        "id": "11290",
+        "name": "Hình dán | HEROIC (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11290.png"
+    },
+    {
+        "id": "11291",
+        "name": "Hình dán | HEROIC (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11291.png"
+    },
+    {
+        "id": "11292",
+        "name": "Hình dán | BetBoom (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11292.png"
+    },
+    {
+        "id": "11293",
+        "name": "Hình dán | BetBoom (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11293.png"
+    },
+    {
+        "id": "11294",
+        "name": "Hình dán | BetBoom (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11294.png"
+    },
+    {
+        "id": "11295",
+        "name": "Hình dán | BIG (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11295.png"
+    },
+    {
+        "id": "11296",
+        "name": "Hình dán | BIG (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11296.png"
+    },
+    {
+        "id": "11297",
+        "name": "Hình dán | BIG (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11297.png"
+    },
+    {
+        "id": "11298",
+        "name": "Hình dán | M80 (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11298.png"
+    },
+    {
+        "id": "11299",
+        "name": "Hình dán | M80 (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11299.png"
+    },
+    {
+        "id": "11300",
+        "name": "Hình dán | M80 (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11300.png"
+    },
+    {
+        "id": "11301",
+        "name": "Hình dán | MIBR (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11301.png"
+    },
+    {
+        "id": "11302",
+        "name": "Hình dán | MIBR (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11302.png"
+    },
+    {
+        "id": "11303",
+        "name": "Hình dán | MIBR (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11303.png"
+    },
+    {
+        "id": "11304",
+        "name": "Hình dán | SINNERS (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11304.png"
+    },
+    {
+        "id": "11305",
+        "name": "Hình dán | SINNERS (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11305.png"
+    },
+    {
+        "id": "11306",
+        "name": "Hình dán | SINNERS (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11306.png"
+    },
+    {
+        "id": "11307",
+        "name": "Hình dán | NRG (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11307.png"
+    },
+    {
+        "id": "11308",
+        "name": "Hình dán | NRG (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11308.png"
+    },
+    {
+        "id": "11309",
+        "name": "Hình dán | NRG (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11309.png"
+    },
+    {
+        "id": "11310",
+        "name": "Hình dán | TYLOO (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11310.png"
+    },
+    {
+        "id": "11311",
+        "name": "Hình dán | TYLOO (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11311.png"
+    },
+    {
+        "id": "11312",
+        "name": "Hình dán | TYLOO (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11312.png"
+    },
+    {
+        "id": "11313",
+        "name": "Hình dán | Sharks Esports (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11313.png"
+    },
+    {
+        "id": "11314",
+        "name": "Hình dán | Sharks Esports (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11314.png"
+    },
+    {
+        "id": "11315",
+        "name": "Hình dán | Sharks Esports (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11315.png"
+    },
+    {
+        "id": "11316",
+        "name": "Hình dán | Gaimin Gladiators (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11316.png"
+    },
+    {
+        "id": "11317",
+        "name": "Hình dán | Gaimin Gladiators (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11317.png"
+    },
+    {
+        "id": "11318",
+        "name": "Hình dán | Gaimin Gladiators (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11318.png"
+    },
+    {
+        "id": "11319",
+        "name": "Hình dán | Team Liquid (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11319.png"
+    },
+    {
+        "id": "11320",
+        "name": "Hình dán | Team Liquid (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11320.png"
+    },
+    {
+        "id": "11321",
+        "name": "Hình dán | Team Liquid (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11321.png"
+    },
+    {
+        "id": "11322",
+        "name": "Hình dán | Lynn Vision (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11322.png"
+    },
+    {
+        "id": "11323",
+        "name": "Hình dán | Lynn Vision (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11323.png"
+    },
+    {
+        "id": "11324",
+        "name": "Hình dán | Lynn Vision (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11324.png"
+    },
+    {
+        "id": "11325",
+        "name": "Hình dán | THUNDERdOWNUNDER (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11325.png"
+    },
+    {
+        "id": "11326",
+        "name": "Hình dán | THUNDERdOWNUNDER (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11326.png"
+    },
+    {
+        "id": "11327",
+        "name": "Hình dán | THUNDERdOWNUNDER (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11327.png"
+    },
+    {
+        "id": "11328",
+        "name": "Hình dán | FlyQuest (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11328.png"
+    },
+    {
+        "id": "11329",
+        "name": "Hình dán | FlyQuest (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11329.png"
+    },
+    {
+        "id": "11330",
+        "name": "Hình dán | FlyQuest (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11330.png"
+    },
+    {
+        "id": "11331",
+        "name": "Hình dán | IEM (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11331.png"
+    },
+    {
+        "id": "11332",
+        "name": "Hình dán | IEM (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11332.png"
+    },
+    {
+        "id": "11333",
+        "name": "Hình dán | IEM (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11333.png"
+    },
+    {
+        "id": "11334",
+        "name": "Hình dán | ZywOo (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11334.png"
+    },
+    {
+        "id": "11335",
+        "name": "Hình dán | ZywOo (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11335.png"
+    },
+    {
+        "id": "11336",
+        "name": "Hình dán | ZywOo (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11336.png"
+    },
+    {
+        "id": "11337",
+        "name": "Hình dán | apEX (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11337.png"
+    },
+    {
+        "id": "11338",
+        "name": "Hình dán | apEX (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11338.png"
+    },
+    {
+        "id": "11339",
+        "name": "Hình dán | apEX (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11339.png"
+    },
+    {
+        "id": "11340",
+        "name": "Hình dán | mezii (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11340.png"
+    },
+    {
+        "id": "11341",
+        "name": "Hình dán | mezii (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11341.png"
+    },
+    {
+        "id": "11342",
+        "name": "Hình dán | mezii (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11342.png"
+    },
+    {
+        "id": "11343",
+        "name": "Hình dán | FlameZ (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11343.png"
+    },
+    {
+        "id": "11344",
+        "name": "Hình dán | FlameZ (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11344.png"
+    },
+    {
+        "id": "11345",
+        "name": "Hình dán | FlameZ (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11345.png"
+    },
+    {
+        "id": "11346",
+        "name": "Hình dán | ropz (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11346.png"
+    },
+    {
+        "id": "11347",
+        "name": "Hình dán | ropz (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11347.png"
+    },
+    {
+        "id": "11348",
+        "name": "Hình dán | ropz (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11348.png"
+    },
+    {
+        "id": "11349",
+        "name": "Hình dán | w0nderful (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11349.png"
+    },
+    {
+        "id": "11350",
+        "name": "Hình dán | w0nderful (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11350.png"
+    },
+    {
+        "id": "11351",
+        "name": "Hình dán | w0nderful (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11351.png"
+    },
+    {
+        "id": "11352",
+        "name": "Hình dán | Aleksib (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11352.png"
+    },
+    {
+        "id": "11353",
+        "name": "Hình dán | Aleksib (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11353.png"
+    },
+    {
+        "id": "11354",
+        "name": "Hình dán | Aleksib (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11354.png"
+    },
+    {
+        "id": "11355",
+        "name": "Hình dán | b1t (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11355.png"
+    },
+    {
+        "id": "11356",
+        "name": "Hình dán | b1t (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11356.png"
+    },
+    {
+        "id": "11357",
+        "name": "Hình dán | b1t (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11357.png"
+    },
+    {
+        "id": "11358",
+        "name": "Hình dán | iM (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11358.png"
+    },
+    {
+        "id": "11359",
+        "name": "Hình dán | iM (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11359.png"
+    },
+    {
+        "id": "11360",
+        "name": "Hình dán | iM (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11360.png"
+    },
+    {
+        "id": "11361",
+        "name": "Hình dán | makazze (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11361.png"
+    },
+    {
+        "id": "11362",
+        "name": "Hình dán | makazze (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11362.png"
+    },
+    {
+        "id": "11363",
+        "name": "Hình dán | makazze (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11363.png"
+    },
+    {
+        "id": "11364",
+        "name": "Hình dán | NiKo (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11364.png"
+    },
+    {
+        "id": "11365",
+        "name": "Hình dán | NiKo (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11365.png"
+    },
+    {
+        "id": "11366",
+        "name": "Hình dán | NiKo (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11366.png"
+    },
+    {
+        "id": "11367",
+        "name": "Hình dán | kyxsan (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11367.png"
+    },
+    {
+        "id": "11368",
+        "name": "Hình dán | kyxsan (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11368.png"
+    },
+    {
+        "id": "11369",
+        "name": "Hình dán | kyxsan (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11369.png"
+    },
+    {
+        "id": "11370",
+        "name": "Hình dán | m0NESY (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11370.png"
+    },
+    {
+        "id": "11371",
+        "name": "Hình dán | m0NESY (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11371.png"
+    },
+    {
+        "id": "11372",
+        "name": "Hình dán | m0NESY (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11372.png"
+    },
+    {
+        "id": "11373",
+        "name": "Hình dán | TeSeS (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11373.png"
+    },
+    {
+        "id": "11374",
+        "name": "Hình dán | TeSeS (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11374.png"
+    },
+    {
+        "id": "11375",
+        "name": "Hình dán | TeSeS (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11375.png"
+    },
+    {
+        "id": "11376",
+        "name": "Hình dán | kyousuke (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11376.png"
+    },
+    {
+        "id": "11377",
+        "name": "Hình dán | kyousuke (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11377.png"
+    },
+    {
+        "id": "11378",
+        "name": "Hình dán | kyousuke (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11378.png"
+    },
+    {
+        "id": "11379",
+        "name": "Hình dán | bLitz (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11379.png"
+    },
+    {
+        "id": "11380",
+        "name": "Hình dán | bLitz (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11380.png"
+    },
+    {
+        "id": "11381",
+        "name": "Hình dán | bLitz (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11381.png"
+    },
+    {
+        "id": "11382",
+        "name": "Hình dán | Techno4K (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11382.png"
+    },
+    {
+        "id": "11383",
+        "name": "Hình dán | Techno4K (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11383.png"
+    },
+    {
+        "id": "11384",
+        "name": "Hình dán | Techno4K (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11384.png"
+    },
+    {
+        "id": "11385",
+        "name": "Hình dán | cobra (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11385.png"
+    },
+    {
+        "id": "11386",
+        "name": "Hình dán | cobra (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11386.png"
+    },
+    {
+        "id": "11387",
+        "name": "Hình dán | cobra (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11387.png"
+    },
+    {
+        "id": "11388",
+        "name": "Hình dán | mzinho (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11388.png"
+    },
+    {
+        "id": "11389",
+        "name": "Hình dán | mzinho (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11389.png"
+    },
+    {
+        "id": "11390",
+        "name": "Hình dán | mzinho (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11390.png"
+    },
+    {
+        "id": "11391",
+        "name": "Hình dán | 910 (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11391.png"
+    },
+    {
+        "id": "11392",
+        "name": "Hình dán | 910 (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11392.png"
+    },
+    {
+        "id": "11393",
+        "name": "Hình dán | 910 (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11393.png"
+    },
+    {
+        "id": "11394",
+        "name": "Hình dán | Jame (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11394.png"
+    },
+    {
+        "id": "11395",
+        "name": "Hình dán | Jame (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11395.png"
+    },
+    {
+        "id": "11396",
+        "name": "Hình dán | Jame (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11396.png"
+    },
+    {
+        "id": "11397",
+        "name": "Hình dán | nota (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11397.png"
+    },
+    {
+        "id": "11398",
+        "name": "Hình dán | nota (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11398.png"
+    },
+    {
+        "id": "11399",
+        "name": "Hình dán | nota (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11399.png"
+    },
+    {
+        "id": "11400",
+        "name": "Hình dán | xiELO (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11400.png"
+    },
+    {
+        "id": "11401",
+        "name": "Hình dán | xiELO (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11401.png"
+    },
+    {
+        "id": "11402",
+        "name": "Hình dán | xiELO (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11402.png"
+    },
+    {
+        "id": "11403",
+        "name": "Hình dán | BELCHONOKK (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11403.png"
+    },
+    {
+        "id": "11404",
+        "name": "Hình dán | BELCHONOKK (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11404.png"
+    },
+    {
+        "id": "11405",
+        "name": "Hình dán | BELCHONOKK (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11405.png"
+    },
+    {
+        "id": "11406",
+        "name": "Hình dán | zweih (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11406.png"
+    },
+    {
+        "id": "11407",
+        "name": "Hình dán | zweih (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11407.png"
+    },
+    {
+        "id": "11408",
+        "name": "Hình dán | zweih (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11408.png"
+    },
+    {
+        "id": "11409",
+        "name": "Hình dán | XANTARES (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11409.png"
+    },
+    {
+        "id": "11410",
+        "name": "Hình dán | XANTARES (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11410.png"
+    },
+    {
+        "id": "11411",
+        "name": "Hình dán | XANTARES (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11411.png"
+    },
+    {
+        "id": "11412",
+        "name": "Hình dán | soulfly (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11412.png"
+    },
+    {
+        "id": "11413",
+        "name": "Hình dán | soulfly (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11413.png"
+    },
+    {
+        "id": "11414",
+        "name": "Hình dán | soulfly (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11414.png"
+    },
+    {
+        "id": "11415",
+        "name": "Hình dán | Wicadia (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11415.png"
+    },
+    {
+        "id": "11416",
+        "name": "Hình dán | Wicadia (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11416.png"
+    },
+    {
+        "id": "11417",
+        "name": "Hình dán | Wicadia (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11417.png"
+    },
+    {
+        "id": "11418",
+        "name": "Hình dán | MAJ3R (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11418.png"
+    },
+    {
+        "id": "11419",
+        "name": "Hình dán | MAJ3R (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11419.png"
+    },
+    {
+        "id": "11420",
+        "name": "Hình dán | MAJ3R (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11420.png"
+    },
+    {
+        "id": "11421",
+        "name": "Hình dán | woxic (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11421.png"
+    },
+    {
+        "id": "11422",
+        "name": "Hình dán | woxic (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11422.png"
+    },
+    {
+        "id": "11423",
+        "name": "Hình dán | woxic (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11423.png"
+    },
+    {
+        "id": "11424",
+        "name": "Hình dán | YEKINDAR (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11424.png"
+    },
+    {
+        "id": "11425",
+        "name": "Hình dán | YEKINDAR (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11425.png"
+    },
+    {
+        "id": "11426",
+        "name": "Hình dán | YEKINDAR (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11426.png"
+    },
+    {
+        "id": "11427",
+        "name": "Hình dán | KSCERATO (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11427.png"
+    },
+    {
+        "id": "11428",
+        "name": "Hình dán | KSCERATO (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11428.png"
+    },
+    {
+        "id": "11429",
+        "name": "Hình dán | KSCERATO (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11429.png"
+    },
+    {
+        "id": "11430",
+        "name": "Hình dán | FalleN (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11430.png"
+    },
+    {
+        "id": "11431",
+        "name": "Hình dán | FalleN (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11431.png"
+    },
+    {
+        "id": "11432",
+        "name": "Hình dán | FalleN (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11432.png"
+    },
+    {
+        "id": "11433",
+        "name": "Hình dán | molodoy (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11433.png"
+    },
+    {
+        "id": "11434",
+        "name": "Hình dán | molodoy (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11434.png"
+    },
+    {
+        "id": "11435",
+        "name": "Hình dán | molodoy (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11435.png"
+    },
+    {
+        "id": "11436",
+        "name": "Hình dán | yuurih (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11436.png"
+    },
+    {
+        "id": "11437",
+        "name": "Hình dán | yuurih (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11437.png"
+    },
+    {
+        "id": "11438",
+        "name": "Hình dán | yuurih (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11438.png"
+    },
+    {
+        "id": "11439",
+        "name": "Hình dán | Jimpphat (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11439.png"
+    },
+    {
+        "id": "11440",
+        "name": "Hình dán | Jimpphat (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11440.png"
+    },
+    {
+        "id": "11441",
+        "name": "Hình dán | Jimpphat (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11441.png"
+    },
+    {
+        "id": "11442",
+        "name": "Hình dán | Brollan (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11442.png"
+    },
+    {
+        "id": "11443",
+        "name": "Hình dán | Brollan (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11443.png"
+    },
+    {
+        "id": "11444",
+        "name": "Hình dán | Brollan (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11444.png"
+    },
+    {
+        "id": "11445",
+        "name": "Hình dán | Spinx (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11445.png"
+    },
+    {
+        "id": "11446",
+        "name": "Hình dán | Spinx (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11446.png"
+    },
+    {
+        "id": "11447",
+        "name": "Hình dán | Spinx (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11447.png"
+    },
+    {
+        "id": "11448",
+        "name": "Hình dán | torzsi (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11448.png"
+    },
+    {
+        "id": "11449",
+        "name": "Hình dán | torzsi (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11449.png"
+    },
+    {
+        "id": "11450",
+        "name": "Hình dán | torzsi (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11450.png"
+    },
+    {
+        "id": "11451",
+        "name": "Hình dán | xertioN (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11451.png"
+    },
+    {
+        "id": "11452",
+        "name": "Hình dán | xertioN (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11452.png"
+    },
+    {
+        "id": "11453",
+        "name": "Hình dán | xertioN (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11453.png"
+    },
+    {
+        "id": "11454",
+        "name": "Hình dán | dem0n (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11454.png"
+    },
+    {
+        "id": "11455",
+        "name": "Hình dán | dem0n (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11455.png"
+    },
+    {
+        "id": "11456",
+        "name": "Hình dán | dem0n (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11456.png"
+    },
+    {
+        "id": "11457",
+        "name": "Hình dán | lauNX (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11457.png"
+    },
+    {
+        "id": "11458",
+        "name": "Hình dán | lauNX (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11458.png"
+    },
+    {
+        "id": "11459",
+        "name": "Hình dán | lauNX (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11459.png"
+    },
+    {
+        "id": "11460",
+        "name": "Hình dán | Krabeni (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11460.png"
+    },
+    {
+        "id": "11461",
+        "name": "Hình dán | Krabeni (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11461.png"
+    },
+    {
+        "id": "11462",
+        "name": "Hình dán | Krabeni (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11462.png"
+    },
+    {
+        "id": "11463",
+        "name": "Hình dán | cmtry (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11463.png"
+    },
+    {
+        "id": "11464",
+        "name": "Hình dán | cmtry (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11464.png"
+    },
+    {
+        "id": "11465",
+        "name": "Hình dán | cmtry (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11465.png"
+    },
+    {
+        "id": "11466",
+        "name": "Hình dán | dziugss (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11466.png"
+    },
+    {
+        "id": "11467",
+        "name": "Hình dán | dziugss (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11467.png"
+    },
+    {
+        "id": "11468",
+        "name": "Hình dán | dziugss (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11468.png"
+    },
+    {
+        "id": "11469",
+        "name": "Hình dán | tN1R (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11469.png"
+    },
+    {
+        "id": "11470",
+        "name": "Hình dán | tN1R (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11470.png"
+    },
+    {
+        "id": "11471",
+        "name": "Hình dán | tN1R (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11471.png"
+    },
+    {
+        "id": "11472",
+        "name": "Hình dán | donk (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11472.png"
+    },
+    {
+        "id": "11473",
+        "name": "Hình dán | donk (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11473.png"
+    },
+    {
+        "id": "11474",
+        "name": "Hình dán | donk (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11474.png"
+    },
+    {
+        "id": "11475",
+        "name": "Hình dán | magixx (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11475.png"
+    },
+    {
+        "id": "11476",
+        "name": "Hình dán | magixx (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11476.png"
+    },
+    {
+        "id": "11477",
+        "name": "Hình dán | magixx (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11477.png"
+    },
+    {
+        "id": "11478",
+        "name": "Hình dán | sh1ro (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11478.png"
+    },
+    {
+        "id": "11479",
+        "name": "Hình dán | sh1ro (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11479.png"
+    },
+    {
+        "id": "11480",
+        "name": "Hình dán | sh1ro (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11480.png"
+    },
+    {
+        "id": "11481",
+        "name": "Hình dán | zont1x (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11481.png"
+    },
+    {
+        "id": "11482",
+        "name": "Hình dán | zont1x (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11482.png"
+    },
+    {
+        "id": "11483",
+        "name": "Hình dán | zont1x (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11483.png"
+    },
+    {
+        "id": "11484",
+        "name": "Hình dán | HooXi (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11484.png"
+    },
+    {
+        "id": "11485",
+        "name": "Hình dán | HooXi (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11485.png"
+    },
+    {
+        "id": "11486",
+        "name": "Hình dán | HooXi (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11486.png"
+    },
+    {
+        "id": "11487",
+        "name": "Hình dán | phzy (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11487.png"
+    },
+    {
+        "id": "11488",
+        "name": "Hình dán | phzy (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11488.png"
+    },
+    {
+        "id": "11489",
+        "name": "Hình dán | phzy (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11489.png"
+    },
+    {
+        "id": "11490",
+        "name": "Hình dán | ryu (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11490.png"
+    },
+    {
+        "id": "11491",
+        "name": "Hình dán | ryu (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11491.png"
+    },
+    {
+        "id": "11492",
+        "name": "Hình dán | ryu (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11492.png"
+    },
+    {
+        "id": "11493",
+        "name": "Hình dán | jabbi (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11493.png"
+    },
+    {
+        "id": "11494",
+        "name": "Hình dán | jabbi (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11494.png"
+    },
+    {
+        "id": "11495",
+        "name": "Hình dán | jabbi (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11495.png"
+    },
+    {
+        "id": "11496",
+        "name": "Hình dán | Staehr (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11496.png"
+    },
+    {
+        "id": "11497",
+        "name": "Hình dán | Staehr (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11497.png"
+    },
+    {
+        "id": "11498",
+        "name": "Hình dán | Staehr (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11498.png"
+    },
+    {
+        "id": "11499",
+        "name": "Hình dán | huNter- (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11499.png"
+    },
+    {
+        "id": "11500",
+        "name": "Hình dán | huNter- (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11500.png"
+    },
+    {
+        "id": "11501",
+        "name": "Hình dán | huNter- (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11501.png"
+    },
+    {
+        "id": "11502",
+        "name": "Hình dán | Heavygod (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11502.png"
+    },
+    {
+        "id": "11503",
+        "name": "Hình dán | Heavygod (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11503.png"
+    },
+    {
+        "id": "11504",
+        "name": "Hình dán | Heavygod (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11504.png"
+    },
+    {
+        "id": "11505",
+        "name": "Hình dán | NertZ (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11505.png"
+    },
+    {
+        "id": "11506",
+        "name": "Hình dán | NertZ (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11506.png"
+    },
+    {
+        "id": "11507",
+        "name": "Hình dán | NertZ (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11507.png"
+    },
+    {
+        "id": "11508",
+        "name": "Hình dán | SunPayus (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11508.png"
+    },
+    {
+        "id": "11509",
+        "name": "Hình dán | SunPayus (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11509.png"
+    },
+    {
+        "id": "11510",
+        "name": "Hình dán | SunPayus (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11510.png"
+    },
+    {
+        "id": "11511",
+        "name": "Hình dán | MATYS (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11511.png"
+    },
+    {
+        "id": "11512",
+        "name": "Hình dán | MATYS (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11512.png"
+    },
+    {
+        "id": "11513",
+        "name": "Hình dán | MATYS (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11513.png"
+    },
+    {
+        "id": "11514",
+        "name": "Hình dán | arT (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11514.png"
+    },
+    {
+        "id": "11515",
+        "name": "Hình dán | arT (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11515.png"
+    },
+    {
+        "id": "11516",
+        "name": "Hình dán | arT (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11516.png"
+    },
+    {
+        "id": "11517",
+        "name": "Hình dán | latto (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11517.png"
+    },
+    {
+        "id": "11518",
+        "name": "Hình dán | latto (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11518.png"
+    },
+    {
+        "id": "11519",
+        "name": "Hình dán | latto (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11519.png"
+    },
+    {
+        "id": "11520",
+        "name": "Hình dán | dumau (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11520.png"
+    },
+    {
+        "id": "11521",
+        "name": "Hình dán | dumau (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11521.png"
+    },
+    {
+        "id": "11522",
+        "name": "Hình dán | dumau (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11522.png"
+    },
+    {
+        "id": "11523",
+        "name": "Hình dán | saadzin (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11523.png"
+    },
+    {
+        "id": "11524",
+        "name": "Hình dán | saadzin (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11524.png"
+    },
+    {
+        "id": "11525",
+        "name": "Hình dán | saadzin (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11525.png"
+    },
+    {
+        "id": "11526",
+        "name": "Hình dán | n1ssim (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11526.png"
+    },
+    {
+        "id": "11527",
+        "name": "Hình dán | n1ssim (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11527.png"
+    },
+    {
+        "id": "11528",
+        "name": "Hình dán | n1ssim (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11528.png"
+    },
+    {
+        "id": "11529",
+        "name": "Hình dán | biguzera (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11529.png"
+    },
+    {
+        "id": "11530",
+        "name": "Hình dán | biguzera (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11530.png"
+    },
+    {
+        "id": "11531",
+        "name": "Hình dán | biguzera (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11531.png"
+    },
+    {
+        "id": "11532",
+        "name": "Hình dán | NQZ (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11532.png"
+    },
+    {
+        "id": "11533",
+        "name": "Hình dán | NQZ (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11533.png"
+    },
+    {
+        "id": "11534",
+        "name": "Hình dán | NQZ (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11534.png"
+    },
+    {
+        "id": "11535",
+        "name": "Hình dán | snow (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11535.png"
+    },
+    {
+        "id": "11536",
+        "name": "Hình dán | snow (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11536.png"
+    },
+    {
+        "id": "11537",
+        "name": "Hình dán | snow (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11537.png"
+    },
+    {
+        "id": "11538",
+        "name": "Hình dán | piriajr (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11538.png"
+    },
+    {
+        "id": "11539",
+        "name": "Hình dán | piriajr (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11539.png"
+    },
+    {
+        "id": "11540",
+        "name": "Hình dán | piriajr (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11540.png"
+    },
+    {
+        "id": "11541",
+        "name": "Hình dán | v$m (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11541.png"
+    },
+    {
+        "id": "11542",
+        "name": "Hình dán | v$m (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11542.png"
+    },
+    {
+        "id": "11543",
+        "name": "Hình dán | v$m (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11543.png"
+    },
+    {
+        "id": "11544",
+        "name": "Hình dán | Rainwaker (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11544.png"
+    },
+    {
+        "id": "11545",
+        "name": "Hình dán | Rainwaker (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11545.png"
+    },
+    {
+        "id": "11546",
+        "name": "Hình dán | Rainwaker (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11546.png"
+    },
+    {
+        "id": "11547",
+        "name": "Hình dán | Bymas (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11547.png"
+    },
+    {
+        "id": "11548",
+        "name": "Hình dán | Bymas (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11548.png"
+    },
+    {
+        "id": "11549",
+        "name": "Hình dán | Bymas (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11549.png"
+    },
+    {
+        "id": "11550",
+        "name": "Hình dán | afro (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11550.png"
+    },
+    {
+        "id": "11551",
+        "name": "Hình dán | afro (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11551.png"
+    },
+    {
+        "id": "11552",
+        "name": "Hình dán | afro (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11552.png"
+    },
+    {
+        "id": "11553",
+        "name": "Hình dán | Gizmy (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11553.png"
+    },
+    {
+        "id": "11554",
+        "name": "Hình dán | Gizmy (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11554.png"
+    },
+    {
+        "id": "11555",
+        "name": "Hình dán | Gizmy (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11555.png"
+    },
+    {
+        "id": "11556",
+        "name": "Hình dán | AZUWU (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11556.png"
+    },
+    {
+        "id": "11557",
+        "name": "Hình dán | AZUWU (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11557.png"
+    },
+    {
+        "id": "11558",
+        "name": "Hình dán | AZUWU (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11558.png"
+    },
+    {
+        "id": "11559",
+        "name": "Hình dán | max (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11559.png"
+    },
+    {
+        "id": "11560",
+        "name": "Hình dán | max (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11560.png"
+    },
+    {
+        "id": "11561",
+        "name": "Hình dán | max (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11561.png"
+    },
+    {
+        "id": "11562",
+        "name": "Hình dán | dgt (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11562.png"
+    },
+    {
+        "id": "11563",
+        "name": "Hình dán | dgt (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11563.png"
+    },
+    {
+        "id": "11564",
+        "name": "Hình dán | dgt (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11564.png"
+    },
+    {
+        "id": "11565",
+        "name": "Hình dán | meyern (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11565.png"
+    },
+    {
+        "id": "11566",
+        "name": "Hình dán | meyern (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11566.png"
+    },
+    {
+        "id": "11567",
+        "name": "Hình dán | meyern (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11567.png"
+    },
+    {
+        "id": "11568",
+        "name": "Hình dán | luchov (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11568.png"
+    },
+    {
+        "id": "11569",
+        "name": "Hình dán | luchov (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11569.png"
+    },
+    {
+        "id": "11570",
+        "name": "Hình dán | luchov (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11570.png"
+    },
+    {
+        "id": "11571",
+        "name": "Hình dán | HUASOPEEK (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11571.png"
+    },
+    {
+        "id": "11572",
+        "name": "Hình dán | HUASOPEEK (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11572.png"
+    },
+    {
+        "id": "11573",
+        "name": "Hình dán | HUASOPEEK (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11573.png"
+    },
+    {
+        "id": "11574",
+        "name": "Hình dán | Snax (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11574.png"
+    },
+    {
+        "id": "11575",
+        "name": "Hình dán | Snax (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11575.png"
+    },
+    {
+        "id": "11576",
+        "name": "Hình dán | Snax (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11576.png"
+    },
+    {
+        "id": "11577",
+        "name": "Hình dán | REZ (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11577.png"
+    },
+    {
+        "id": "11578",
+        "name": "Hình dán | REZ (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11578.png"
+    },
+    {
+        "id": "11579",
+        "name": "Hình dán | REZ (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11579.png"
+    },
+    {
+        "id": "11580",
+        "name": "Hình dán | Tauson (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11580.png"
+    },
+    {
+        "id": "11581",
+        "name": "Hình dán | Tauson (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11581.png"
+    },
+    {
+        "id": "11582",
+        "name": "Hình dán | Tauson (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11582.png"
+    },
+    {
+        "id": "11583",
+        "name": "Hình dán | PR (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11583.png"
+    },
+    {
+        "id": "11584",
+        "name": "Hình dán | PR (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11584.png"
+    },
+    {
+        "id": "11585",
+        "name": "Hình dán | PR (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11585.png"
+    },
+    {
+        "id": "11586",
+        "name": "Hình dán | hypex (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11586.png"
+    },
+    {
+        "id": "11587",
+        "name": "Hình dán | hypex (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11587.png"
+    },
+    {
+        "id": "11588",
+        "name": "Hình dán | hypex (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11588.png"
+    },
+    {
+        "id": "11589",
+        "name": "Hình dán | s1zzi (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11589.png"
+    },
+    {
+        "id": "11590",
+        "name": "Hình dán | s1zzi (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11590.png"
+    },
+    {
+        "id": "11591",
+        "name": "Hình dán | s1zzi (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11591.png"
+    },
+    {
+        "id": "11592",
+        "name": "Hình dán | npl (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11592.png"
+    },
+    {
+        "id": "11593",
+        "name": "Hình dán | npl (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11593.png"
+    },
+    {
+        "id": "11594",
+        "name": "Hình dán | npl (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11594.png"
+    },
+    {
+        "id": "11595",
+        "name": "Hình dán | esenthial (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11595.png"
+    },
+    {
+        "id": "11596",
+        "name": "Hình dán | esenthial (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11596.png"
+    },
+    {
+        "id": "11597",
+        "name": "Hình dán | esenthial (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11597.png"
+    },
+    {
+        "id": "11598",
+        "name": "Hình dán | alex666 (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11598.png"
+    },
+    {
+        "id": "11599",
+        "name": "Hình dán | alex666 (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11599.png"
+    },
+    {
+        "id": "11600",
+        "name": "Hình dán | alex666 (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11600.png"
+    },
+    {
+        "id": "11601",
+        "name": "Hình dán | kensizor (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11601.png"
+    },
+    {
+        "id": "11602",
+        "name": "Hình dán | kensizor (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11602.png"
+    },
+    {
+        "id": "11603",
+        "name": "Hình dán | kensizor (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11603.png"
+    },
+    {
+        "id": "11604",
+        "name": "Hình dán | xfl0ud (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11604.png"
+    },
+    {
+        "id": "11605",
+        "name": "Hình dán | xfl0ud (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11605.png"
+    },
+    {
+        "id": "11606",
+        "name": "Hình dán | xfl0ud (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11606.png"
+    },
+    {
+        "id": "11607",
+        "name": "Hình dán | nilo (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11607.png"
+    },
+    {
+        "id": "11608",
+        "name": "Hình dán | nilo (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11608.png"
+    },
+    {
+        "id": "11609",
+        "name": "Hình dán | nilo (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11609.png"
+    },
+    {
+        "id": "11610",
+        "name": "Hình dán | susp (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11610.png"
+    },
+    {
+        "id": "11611",
+        "name": "Hình dán | susp (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11611.png"
+    },
+    {
+        "id": "11612",
+        "name": "Hình dán | susp (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11612.png"
+    },
+    {
+        "id": "11613",
+        "name": "Hình dán | Chr1zN (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11613.png"
+    },
+    {
+        "id": "11614",
+        "name": "Hình dán | Chr1zN (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11614.png"
+    },
+    {
+        "id": "11615",
+        "name": "Hình dán | Chr1zN (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11615.png"
+    },
+    {
+        "id": "11616",
+        "name": "Hình dán | yxngstxr (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11616.png"
+    },
+    {
+        "id": "11617",
+        "name": "Hình dán | yxngstxr (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11617.png"
+    },
+    {
+        "id": "11618",
+        "name": "Hình dán | yxngstxr (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11618.png"
+    },
+    {
+        "id": "11619",
+        "name": "Hình dán | Boombl4 (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11619.png"
+    },
+    {
+        "id": "11620",
+        "name": "Hình dán | Boombl4 (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11620.png"
+    },
+    {
+        "id": "11621",
+        "name": "Hình dán | Boombl4 (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11621.png"
+    },
+    {
+        "id": "11622",
+        "name": "Hình dán | zorte (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11622.png"
+    },
+    {
+        "id": "11623",
+        "name": "Hình dán | zorte (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11623.png"
+    },
+    {
+        "id": "11624",
+        "name": "Hình dán | zorte (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11624.png"
+    },
+    {
+        "id": "11625",
+        "name": "Hình dán | S1ren (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11625.png"
+    },
+    {
+        "id": "11626",
+        "name": "Hình dán | S1ren (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11626.png"
+    },
+    {
+        "id": "11627",
+        "name": "Hình dán | S1ren (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11627.png"
+    },
+    {
+        "id": "11628",
+        "name": "Hình dán | FL4MUS (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11628.png"
+    },
+    {
+        "id": "11629",
+        "name": "Hình dán | FL4MUS (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11629.png"
+    },
+    {
+        "id": "11630",
+        "name": "Hình dán | FL4MUS (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11630.png"
+    },
+    {
+        "id": "11631",
+        "name": "Hình dán | Magnojez (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11631.png"
+    },
+    {
+        "id": "11632",
+        "name": "Hình dán | Magnojez (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11632.png"
+    },
+    {
+        "id": "11633",
+        "name": "Hình dán | Magnojez (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11633.png"
+    },
+    {
+        "id": "11634",
+        "name": "Hình dán | tabseN (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11634.png"
+    },
+    {
+        "id": "11635",
+        "name": "Hình dán | tabseN (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11635.png"
+    },
+    {
+        "id": "11636",
+        "name": "Hình dán | tabseN (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11636.png"
+    },
+    {
+        "id": "11637",
+        "name": "Hình dán | JDC (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11637.png"
+    },
+    {
+        "id": "11638",
+        "name": "Hình dán | JDC (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11638.png"
+    },
+    {
+        "id": "11639",
+        "name": "Hình dán | JDC (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11639.png"
+    },
+    {
+        "id": "11640",
+        "name": "Hình dán | faveN (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11640.png"
+    },
+    {
+        "id": "11641",
+        "name": "Hình dán | faveN (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11641.png"
+    },
+    {
+        "id": "11642",
+        "name": "Hình dán | faveN (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11642.png"
+    },
+    {
+        "id": "11643",
+        "name": "Hình dán | blameF (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11643.png"
+    },
+    {
+        "id": "11644",
+        "name": "Hình dán | blameF (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11644.png"
+    },
+    {
+        "id": "11645",
+        "name": "Hình dán | blameF (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11645.png"
+    },
+    {
+        "id": "11646",
+        "name": "Hình dán | gr1ks (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11646.png"
+    },
+    {
+        "id": "11647",
+        "name": "Hình dán | gr1ks (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11647.png"
+    },
+    {
+        "id": "11648",
+        "name": "Hình dán | gr1ks (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11648.png"
+    },
+    {
+        "id": "11649",
+        "name": "Hình dán | Swisher (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11649.png"
+    },
+    {
+        "id": "11650",
+        "name": "Hình dán | Swisher (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11650.png"
+    },
+    {
+        "id": "11651",
+        "name": "Hình dán | Swisher (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11651.png"
+    },
+    {
+        "id": "11652",
+        "name": "Hình dán | Lake (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11652.png"
+    },
+    {
+        "id": "11653",
+        "name": "Hình dán | Lake (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11653.png"
+    },
+    {
+        "id": "11654",
+        "name": "Hình dán | Lake (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11654.png"
+    },
+    {
+        "id": "11655",
+        "name": "Hình dán | JBa (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11655.png"
+    },
+    {
+        "id": "11656",
+        "name": "Hình dán | JBa (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11656.png"
+    },
+    {
+        "id": "11657",
+        "name": "Hình dán | JBa (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11657.png"
+    },
+    {
+        "id": "11658",
+        "name": "Hình dán | s1n (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11658.png"
+    },
+    {
+        "id": "11659",
+        "name": "Hình dán | s1n (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11659.png"
+    },
+    {
+        "id": "11660",
+        "name": "Hình dán | s1n (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11660.png"
+    },
+    {
+        "id": "11661",
+        "name": "Hình dán | slaxz- (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11661.png"
+    },
+    {
+        "id": "11662",
+        "name": "Hình dán | slaxz- (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11662.png"
+    },
+    {
+        "id": "11663",
+        "name": "Hình dán | slaxz- (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11663.png"
+    },
+    {
+        "id": "11664",
+        "name": "Hình dán | LNZ (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11664.png"
+    },
+    {
+        "id": "11665",
+        "name": "Hình dán | LNZ (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11665.png"
+    },
+    {
+        "id": "11666",
+        "name": "Hình dán | LNZ (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11666.png"
+    },
+    {
+        "id": "11667",
+        "name": "Hình dán | insani (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11667.png"
+    },
+    {
+        "id": "11668",
+        "name": "Hình dán | insani (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11668.png"
+    },
+    {
+        "id": "11669",
+        "name": "Hình dán | insani (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11669.png"
+    },
+    {
+        "id": "11670",
+        "name": "Hình dán | brnz4n (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11670.png"
+    },
+    {
+        "id": "11671",
+        "name": "Hình dán | brnz4n (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11671.png"
+    },
+    {
+        "id": "11672",
+        "name": "Hình dán | brnz4n (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11672.png"
+    },
+    {
+        "id": "11673",
+        "name": "Hình dán | venomzera (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11673.png"
+    },
+    {
+        "id": "11674",
+        "name": "Hình dán | venomzera (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11674.png"
+    },
+    {
+        "id": "11675",
+        "name": "Hình dán | venomzera (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11675.png"
+    },
+    {
+        "id": "11676",
+        "name": "Hình dán | kl1m (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11676.png"
+    },
+    {
+        "id": "11677",
+        "name": "Hình dán | kl1m (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11677.png"
+    },
+    {
+        "id": "11678",
+        "name": "Hình dán | kl1m (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11678.png"
+    },
+    {
+        "id": "11679",
+        "name": "Hình dán | beastik (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11679.png"
+    },
+    {
+        "id": "11680",
+        "name": "Hình dán | beastik (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11680.png"
+    },
+    {
+        "id": "11681",
+        "name": "Hình dán | beastik (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11681.png"
+    },
+    {
+        "id": "11682",
+        "name": "Hình dán | SHOCK (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11682.png"
+    },
+    {
+        "id": "11683",
+        "name": "Hình dán | SHOCK (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11683.png"
+    },
+    {
+        "id": "11684",
+        "name": "Hình dán | SHOCK (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11684.png"
+    },
+    {
+        "id": "11685",
+        "name": "Hình dán | MoDo (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11685.png"
+    },
+    {
+        "id": "11686",
+        "name": "Hình dán | MoDo (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11686.png"
+    },
+    {
+        "id": "11687",
+        "name": "Hình dán | MoDo (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11687.png"
+    },
+    {
+        "id": "11688",
+        "name": "Hình dán | kisserek (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11688.png"
+    },
+    {
+        "id": "11689",
+        "name": "Hình dán | kisserek (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11689.png"
+    },
+    {
+        "id": "11690",
+        "name": "Hình dán | kisserek (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11690.png"
+    },
+    {
+        "id": "11691",
+        "name": "Hình dán | stressarN (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11691.png"
+    },
+    {
+        "id": "11692",
+        "name": "Hình dán | stressarN (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11692.png"
+    },
+    {
+        "id": "11693",
+        "name": "Hình dán | stressarN (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11693.png"
+    },
+    {
+        "id": "11694",
+        "name": "Hình dán | Grim (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11694.png"
+    },
+    {
+        "id": "11695",
+        "name": "Hình dán | Grim (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11695.png"
+    },
+    {
+        "id": "11696",
+        "name": "Hình dán | Grim (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11696.png"
+    },
+    {
+        "id": "11697",
+        "name": "Hình dán | br0 (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11697.png"
+    },
+    {
+        "id": "11698",
+        "name": "Hình dán | br0 (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11698.png"
+    },
+    {
+        "id": "11699",
+        "name": "Hình dán | br0 (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11699.png"
+    },
+    {
+        "id": "11700",
+        "name": "Hình dán | oSee (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11700.png"
+    },
+    {
+        "id": "11701",
+        "name": "Hình dán | oSee (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11701.png"
+    },
+    {
+        "id": "11702",
+        "name": "Hình dán | oSee (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11702.png"
+    },
+    {
+        "id": "11703",
+        "name": "Hình dán | Sonic (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11703.png"
+    },
+    {
+        "id": "11704",
+        "name": "Hình dán | Sonic (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11704.png"
+    },
+    {
+        "id": "11705",
+        "name": "Hình dán | Sonic (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11705.png"
+    },
+    {
+        "id": "11706",
+        "name": "Hình dán | nitr0 (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11706.png"
+    },
+    {
+        "id": "11707",
+        "name": "Hình dán | nitr0 (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11707.png"
+    },
+    {
+        "id": "11708",
+        "name": "Hình dán | nitr0 (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11708.png"
+    },
+    {
+        "id": "11709",
+        "name": "Hình dán | Mercury (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11709.png"
+    },
+    {
+        "id": "11710",
+        "name": "Hình dán | Mercury (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11710.png"
+    },
+    {
+        "id": "11711",
+        "name": "Hình dán | Mercury (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11711.png"
+    },
+    {
+        "id": "11712",
+        "name": "Hình dán | Jee (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11712.png"
+    },
+    {
+        "id": "11713",
+        "name": "Hình dán | Jee (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11713.png"
+    },
+    {
+        "id": "11714",
+        "name": "Hình dán | Jee (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11714.png"
+    },
+    {
+        "id": "11715",
+        "name": "Hình dán | JamYoung (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11715.png"
+    },
+    {
+        "id": "11716",
+        "name": "Hình dán | JamYoung (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11716.png"
+    },
+    {
+        "id": "11717",
+        "name": "Hình dán | JamYoung (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11717.png"
+    },
+    {
+        "id": "11718",
+        "name": "Hình dán | Moseyuh (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11718.png"
+    },
+    {
+        "id": "11719",
+        "name": "Hình dán | Moseyuh (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11719.png"
+    },
+    {
+        "id": "11720",
+        "name": "Hình dán | Moseyuh (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11720.png"
+    },
+    {
+        "id": "11721",
+        "name": "Hình dán | Zero (Foil, Ranked)  | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11721.png"
+    },
+    {
+        "id": "11722",
+        "name": "Hình dán | Zero (Holo, Ranked)  | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11722.png"
+    },
+    {
+        "id": "11723",
+        "name": "Hình dán | Zero (Gold, Ranked)  | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11723.png"
+    },
+    {
+        "id": "11724",
+        "name": "Hình dán | gafolo (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11724.png"
+    },
+    {
+        "id": "11725",
+        "name": "Hình dán | gafolo (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11725.png"
+    },
+    {
+        "id": "11726",
+        "name": "Hình dán | gafolo (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11726.png"
+    },
+    {
+        "id": "11727",
+        "name": "Hình dán | koala (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11727.png"
+    },
+    {
+        "id": "11728",
+        "name": "Hình dán | koala (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11728.png"
+    },
+    {
+        "id": "11729",
+        "name": "Hình dán | koala (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11729.png"
+    },
+    {
+        "id": "11730",
+        "name": "Hình dán | maxxkor (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11730.png"
+    },
+    {
+        "id": "11731",
+        "name": "Hình dán | maxxkor (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11731.png"
+    },
+    {
+        "id": "11732",
+        "name": "Hình dán | maxxkor (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11732.png"
+    },
+    {
+        "id": "11733",
+        "name": "Hình dán | rdnzao (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11733.png"
+    },
+    {
+        "id": "11734",
+        "name": "Hình dán | rdnzao (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11734.png"
+    },
+    {
+        "id": "11735",
+        "name": "Hình dán | rdnzao (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11735.png"
+    },
+    {
+        "id": "11736",
+        "name": "Hình dán | doc (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11736.png"
+    },
+    {
+        "id": "11737",
+        "name": "Hình dán | doc (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11737.png"
+    },
+    {
+        "id": "11738",
+        "name": "Hình dán | doc (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11738.png"
+    },
+    {
+        "id": "11739",
+        "name": "Hình dán | HEN1 (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11739.png"
+    },
+    {
+        "id": "11740",
+        "name": "Hình dán | HEN1 (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11740.png"
+    },
+    {
+        "id": "11741",
+        "name": "Hình dán | HEN1 (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11741.png"
+    },
+    {
+        "id": "11742",
+        "name": "Hình dán | felps (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11742.png"
+    },
+    {
+        "id": "11743",
+        "name": "Hình dán | felps (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11743.png"
+    },
+    {
+        "id": "11744",
+        "name": "Hình dán | felps (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11744.png"
+    },
+    {
+        "id": "11745",
+        "name": "Hình dán | NEKiZ (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11745.png"
+    },
+    {
+        "id": "11746",
+        "name": "Hình dán | NEKiZ (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11746.png"
+    },
+    {
+        "id": "11747",
+        "name": "Hình dán | NEKiZ (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11747.png"
+    },
+    {
+        "id": "11748",
+        "name": "Hình dán | luken (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11748.png"
+    },
+    {
+        "id": "11749",
+        "name": "Hình dán | luken (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11749.png"
+    },
+    {
+        "id": "11750",
+        "name": "Hình dán | luken (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11750.png"
+    },
+    {
+        "id": "11751",
+        "name": "Hình dán | JOTA (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11751.png"
+    },
+    {
+        "id": "11752",
+        "name": "Hình dán | JOTA (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11752.png"
+    },
+    {
+        "id": "11753",
+        "name": "Hình dán | JOTA (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11753.png"
+    },
+    {
+        "id": "11754",
+        "name": "Hình dán | EliGE (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11754.png"
+    },
+    {
+        "id": "11755",
+        "name": "Hình dán | EliGE (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11755.png"
+    },
+    {
+        "id": "11756",
+        "name": "Hình dán | EliGE (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11756.png"
+    },
+    {
+        "id": "11757",
+        "name": "Hình dán | ultimate (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11757.png"
+    },
+    {
+        "id": "11758",
+        "name": "Hình dán | ultimate (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11758.png"
+    },
+    {
+        "id": "11759",
+        "name": "Hình dán | ultimate (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11759.png"
+    },
+    {
+        "id": "11760",
+        "name": "Hình dán | malbsMd (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11760.png"
+    },
+    {
+        "id": "11761",
+        "name": "Hình dán | malbsMd (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11761.png"
+    },
+    {
+        "id": "11762",
+        "name": "Hình dán | malbsMd (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11762.png"
+    },
+    {
+        "id": "11763",
+        "name": "Hình dán | siuhy (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11763.png"
+    },
+    {
+        "id": "11764",
+        "name": "Hình dán | siuhy (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11764.png"
+    },
+    {
+        "id": "11765",
+        "name": "Hình dán | siuhy (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11765.png"
+    },
+    {
+        "id": "11766",
+        "name": "Hình dán | NAF (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11766.png"
+    },
+    {
+        "id": "11767",
+        "name": "Hình dán | NAF (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11767.png"
+    },
+    {
+        "id": "11768",
+        "name": "Hình dán | NAF (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11768.png"
+    },
+    {
+        "id": "11769",
+        "name": "Hình dán | westmelon (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11769.png"
+    },
+    {
+        "id": "11770",
+        "name": "Hình dán | westmelon (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11770.png"
+    },
+    {
+        "id": "11771",
+        "name": "Hình dán | westmelon (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11771.png"
+    },
+    {
+        "id": "11772",
+        "name": "Hình dán | z4KR (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11772.png"
+    },
+    {
+        "id": "11773",
+        "name": "Hình dán | z4KR (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11773.png"
+    },
+    {
+        "id": "11774",
+        "name": "Hình dán | z4KR (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11774.png"
+    },
+    {
+        "id": "11775",
+        "name": "Hình dán | Starry (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11775.png"
+    },
+    {
+        "id": "11776",
+        "name": "Hình dán | Starry (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11776.png"
+    },
+    {
+        "id": "11777",
+        "name": "Hình dán | Starry (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11777.png"
+    },
+    {
+        "id": "11778",
+        "name": "Hình dán | EmiliaQAQ (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11778.png"
+    },
+    {
+        "id": "11779",
+        "name": "Hình dán | EmiliaQAQ (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11779.png"
+    },
+    {
+        "id": "11780",
+        "name": "Hình dán | EmiliaQAQ (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11780.png"
+    },
+    {
+        "id": "11781",
+        "name": "Hình dán | C4LLM3SU3 (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11781.png"
+    },
+    {
+        "id": "11782",
+        "name": "Hình dán | C4LLM3SU3 (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11782.png"
+    },
+    {
+        "id": "11783",
+        "name": "Hình dán | C4LLM3SU3 (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11783.png"
+    },
+    {
+        "id": "11784",
+        "name": "Hình dán | dexter (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11784.png"
+    },
+    {
+        "id": "11785",
+        "name": "Hình dán | dexter (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11785.png"
+    },
+    {
+        "id": "11786",
+        "name": "Hình dán | dexter (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11786.png"
+    },
+    {
+        "id": "11787",
+        "name": "Hình dán | Liazz (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11787.png"
+    },
+    {
+        "id": "11788",
+        "name": "Hình dán | Liazz (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11788.png"
+    },
+    {
+        "id": "11789",
+        "name": "Hình dán | Liazz (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11789.png"
+    },
+    {
+        "id": "11790",
+        "name": "Hình dán | aliStair (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11790.png"
+    },
+    {
+        "id": "11791",
+        "name": "Hình dán | aliStair (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11791.png"
+    },
+    {
+        "id": "11792",
+        "name": "Hình dán | aliStair (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11792.png"
+    },
+    {
+        "id": "11793",
+        "name": "Hình dán | asap (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11793.png"
+    },
+    {
+        "id": "11794",
+        "name": "Hình dán | asap (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11794.png"
+    },
+    {
+        "id": "11795",
+        "name": "Hình dán | asap (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11795.png"
+    },
+    {
+        "id": "11796",
+        "name": "Hình dán | TjP (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11796.png"
+    },
+    {
+        "id": "11797",
+        "name": "Hình dán | TjP (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11797.png"
+    },
+    {
+        "id": "11798",
+        "name": "Hình dán | TjP (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11798.png"
+    },
+    {
+        "id": "11799",
+        "name": "Hình dán | INS (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11799.png"
+    },
+    {
+        "id": "11800",
+        "name": "Hình dán | INS (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11800.png"
+    },
+    {
+        "id": "11801",
+        "name": "Hình dán | INS (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11801.png"
+    },
+    {
+        "id": "11802",
+        "name": "Hình dán | jks (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11802.png"
+    },
+    {
+        "id": "11803",
+        "name": "Hình dán | jks (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11803.png"
+    },
+    {
+        "id": "11804",
+        "name": "Hình dán | jks (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11804.png"
+    },
+    {
+        "id": "11805",
+        "name": "Hình dán | vexite (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11805.png"
+    },
+    {
+        "id": "11806",
+        "name": "Hình dán | vexite (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11806.png"
+    },
+    {
+        "id": "11807",
+        "name": "Hình dán | vexite (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11807.png"
+    },
+    {
+        "id": "11808",
+        "name": "Hình dán | story (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11808.png"
+    },
+    {
+        "id": "11809",
+        "name": "Hình dán | story (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11809.png"
+    },
+    {
+        "id": "11810",
+        "name": "Hình dán | story (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11810.png"
+    },
+    {
+        "id": "11811",
+        "name": "Hình dán | nettik (Foil, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11811.png"
+    },
+    {
+        "id": "11812",
+        "name": "Hình dán | nettik (Holo, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11812.png"
+    },
+    {
+        "id": "11813",
+        "name": "Hình dán | nettik (Gold, Ranked) | Cologne 2026",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/sticker-11813.png"
     }
 ]
