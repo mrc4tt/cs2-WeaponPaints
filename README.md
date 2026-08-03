@@ -17,12 +17,12 @@ Unfinished, unoptimized and not fully functional ugly demo weapon paints plugin 
 - Translations support, submit a PR if you want to share your translation
 
 ## Images
-**Are you looking after images? - You can find them here: [WeaponPaints IMG](https://git.miksen.me/mikkel/weaponpaints-img)**
+**Are you looking for images? - You can find them here: [WeaponPaints IMG](https://git.miksen.me/mikkel/weaponpaints-img)**
 
 ## ⚙️ Requirements
 **Ensure all the following dependencies are installed before proceeding**
 - [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
-- [CS2MenuManager by schwarper](https://github.com/schwarper/CS2MenuManager)
+- [CS2MenuManager by schwarper (forked)](https://git.miksen.me/mikkel/CS2MenuManager/releases)
 - MySQL database
 
 ## CS2 Server
@@ -80,7 +80,7 @@ Unfinished, unoptimized and not fully functional ugly demo weapon paints plugin 
 **Skins are not changing:**<br />
 Set FollowCSGOGuidelines to false in cssharp’s core.jcon config
 
-**Database error table does not exist:**<br />
+**Database error: table does not exist**<br />
 The plugin is not loaded or configured with MySQL credentials. Tables are auto-created by the plugin.
 
-### Use this plugin at your own risk! Using this may lead to GSLT ban or something else Valve comes up with. [Valve Server guidelines](https://blog.counter-strike.net/index.php/server_guidelines/)
+### Use this plugin at your own risk! Using this may lead to a GSLT ban or something else Valve comes up with. [Valve Server guidelines](https://blog.counter-strike.net/index.php/server_guidelines/)
