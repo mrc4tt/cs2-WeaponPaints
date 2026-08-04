@@ -26,6 +26,29 @@ or called. The entries are shipped ahead of the code that will use them.
 
 `CAttributeList_SetOrAddAttributeValueByName` (already shipped, key keeps its underscore form — renaming
 it breaks the existing `GameData.GetSignature` call) resolves to `0x1b5e3a0` / `0x180f2add0` on this build.
+Its shipped pattern was regenerated from scratch in IDA and came back byte-for-byte identical, so that
+entry is sound.
+
+## `UpdateItemView` (already shipped, and it had drifted)
+
+`CEconItemView::Update` — linux `0x1b5e570`, windows `0x180f26fa0`. Takes `(this, pItem)`, falls back to
+`*(this+96)` when the second argument is null (which is why the plugin can call it with `nint.Zero` —
+field 96 is the `CEconItem*` that `operator=` copies), then walks the item's attribute array at
+`*(pItem+32)` with a 16-byte stride and rebuilds the networked attribute block at `this+240`. The linux
+body references the `kill eater` attribute, confirming it is the econ view rebuild.
+
+Located by the call pair in `SetWearables`, which on both platforms does
+`operator=(view, src)` immediately followed by `Update(view, 0)`.
+
+**The windows signature was stale and matched nothing on build 14174.** Unlike the loadout entries above,
+this one is resolved at static-field initialisation in `Variables.cs`, not lazily — so it took the whole
+plugin down on windows rather than failing at the call site. The function had not moved; only its prologue
+changed (`55 56 57` became `53 57`), which is why the old pattern's first ten bytes still matched. The
+linux signature was re-checked at the same time and is still unique and correct.
+
+This entry is **fork-local** — upstream `Nereziel/cs2-WeaponPaints` and `daffyyyy/cs2-WeaponPaints` ship
+only `CAttributeList_SetOrAddAttributeValueByName`, so there is no upstream to sync it from. Re-verify it
+on both binaries every CS2 update.
 
 ### Weakest link
 

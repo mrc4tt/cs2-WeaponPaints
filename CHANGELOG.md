@@ -7,6 +7,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **The plugin could not load on Windows.** The `UpdateItemView` signature no longer matched anything in
+  `server.dll` on CS2 build 14174, and that entry is resolved at static-field initialisation
+  (`Variables.cs`) rather than lazily, so the failure took the whole plugin down rather than just the one
+  call. The function itself has not moved — only its prologue changed, `55 56 57` becoming `53 57` — so
+  the old pattern's first ten bytes still matched and then diverged. Re-signed and confirmed unique. The
+  Linux signature for the same function was re-checked and is still correct, so Linux was never affected.
+
 - **Sticker changes could fail to render until a map change.** The wear value a weapon carries is part of
   how CS2 decides whether an already-generated weapon material can be reused. The old code oscillated wear
   by ±0.0005 around the real value, which only ever produced two values — editing a sticker flipped wear
