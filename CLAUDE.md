@@ -109,6 +109,16 @@ CSSharp events and listeners fire on the game's main thread. Database work runs 
 - Player state keyed by `player.Slot` must be cleared in `OnPlayerDisconnect` (it already does this for every `GPlayers*` dictionary, `OriginalPawnModel`, `_temporaryPlayerWeaponWear`, `CommandsCooldown`, and `PlayersBySteamId` — add to that block if you introduce a new one).
 - Prefer `async`/`await` with `QueryAsync` over blocking `Query` inside DB helpers. The `GetPlayerData` helpers are now `async Task` and `await`ed in sequence; don't reintroduce sync Dapper calls.
 
+## Signatures and gamedata sourcing
+
+`gamedata/weaponpaints.json` currently ships one signature (`CAttributeList_SetOrAddAttributeValueByName`). `rosetta-cs2.json` at the repo root is a bulk CS2 symbol/signature catalogue (build 24537688) used to look up candidates for anything new. Rules learned the hard way:
+
+- **A unique byte-pattern match is not an identification.** A pattern can match exactly one address and still sit on the wrong function. Decompile and confirm the body does what the name claims before writing an entry — and never hand an address to anyone until you have.
+- **Never trust a rosetta entry's signature and its vtable/prototype metadata to describe the same function.** They are joined by name, and the join is not always right. Real case: `CCSPlayer_WeaponServices::DropWeapon` reports `vtable: 29` with a verified 4-arg prototype, but its byte signature resolves to a *different, non-virtual* `DropWeapon(this, weapon, bool)` — the player-pressed-G handler that prints `#SFUI_Notice_YouDroppedWeapon`. The index was right; the signature pointed somewhere else entirely.
+- **Verify a vtable index by walking RTTI, not by trusting metadata.** On Linux: find the Itanium mangled name string (e.g. `24CCSPlayer_WeaponServices`), xref it to the typeinfo, xref that to the vtable, then slot N is at `vtable + 0x10 + N*8`. On Windows: find the RTTI type descriptor, its `CompleteObjectLocator`, then the vftable whose `[-1]` points at that COL.
+- **Raw C++ members are not in any schema dump.** Offsets like `CCSPlayerInventory::m_pSOCache` or `CGCClientSharedObjectCache::m_Owner` are plain struct fields, so rosetta lists them under `unresolved` and no schema dumper will have them. They have to come out of IDA and be re-checked every CS2 update.
+- Confirm every offset on *both* `libserver.so` and `server.dll` separately. They have agreed so far, but that is an observation, not a rule.
+
 ## Conventions
 
 - Configs: bump `WeaponPaintsConfig.Version` when changing `Config.cs` so the plugin's `MigrateConfigFile` (not CSSharp) rewrites existing user configs with the new fields.
