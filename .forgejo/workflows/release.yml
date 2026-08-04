@@ -19,6 +19,10 @@ env:
   PROJECT_PATH: "WeaponPaints.csproj"
   PROJECT_NAME: "WeaponPaints"
   OUTPUT_PATH: "./WeaponPaints"
+  # The runner container advertises an IPv6 address but has no IPv6 default
+  # route, so .NET tries AAAA first and NuGet fails with
+  # "Network is unreachable (api.nuget.org:443)". Force IPv4 sockets.
+  DOTNET_SYSTEM_NET_DISABLEIPV6: "1"
 
 jobs:
   build:
