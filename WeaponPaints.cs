@@ -46,6 +46,8 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             GPlayersPendingSeedWearInput.Clear();
             OriginalPawnModel.Clear();
             _temporaryPlayerWeaponWear.Clear();
+            _stickerWearAssignments.Clear();
+            _stickerWearOwners.Clear();
             _stickerCommandFilters.Clear();
             _playerWeaponImage.Clear();
             CommandsCooldown.Clear();
@@ -270,6 +272,8 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
     // and OnGiveNamedItemPost fires N times per weapon-give, leaking closures.
     public override void Unload(bool hotReload)
     {
+        ClearPickupRefreshTimers();
+
         try
         {
             VirtualFunctions.GiveNamedItemFunc.Unhook(OnGiveNamedItemPost, HookMode.Post);

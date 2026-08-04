@@ -225,11 +225,40 @@ public partial class WeaponPaints
     // item — otherwise the HUD weapon-slot label skips the paint-kit name lookup and
     // shows the base weapon name after a kill+regive cycle (!wp). 16384 is the
     // commonly-used "fake inventory bucket" high half across CS2 paint plugins.
-    private const ulong MinimumCustomItemId = (16384UL << 32) | 65578UL;
-    private ulong _nextItemId = MinimumCustomItemId;
+    private const ulong CustomItemIdBucket = 16384UL << 32;
+
+    // The low half is re-seeded from wall-clock time on every plugin load and map change.
+    // It used to be a fixed constant, so a reload handed the client back the exact item IDs
+    // it had already cached generated weapon materials for — with the previous sticker
+    // layout baked in. Seeding from the clock guarantees fresh IDs across reloads while
+    // keeping the 16384 bucket in the high half.
+    private static ulong NewItemIdSeed() =>
+        CustomItemIdBucket | ((ulong)DateTimeOffset.UtcNow.ToUnixTimeSeconds() & 0xFFFFFFFF);
+
+    private ulong _nextItemId = NewItemIdSeed();
     private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
     private readonly ConcurrentDictionary<int, ConcurrentDictionary<int, float>> _temporaryPlayerWeaponWear = new();
+
+    // Sticker re-render depends on the weapon's wear changing, but CS2 also keys its cache of
+    // generated weapon materials on (model, paint kit, wear). The old code oscillated wear by
+    // ±0.0005 around the real value, which only ever produced two values — editing a sticker
+    // flipped wear straight back onto a value the *previous* layout had already used, so the
+    // client happily reused the stale composite and the change never showed. Instead every
+    // distinct sticker layout is handed its own wear value, and a value is never reused across
+    // two different layouts. See IncrementWearForWeaponWithStickers.
+    private const float StickerWearStep = 0.001f;
+
+    // slot -> (weapon defindex, layout signature) -> wear value assigned to that layout
+    private readonly ConcurrentDictionary<int, Dictionary<(int DefIndex, string Signature), float>> _stickerWearAssignments = new();
+
+    // slot -> (weapon defindex, paint kit, wear bits) -> layout signature owning that wear value
+    private readonly ConcurrentDictionary<int, Dictionary<(int DefIndex, int Paint, int WearBits), string>> _stickerWearOwners = new();
+
+    // Knife pickups arrive in bursts (spawn, buy, every kill+regive cycle) and GiveOnItemPickup
+    // walks the player's whole inventory — collapse a burst into a single run. Timers are
+    // main-thread only, so a plain Dictionary is enough.
+    private readonly Dictionary<int, CounterStrikeSharp.API.Modules.Timers.Timer> _pickupRefreshTimers = new();
 
     // Coalesce overlapping RefreshWeapons kill+regive cycles (connect-path GetPlayerData +
     // OnPlayerSpawn timer both fire on first spawn). Value = last cycle start time per slot.

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
@@ -243,40 +244,127 @@ namespace WeaponPaints
             UpdatePlayerWeaponMeshGroupMask(player, weapon, isLegacyModel);
         }
 
-        // silly method to update sticker when call RefreshWeapons()
+        // Gives the weapon a wear value that is unique to its current sticker layout, so the
+        // client cannot reuse a material it generated for a different layout. See the comment
+        // on StickerWearStep in Variables.cs for why the old ±jitter approach was not enough.
         private void IncrementWearForWeaponWithStickers(CCSPlayerController player, CBasePlayerWeapon weapon)
         {
             int weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
             // Run whenever the list has slots (Count > 0), even if every slot is empty (Id 0):
             // clearing stickers needs the wear nudge to force the client to re-bake the decals
-            // off, otherwise the old baked decals linger on a reused weapon entity.
+            // off, otherwise the old baked decals linger on a reused weapon entity. An all-empty
+            // list is its own layout signature, so it gets its own wear value too.
             if (!TryGetWeaponInfo(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null || weaponInfo.Stickers.Count == 0)
                 return;
 
-            // The engine only re-renders sticker decals when the weapon's wear value changes.
-            // The old code increased wear by 0.001 every refresh, which made the in-game float
-            // drift upward forever and never resync to the real value (the cache only ever grew
-            // and was kept until disconnect). Instead, oscillate by a tiny amount AROUND the real
-            // wear: the value still changes every refresh (so stickers re-render), but it stays
-            // centered on the true float and is recomputed from the fresh DB value every time, so
-            // editing the wear on the website resyncs immediately.
-            const float jitter = 0.0005f;
-            float currentWear = weaponInfo.Wear;
+            float assignedWear = ResolveStickerWear(player.Slot, weaponDefIndex, weaponInfo);
 
-            var playerWear = _temporaryPlayerWeaponWear.GetOrAdd(player.Slot, _ => new ConcurrentDictionary<int, float>());
+            // SetStickers re-reads this cache to keep the wear it just wrote, and the !float
+            // command clears it to force a fresh allocation — keep both maps in sync.
+            _temporaryPlayerWeaponWear.GetOrAdd(player.Slot, _ => new ConcurrentDictionary<int, float>())[weaponDefIndex] = assignedWear;
 
-            float jitteredWear = playerWear.AddOrUpdate(
-                weaponDefIndex,
-                Math.Clamp(currentWear + jitter, 0f, 1f),
-                (_, oldWear) =>
+            weapon.FallbackWear = assignedWear;
+        }
+
+        private float ResolveStickerWear(int playerSlot, int weaponDefIndex, WeaponInfo weaponInfo)
+        {
+            string signature = BuildStickerLayoutSignature(weaponInfo);
+            var assignments = _stickerWearAssignments.GetOrAdd(playerSlot, _ => new Dictionary<(int, string), float>());
+            var owners = _stickerWearOwners.GetOrAdd(playerSlot, _ => new Dictionary<(int, int, int), string>());
+
+            // Both maps are per-player and always taken together, so one lock is enough.
+            lock (assignments)
+            {
+                if (assignments.TryGetValue((weaponDefIndex, signature), out float existing))
+                    return existing;
+
+                // Start one step away from the real wear rather than at it: that also invalidates
+                // any material the client generated from an older plugin version, which wrote the
+                // unmodified float.
+                for (int step = 1; step <= 999; step++)
                 {
-                    // Flip to the opposite side of the real wear each refresh.
-                    float target = oldWear > currentWear ? currentWear - jitter : currentWear + jitter;
-                    return Math.Clamp(target, 0f, 1f);
+                    float delta = step * StickerWearStep;
+                    if (
+                        TryClaimStickerWear(owners, weaponDefIndex, weaponInfo.Paint, weaponInfo.Wear + delta, signature, out float claimed)
+                        || TryClaimStickerWear(owners, weaponDefIndex, weaponInfo.Paint, weaponInfo.Wear - delta, signature, out claimed)
+                    )
+                    {
+                        assignments[(weaponDefIndex, signature)] = claimed;
+                        return claimed;
+                    }
                 }
-            );
+            }
 
-            weapon.FallbackWear = jitteredWear;
+            Logger.LogWarning(
+                "No distinct sticker wear left for slot {Slot} weapon {DefinitionIndex} (paint {Paint}); sticker changes may stay cached client-side.",
+                playerSlot,
+                weaponDefIndex,
+                weaponInfo.Paint
+            );
+            return weaponInfo.Wear;
+        }
+
+        private static bool TryClaimStickerWear(
+            Dictionary<(int DefIndex, int Paint, int WearBits), string> owners,
+            int weaponDefIndex,
+            int paint,
+            float candidate,
+            string signature,
+            out float claimed
+        )
+        {
+            claimed = 0f;
+            if (!float.IsFinite(candidate) || candidate < 0.0001f || candidate > 1f)
+                return false;
+
+            // Round before hashing the bits — the caller reaches the same value from either
+            // direction and float error would otherwise make two "equal" wears distinct keys.
+            candidate = MathF.Round(candidate, 6, MidpointRounding.AwayFromZero);
+
+            var key = (weaponDefIndex, paint, BitConverter.SingleToInt32Bits(candidate));
+            if (owners.TryGetValue(key, out var owner) && !string.Equals(owner, signature, StringComparison.Ordinal))
+                return false;
+
+            owners[key] = signature;
+            claimed = candidate;
+            return true;
+        }
+
+        // Everything the client bakes into a weapon's composite material. Two weapons that share
+        // this string can safely share a wear value; anything else must get its own.
+        private static string BuildStickerLayoutSignature(WeaponInfo weaponInfo)
+        {
+            var signature = new StringBuilder();
+            signature
+                .Append(weaponInfo.Paint)
+                .Append('|')
+                .Append(weaponInfo.Seed)
+                .Append('|')
+                .Append(BitConverter.SingleToInt32Bits(weaponInfo.Wear));
+
+            for (int stickerSlot = 0; stickerSlot < weaponInfo.Stickers.Count; stickerSlot++)
+            {
+                var sticker = weaponInfo.Stickers[stickerSlot];
+                signature
+                    .Append('|')
+                    .Append(stickerSlot)
+                    .Append(':')
+                    .Append(sticker.Id)
+                    .Append(':')
+                    .Append(sticker.Schema)
+                    .Append(':')
+                    .Append(BitConverter.SingleToInt32Bits(sticker.OffsetX))
+                    .Append(':')
+                    .Append(BitConverter.SingleToInt32Bits(sticker.OffsetY))
+                    .Append(':')
+                    .Append(BitConverter.SingleToInt32Bits(sticker.Rotation))
+                    .Append(':')
+                    .Append(BitConverter.SingleToInt32Bits(sticker.Wear))
+                    .Append(':')
+                    .Append(BitConverter.SingleToInt32Bits(sticker.Scale));
+            }
+
+            return signature.ToString();
         }
 
         private void SetStickers(CCSPlayerController? player, CBasePlayerWeapon weapon)

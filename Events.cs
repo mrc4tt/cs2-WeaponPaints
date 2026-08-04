@@ -121,6 +121,10 @@ namespace WeaponPaints
             }
 
             _temporaryPlayerWeaponWear.TryRemove(player.Slot, out _);
+            _stickerWearAssignments.TryRemove(player.Slot, out _);
+            _stickerWearOwners.TryRemove(player.Slot, out _);
+            if (_pickupRefreshTimers.Remove(player.Slot, out var pickupTimer))
+                pickupTimer.Kill();
             _stickerCommandFilters.TryRemove(player.Slot, out _);
             GPlayersPendingSeedWearInput.TryRemove(player.Slot, out _);
             CommandsCooldown.Remove(player.Slot);
@@ -137,6 +141,9 @@ namespace WeaponPaints
 
         private void OnMapStart(string mapName)
         {
+            // The timers carry STOP_ON_MAPCHANGE, but the dictionary still has to be emptied.
+            ClearPickupRefreshTimers();
+
             if (Config.Additional is { KnifeEnabled: false, SkinEnabled: false, GloveEnabled: false })
                 return;
 
@@ -145,7 +152,9 @@ namespace WeaponPaints
                 WeaponSync = new WeaponSynchronization(Database, Config);
 
             _fadeSeed = 0;
-            _nextItemId = MinimumCustomItemId;
+            // Re-seed rather than reset to a constant, so the client cannot match these item IDs
+            // against materials it generated for the previous map's sticker layouts.
+            _nextItemId = NewItemIdSeed();
         }
 
         private HookResult OnPlayerSpawn(EventPlayerSpawn @event, GameEventInfo info)
@@ -407,10 +416,45 @@ namespace WeaponPaints
 
             if (player is { Connected: PlayerConnectedState.Connected, PawnIsAlive: true, PlayerPawn.IsValid: true })
             {
-                GiveOnItemPickup(player);
+                SchedulePickupRefresh(player);
             }
 
             return HookResult.Continue;
+        }
+
+        // A knife pickup fires once per regive, so spawning, buying, or any kill+regive cycle can
+        // deliver several in the same handful of ticks. GiveOnItemPickup walks the player's whole
+        // inventory and may run a give+kill dance, so restart a short timer instead of running it
+        // per event — the burst collapses into one refresh.
+        private void SchedulePickupRefresh(CCSPlayerController player)
+        {
+            int slot = player.Slot;
+
+            if (_pickupRefreshTimers.Remove(slot, out var pending))
+                pending.Kill();
+
+            _pickupRefreshTimers[slot] = AddTimer(
+                0.10f,
+                () =>
+                {
+                    _pickupRefreshTimers.Remove(slot);
+
+                    // Re-resolve by slot: the player may have disconnected during the delay, and
+                    // the slot may already belong to someone else.
+                    var current = Utilities.GetPlayerFromSlot(slot);
+                    if (current is { IsValid: true, IsBot: false, Connected: PlayerConnectedState.Connected, PawnIsAlive: true, PlayerPawn.IsValid: true })
+                        GiveOnItemPickup(current);
+                },
+                TimerFlags.STOP_ON_MAPCHANGE
+            );
+        }
+
+        private void ClearPickupRefreshTimers()
+        {
+            foreach (var timer in _pickupRefreshTimers.Values)
+                timer.Kill();
+
+            _pickupRefreshTimers.Clear();
         }
 
         private HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
