@@ -51,5 +51,12 @@
 	"wp_skin_weapon_not_found": "{lightred}Arma '{0}' nuk u gjet. Provoni: ak47, awp, glock, etj.",
 	"wp_skin_no_skins_found": "{lightred}Nuk u gjet asnjë skin për {0}",
 
+	"wp_gen_usage": "Përdorimi: {lime}!g <lidhje inspect ose kod gen>{default} - mbështeten lidhjet Steam, cs2inspects, csfloat dhe cs2preview",
+	"wp_gen_invalid": "{lightred}Nuk u lexua dot ajo lidhje inspect / ai kod gen",
+	"wp_gen_too_long": "{lightred}Ai kod është shumë i gjatë për chat - përdor {lime}css_g <kod>{lightred} në konsolë",
+	"wp_gen_owned_link": "{lightred}Ajo lidhje inspect tregon një artikull në inventar dhe nuk përmban të dhëna skin-i - përdor një kod gen ose lidhje preview",
+	"wp_gen_unknown_item": "{lightred}Ky lloj artikulli nuk mbështetet (vetëm armë, thika dhe doreza)",
+	"wp_gen_no_permission": "{lightred}Nuk ke akses në këtë komandë",
+	"wp_gen_applied": "{lime}{0}{default} u aplikua në pajisjet e tua",
 	"None": "Asnjë"
 }

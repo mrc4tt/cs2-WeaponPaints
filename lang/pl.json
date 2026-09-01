@@ -46,5 +46,13 @@
     "wp_seed_set": "Pattern seed ustawiony na {lime}{0}",
     "wp_skin_weapon_not_found": "{lightred}Nie znaleziono broni '{0}'. Spróbuj: ak47, awp, glock itp.",
     "wp_skin_no_skins_found": "{lightred}Nie znaleziono skinów dla {0}",
+    "wp_gen_usage": "Użycie: {lime}!g <link inspect lub kod gen>{default} - obsługiwane są linki Steam, cs2inspects, csfloat i cs2preview",
+    "wp_gen_invalid": "{lightred}Nie udało się odczytać tego linku inspect / kodu gen",
+    "wp_gen_too_long": "{lightred}Ten kod jest za długi na czat - użyj {lime}css_g <kod>{lightred} w konsoli",
+    "wp_gen_owned_link": "{lightred}Ten link inspect wskazuje na posiadany przedmiot i nie zawiera danych o skinie - użyj kodu gen lub linku preview",
+    "wp_gen_unknown_item": "{lightred}Ten typ przedmiotu nie jest obsługiwany (tylko bronie, noże i rękawice)",
+    "wp_gen_no_permission": "{lightred}Nie masz dostępu do tej komendy",
+    "wp_gen_applied": "Zastosowano {lime}{0}{default} do twojego ekwipunku",
+
     "None": "Brak"
 }

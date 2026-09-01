@@ -46,5 +46,13 @@
     "wp_seed_set": "Номер паттерна (seed) установлен на {lime}{0}",
     "wp_skin_weapon_not_found": "{lightred}Оружие '{0}' не найдено. Попробуйте: ak47, awp, glock и т.д.",
     "wp_skin_no_skins_found": "{lightred}Скины для {0} не найдены",
+    "wp_gen_usage": "Использование: {lime}!g <инспект-ссылка или ген-код>{default} - поддерживаются ссылки Steam, cs2inspects, csfloat и cs2preview",
+    "wp_gen_invalid": "{lightred}Не удалось распознать эту инспект-ссылку / ген-код",
+    "wp_gen_too_long": "{lightred}Этот код слишком длинный для чата - используйте {lime}css_g <код>{lightred} в консоли",
+    "wp_gen_owned_link": "{lightred}Эта инспект-ссылка указывает на предмет из инвентаря и не содержит данных о скине - используйте ген-код или preview-ссылку",
+    "wp_gen_unknown_item": "{lightred}Этот тип предмета не поддерживается (только оружие, ножи и перчатки)",
+    "wp_gen_no_permission": "{lightred}У вас нет доступа к этой команде",
+    "wp_gen_applied": "Применено {lime}{0}{default} к вашему снаряжению",
+
     "None": "Нет"
 }

@@ -1,5 +1,5 @@
 {
-  "CAttributeList_SetOrAddAttributeValueByName": {
+  "CAttributeList::SetOrAddAttributeValueByName": {
     "signatures": {
       "library": "server",
       "windows": "40 53 55 41 56 48 81 EC ? ? ? ? 0F 29 74 24",

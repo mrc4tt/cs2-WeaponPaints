@@ -46,5 +46,13 @@
     "wp_seed_set": "Desen (seed) değeri {lime}{0} olarak ayarlandı",
     "wp_skin_weapon_not_found": "{lightred}'{0}' silahı bulunamadı. Şunu deneyin: ak47, awp, glock, vb.",
     "wp_skin_no_skins_found": "{lightred}{0} için skin bulunamadı",
+    "wp_gen_usage": "Kullanım: {lime}!g <inspect linki veya gen kodu>{default} - Steam, cs2inspects, csfloat ve cs2preview linkleri desteklenir",
+    "wp_gen_invalid": "{lightred}Bu inspect linki / gen kodu okunamadı",
+    "wp_gen_too_long": "{lightred}Bu kod sohbet için çok uzun - bunun yerine konsolda {lime}css_g <kod>{lightred} kullanın",
+    "wp_gen_owned_link": "{lightred}Bu inspect linki sahipli bir eşyayı gösteriyor ve skin verisi içermiyor - bunun yerine gen kodu / preview linki kullanın",
+    "wp_gen_unknown_item": "{lightred}Bu eşya türü desteklenmiyor (yalnızca silahlar, bıçaklar ve eldivenler)",
+    "wp_gen_no_permission": "{lightred}Bu komuta erişiminiz yok",
+    "wp_gen_applied": "{lime}{0}{default} loadout'unuza uygulandı",
+
     "None": "Yok"
 }

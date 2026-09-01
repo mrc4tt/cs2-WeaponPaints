@@ -66,5 +66,13 @@
 	"wp_sticker_cleared": "Cleared sticker in slot {lime}{0}",
 	"wp_sticker_cleared_all": "{lime}All stickers cleared on this weapon",
 
+	"wp_gen_usage": "Usage: {lime}!g <inspect link or gen code>{default} - Steam, cs2inspects, csfloat and cs2preview links are supported",
+	"wp_gen_invalid": "{lightred}Couldn't read that inspect link / gen code",
+	"wp_gen_too_long": "{lightred}That code is too long for chat - use {lime}css_g <code>{lightred} in console instead",
+	"wp_gen_owned_link": "{lightred}That inspect link points at an owned item and carries no skin data - use a gen code / preview link instead",
+	"wp_gen_unknown_item": "{lightred}That item type isn't supported (weapons, knives and gloves only)",
+	"wp_gen_no_permission": "{lightred}You don't have access to this command",
+	"wp_gen_applied": "Applied {lime}{0}{default} to your loadout",
+
 	"None": "None"
 }

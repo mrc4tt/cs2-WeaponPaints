@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Timers;
@@ -976,6 +977,24 @@ public partial class WeaponPaints
             );
         });
 
+        // Register gen command (apply an item from an inspect link / gen code)
+        if (Config.Additional.CommandGenEnabled)
+        {
+            Config.Additional.CommandGen.ForEach(c =>
+            {
+                AddCommand(
+                    $"css_{c}",
+                    "Apply a skin from an inspect link or gen code",
+                    (player, info) =>
+                    {
+                        if (!Utility.IsPlayerValid(player))
+                            return;
+                        OnCommandGen(player, info);
+                    }
+                );
+            });
+        }
+
         // Chat-input interceptor for !seed / !float no-arg flow. Pre-hook so we can swallow
         // the value message (HookResult.Handled) without it appearing in public chat.
         AddCommandListener("say", OnPlayerChatSeedWearInput, HookMode.Pre);
@@ -1940,5 +1959,293 @@ public partial class WeaponPaints
 
         if (!string.IsNullOrEmpty(Localizer["wp_sticker_cleared_all"]))
             player.Print(Localizer["wp_sticker_cleared_all"]);
+    }
+
+    private void OnCommandGen(CCSPlayerController? player, CommandInfo command)
+    {
+        if (!Config.Additional.SkinEnabled || !Config.Additional.CommandGenEnabled || !_gBCommandsAllowed)
+            return;
+        if (!Utility.IsPlayerValid(player) || player == null)
+            return;
+
+        // Prevent double-call from chat/console trigger
+        if (LastCommandTime.TryGetValue(player.Slot, out var lastTime) && (DateTime.UtcNow - lastTime).TotalMilliseconds < 100)
+            return;
+        LastCommandTime[player.Slot] = DateTime.UtcNow;
+
+        var permission = Config.Additional.CommandGenPermission;
+        if (!string.IsNullOrEmpty(permission) && !AdminManager.PlayerHasPermissions(player, permission))
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_gen_no_permission"]))
+                player.Print(Localizer["wp_gen_no_permission"]);
+            return;
+        }
+
+        if (command.ArgCount < 2)
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_gen_usage"]))
+                player.Print(Localizer["wp_gen_usage"]);
+            return;
+        }
+
+        // Gen triggers a kill+regive refresh, so it shares the loadout-command cooldown.
+        if (CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime) && DateTime.UtcNow < cooldownEndTime)
+            return;
+        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
+
+        var result = InspectItemPreview.TryParse(command.ArgString, out var item);
+        if (result == InspectParseResult.OwnedItemLink)
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_gen_owned_link"]))
+                player.Print(Localizer["wp_gen_owned_link"]);
+            return;
+        }
+
+        if (result != InspectParseResult.Ok)
+        {
+            // Chat messages get truncated around 255 chars, so a long sticker-heavy code pasted
+            // in chat arrives cut off and can't parse. Point the player at the console command.
+            var key = command.CallingContext == CommandCallingContext.Chat && command.ArgString.Length >= 120
+                ? "wp_gen_too_long"
+                : "wp_gen_invalid";
+            if (!string.IsNullOrEmpty(Localizer[key]))
+                player.Print(Localizer[key]);
+            return;
+        }
+
+        if (WeaponDefindex.TryGetValue(item.DefIndex, out var className))
+        {
+            if (className.StartsWith("weapon_knife") || className.StartsWith("weapon_bayonet"))
+                ApplyGenKnife(player, item, className);
+            else
+                ApplyGenWeapon(player, item, className);
+        }
+        else if (TryFindGloveByDefIndex(item.DefIndex))
+        {
+            ApplyGenGloves(player, item);
+        }
+        else if (!string.IsNullOrEmpty(Localizer["wp_gen_unknown_item"]))
+        {
+            player.Print(Localizer["wp_gen_unknown_item"]);
+        }
+    }
+
+    private static bool TryFindGloveByDefIndex(int defIndex)
+    {
+        return GlovesList.Any(g => int.TryParse(g["weapon_defindex"]?.ToString(), out var d) && d == defIndex);
+    }
+
+    // Builds the WeaponInfo a gen result maps onto. The sticker list is created slot-aligned
+    // (5 entries, index i == sticker slot i) per the SetStickers contract; an inspect sticker
+    // lands at its own Slot, and the proto's 3D model-space offsets are dropped — SetStickers
+    // renders at the weapon's native per-slot anchors.
+    private static WeaponInfo BuildGenWeaponInfo(InspectItemPreview item, bool allowStickers)
+    {
+        var nametag = item.CustomName ?? "";
+        if (nametag.Length > 128)
+            nametag = nametag[..128];
+
+        var info = new WeaponInfo
+        {
+            Paint = item.PaintIndex,
+            Wear = item.PaintWear > 0f ? item.PaintWear : 0.000001f,
+            Seed = item.PaintSeed,
+            Nametag = nametag,
+            StatTrak = item.KillEaterValue >= 0,
+            StatTrakCount = Math.Max(item.KillEaterValue, 0),
+        };
+
+        for (var i = 0; i < 5; i++)
+            info.Stickers.Add(new StickerInfo());
+
+        if (!allowStickers)
+            return info;
+
+        foreach (var sticker in item.Stickers)
+        {
+            if (sticker.Id == 0 || sticker.Slot is < 0 or > 4 || info.Stickers[sticker.Slot].Id != 0)
+                continue;
+
+            info.Stickers[sticker.Slot] = new StickerInfo
+            {
+                Id = sticker.Id,
+                Schema = 0,
+                OffsetX = 0,
+                OffsetY = 0,
+                Wear = sticker.Wear,
+                Scale = sticker.Scale <= 0f ? 1f : sticker.Scale,
+                Rotation = sticker.Rotation,
+            };
+        }
+
+        var keychain = item.Keychains.FirstOrDefault(k => k.Id != 0);
+        if (keychain != null)
+        {
+            info.KeyChain = new KeyChainInfo
+            {
+                Id = keychain.Id,
+                OffsetX = keychain.OffsetX,
+                OffsetY = keychain.OffsetY,
+                OffsetZ = keychain.OffsetZ,
+                Seed = keychain.Pattern,
+                Rotation = keychain.Rotation,
+            };
+        }
+
+        return info;
+    }
+
+    private string GenDisplayName(InspectItemPreview item, string? className)
+    {
+        if (className != null && SkinsByWeaponName.TryGetValue(className, out var skins))
+        {
+            foreach (var skin in skins)
+            {
+                if (((int?)skin["paint"] ?? -1) == item.PaintIndex)
+                    return skin["paint_name"]?.ToString() ?? className;
+            }
+        }
+
+        var glove = GlovesList.FirstOrDefault(g =>
+            int.TryParse(g["weapon_defindex"]?.ToString(), out var d) && d == item.DefIndex
+            && int.TryParse(g["paint"]?.ToString(), out var p) && p == item.PaintIndex);
+        if (glove?["paint_name"]?.ToString() is { Length: > 0 } gloveName)
+            return gloveName;
+
+        if (className != null && WeaponList.TryGetValue(className, out var displayName))
+            return displayName;
+
+        return $"item #{item.DefIndex}";
+    }
+
+    private void ApplyGenKnife(CCSPlayerController player, InspectItemPreview item, string className)
+    {
+        if (!Config.Additional.KnifeEnabled)
+            return;
+
+        var info = BuildGenWeaponInfo(item, allowStickers: false);
+
+        var playerKnives = GPlayersKnife.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, string>());
+        var playerWeapons = GPlayerWeaponsInfo.GetOrAdd(player.Slot, _ => new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
+        var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [player.Team];
+
+        foreach (var team in teamsToCheck)
+        {
+            playerKnives[team] = className;
+            playerWeapons.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>())[item.DefIndex] = info;
+        }
+
+        var playerInfo = PlayerInfo.From(player);
+
+        if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
+            RefreshWeapons(player);
+
+        if (WeaponSync != null)
+        {
+            _ = Task.Run(async () =>
+            {
+                await WeaponSync.SyncKnifeToDatabase(playerInfo, className, teamsToCheck);
+                await WeaponSync.SyncWeaponGenToDatabase(playerInfo, item.DefIndex, teamsToCheck);
+            });
+        }
+
+        if (!string.IsNullOrEmpty(Localizer["wp_gen_applied"]))
+            player.Print(Localizer["wp_gen_applied", GenDisplayName(item, className)]);
+    }
+
+    private void ApplyGenGloves(CCSPlayerController player, InspectItemPreview item)
+    {
+        if (!Config.Additional.GloveEnabled)
+            return;
+
+        if (item.PaintIndex == 0)
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_gen_invalid"]))
+                player.Print(Localizer["wp_gen_invalid"]);
+            return;
+        }
+
+        // Snapshot the player's default gloves before the first custom override, so a later
+        // "None" pick in the glove menu can revert without respawn (same as the menu path).
+        var pawn = player.PlayerPawn.Value;
+        if (pawn != null && pawn.IsValid)
+            CacheCurrentNativeGloveSnapshot(player, pawn);
+
+        var info = BuildGenWeaponInfo(item, allowStickers: false);
+        info.Nametag = "";
+        info.StatTrak = false;
+        info.StatTrakCount = 0;
+
+        var playerGloves = GPlayersGlove.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ushort>());
+        var playerWeapons = GPlayerWeaponsInfo.GetOrAdd(player.Slot, _ => new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
+        var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [player.Team];
+
+        foreach (var team in teamsToCheck)
+        {
+            playerGloves[team] = (ushort)item.DefIndex;
+            playerWeapons.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>())[item.DefIndex] = info;
+        }
+
+        var playerInfo = PlayerInfo.From(player);
+
+        if (WeaponSync != null)
+        {
+            _ = Task.Run(async () =>
+            {
+                await WeaponSync.SyncGloveToDatabase(playerInfo, (ushort)item.DefIndex, teamsToCheck);
+                await WeaponSync.SyncWeaponGenToDatabase(playerInfo, item.DefIndex, teamsToCheck);
+            });
+        }
+
+        if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
+        {
+            AddTimer(0.1f, () => GivePlayerGloves(player), TimerFlags.STOP_ON_MAPCHANGE);
+
+            // Force gloves model refresh to prevent model overlap (same as the glove menu path).
+            player.ExecuteClientCommand("lastinv");
+            AddTimer(0.15f, () =>
+            {
+                if (player.IsValid && player.PawnIsAlive)
+                    player.ExecuteClientCommand("lastinv");
+            }, TimerFlags.STOP_ON_MAPCHANGE);
+        }
+
+        if (!string.IsNullOrEmpty(Localizer["wp_gen_applied"]))
+            player.Print(Localizer["wp_gen_applied", GenDisplayName(item, null)]);
+    }
+
+    private void ApplyGenWeapon(CCSPlayerController player, InspectItemPreview item, string className)
+    {
+        var info = BuildGenWeaponInfo(item, allowStickers: true);
+
+        // A payload with nothing to apply (vanilla item) is treated as invalid input.
+        var hasAnySticker = info.Stickers.Any(s => s.Id != 0);
+        if (info.Paint == 0 && !hasAnySticker && info.KeyChain is not { Id: not 0 } && !info.StatTrak && string.IsNullOrEmpty(info.Nametag))
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_gen_invalid"]))
+                player.Print(Localizer["wp_gen_invalid"]);
+            return;
+        }
+
+        var playerWeapons = GPlayerWeaponsInfo.GetOrAdd(player.Slot, _ => new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
+        var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [player.Team];
+
+        foreach (var team in teamsToCheck)
+            playerWeapons.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>())[item.DefIndex] = info;
+
+        // Clear any temporary wear override so the refresh uses the gen wear.
+        if (_temporaryPlayerWeaponWear.TryGetValue(player.Slot, out var tempWear))
+            tempWear.TryRemove(item.DefIndex, out _);
+
+        var playerInfo = PlayerInfo.From(player);
+
+        if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
+            RefreshSingleWeapon(player, item.DefIndex);
+
+        if (WeaponSync != null)
+            _ = Task.Run(async () => await WeaponSync.SyncWeaponGenToDatabase(playerInfo, item.DefIndex, teamsToCheck));
+
+        if (!string.IsNullOrEmpty(Localizer["wp_gen_applied"]))
+            player.Print(Localizer["wp_gen_applied", GenDisplayName(item, className)]);
     }
 }

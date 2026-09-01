@@ -46,5 +46,13 @@
     "wp_seed_set": "Pattern seed definido para {lime}{0}",
     "wp_skin_weapon_not_found": "{lightred}Arma '{0}' não encontrada. Tente: ak47, awp, glock, etc.",
     "wp_skin_no_skins_found": "{lightred}Nenhuma skin encontrada para {0}",
+    "wp_gen_usage": "Uso: {lime}!g <link de inspeção ou código gen>{default} - links Steam, cs2inspects, csfloat e cs2preview são suportados",
+    "wp_gen_invalid": "{lightred}Não foi possível ler esse link de inspeção / código gen",
+    "wp_gen_too_long": "{lightred}Esse código é muito longo para o chat - use {lime}css_g <código>{lightred} no console",
+    "wp_gen_owned_link": "{lightred}Esse link de inspeção aponta para um item do inventário e não contém dados da skin - use um código gen ou link de preview",
+    "wp_gen_unknown_item": "{lightred}Esse tipo de item não é suportado (apenas armas, facas e luvas)",
+    "wp_gen_no_permission": "{lightred}Você não tem acesso a este comando",
+    "wp_gen_applied": "{lime}{0}{default} aplicado ao seu loadout",
+
     "None": "Nenhum"
 }

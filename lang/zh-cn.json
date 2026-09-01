@@ -46,5 +46,13 @@
     "wp_seed_set": "模板编号已设置为 {lime}{0}",
     "wp_skin_weapon_not_found": "{lightred}未找到武器 '{0}'。尝试: ak47, awp, glock 等",
     "wp_skin_no_skins_found": "{lightred}未找到 {0} 的皮肤",
+    "wp_gen_usage": "用法: {lime}!g <检视链接或 gen 代码>{default} - 支持 Steam、cs2inspects、csfloat 和 cs2preview 链接",
+    "wp_gen_invalid": "{lightred}无法解析该检视链接 / gen 代码",
+    "wp_gen_too_long": "{lightred}该代码太长，无法在聊天中输入 - 请在控制台使用 {lime}css_g <代码>{lightred}",
+    "wp_gen_owned_link": "{lightred}该检视链接指向已拥有的物品，不包含皮肤数据 - 请改用 gen 代码或预览链接",
+    "wp_gen_unknown_item": "{lightred}不支持该物品类型（仅支持武器、刀具和手套）",
+    "wp_gen_no_permission": "{lightred}你没有权限使用此命令",
+    "wp_gen_applied": "已将 {lime}{0}{default} 应用到你的装备",
+
     "None": "无"
 }

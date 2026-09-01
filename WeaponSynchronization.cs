@@ -587,6 +587,90 @@ internal class WeaponSynchronization
         }
     }
 
+    // Full-row upsert for one weapon: paint/wear/seed plus nametag, StatTrak, all five sticker
+    // columns and the keychain. Used by !g (gen), which is the only in-plugin path that sets all
+    // of these at once — the narrower Sync* methods above would take 8 round-trips per team.
+    internal async Task SyncWeaponGenToDatabase(PlayerInfo player, int weaponDefIndex, CsTeam[] teams)
+    {
+        if (!_config.Additional.SkinEnabled || string.IsNullOrEmpty(player.SteamId) || teams.Length == 0)
+            return;
+        if (!WeaponPaints.GPlayerWeaponsInfo.TryGetValue(player.Slot, out var teamWeaponInfos))
+            return;
+
+        const string query = @"
+            INSERT INTO `wp_player_skins`
+                (`steamid`, `weapon_team`, `weapon_defindex`, `weapon_paint_id`, `weapon_wear`, `weapon_seed`,
+                 `weapon_nametag`, `weapon_stattrak`, `weapon_stattrak_count`,
+                 `weapon_sticker_0`, `weapon_sticker_1`, `weapon_sticker_2`, `weapon_sticker_3`, `weapon_sticker_4`,
+                 `weapon_keychain`)
+            VALUES (@steamid, @team, @defindex, @paint, @wear, @seed, @nametag, @stattrak, @stattrakCount,
+                    @sticker0, @sticker1, @sticker2, @sticker3, @sticker4, @keychain)
+            ON DUPLICATE KEY UPDATE
+                `weapon_paint_id` = @paint, `weapon_wear` = @wear, `weapon_seed` = @seed,
+                `weapon_nametag` = @nametag, `weapon_stattrak` = @stattrak, `weapon_stattrak_count` = @stattrakCount,
+                `weapon_sticker_0` = @sticker0, `weapon_sticker_1` = @sticker1, `weapon_sticker_2` = @sticker2,
+                `weapon_sticker_3` = @sticker3, `weapon_sticker_4` = @sticker4,
+                `weapon_keychain` = @keychain";
+
+        try
+        {
+            await using var connection = await _database.GetConnectionAsync();
+
+            foreach (var team in teams)
+            {
+                if (!teamWeaponInfos.TryGetValue(team, out var weapons) || !weapons.TryGetValue(weaponDefIndex, out var weaponInfo))
+                    continue;
+
+                var stickerValues = new string[5];
+                for (var slot = 0; slot < 5; slot++)
+                {
+                    var sticker = slot < weaponInfo.Stickers.Count ? weaponInfo.Stickers[slot] : null;
+                    stickerValues[slot] = sticker is { Id: not 0 }
+                        ? string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{0};{1};{2};{3};{4};{5};{6}",
+                            sticker.Id, sticker.Schema, sticker.OffsetX, sticker.OffsetY,
+                            sticker.Wear, sticker.Scale, sticker.Rotation)
+                        : "0;0;0;0;0;0;0";
+                }
+
+                var keychainValue = weaponInfo.KeyChain is { Id: not 0 } keyChain
+                    ? string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0};{1};{2};{3};{4};{5}",
+                        keyChain.Id, keyChain.OffsetX, keyChain.OffsetY, keyChain.OffsetZ,
+                        keyChain.Seed, keyChain.Rotation)
+                    : "0;0;0;0;0";
+
+                await connection.ExecuteAsync(
+                    query,
+                    new
+                    {
+                        steamid = player.SteamId,
+                        team = (int)team,
+                        defindex = weaponDefIndex,
+                        paint = weaponInfo.Paint,
+                        wear = weaponInfo.Wear,
+                        seed = weaponInfo.Seed,
+                        nametag = string.IsNullOrEmpty(weaponInfo.Nametag) ? null : weaponInfo.Nametag,
+                        stattrak = weaponInfo.StatTrak,
+                        stattrakCount = weaponInfo.StatTrakCount,
+                        sticker0 = stickerValues[0],
+                        sticker1 = stickerValues[1],
+                        sticker2 = stickerValues[2],
+                        sticker3 = stickerValues[3],
+                        sticker4 = stickerValues[4],
+                        keychain = keychainValue,
+                    }
+                );
+            }
+        }
+        catch (Exception e)
+        {
+            Utility.Log($"Error syncing gen weapon to database: {e.Message}");
+        }
+    }
+
     internal async Task SyncMusicToDatabase(PlayerInfo player, ushort music, CsTeam[] teams)
     {
         if (!_config.Additional.MusicEnabled || string.IsNullOrEmpty(player.SteamId))

@@ -77,6 +77,16 @@ namespace WeaponPaints
         [JsonPropertyName("CommandMenu")]
         public List<string> CommandMenu { get; set; } = ["menu"];
 
+        [JsonPropertyName("CommandGenEnabled")]
+        public bool CommandGenEnabled { get; set; } = true;
+
+        [JsonPropertyName("CommandGen")]
+        public List<string> CommandGen { get; set; } = ["g", "gen"];
+
+        // Admin-permission gate for !g, e.g. "@css/vip". Empty = everyone may use it.
+        [JsonPropertyName("CommandGenPermission")]
+        public string CommandGenPermission { get; set; } = "";
+
         [JsonPropertyName("GiveRandomKnife")]
         public bool GiveRandomKnife { get; set; } = false;
 
@@ -90,7 +100,7 @@ namespace WeaponPaints
     public class WeaponPaintsConfig : BasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 18;
+        public override int Version { get; set; } = 19;
 
         [JsonPropertyName("DatabaseHost")]
         public string DatabaseHost { get; set; } = "";

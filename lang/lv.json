@@ -46,5 +46,13 @@
     "wp_seed_set": "Pattern seed iestatīts uz {lime}{0}",
     "wp_skin_weapon_not_found": "{lightred}Ierocis '{0}' nav atrasts. Mēģiniet: ak47, awp, glock utt.",
     "wp_skin_no_skins_found": "{lightred}Ierocim {0} netika atrasta neviena āda",
+    "wp_gen_usage": "Lietošana: {lime}!g <inspect saite vai gen kods>{default} - tiek atbalstītas Steam, cs2inspects, csfloat un cs2preview saites",
+    "wp_gen_invalid": "{lightred}Neizdevās nolasīt šo inspect saiti / gen kodu",
+    "wp_gen_too_long": "{lightred}Šis kods ir pārāk garš čatam - izmantojiet {lime}css_g <kods>{lightred} konsolē",
+    "wp_gen_owned_link": "{lightred}Šī inspect saite norāda uz piederošu priekšmetu un nesatur skina datus - izmantojiet gen kodu vai preview saiti",
+    "wp_gen_unknown_item": "{lightred}Šis priekšmeta tips netiek atbalstīts (tikai ieroči, naži un cimdi)",
+    "wp_gen_no_permission": "{lightred}Jums nav piekļuves šai komandai",
+    "wp_gen_applied": "{lime}{0}{default} pielietots jūsu ekipējumam",
+
     "None": "Nav"
 }
