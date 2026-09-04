@@ -2003,6 +2003,21 @@ public partial class WeaponPaints
 
         if (result != InspectParseResult.Ok)
         {
+            // Not a hex payload. Try the classic space-separated numeric gen code next
+            // ("<defindex> <paint> <seed> <wear> [stickerId wear]..."), then a cs2inspects
+            // share code — a single large numeric id resolved through their public API.
+            if (GenCodeResolver.TryParseNumeric(command.ArgString, IsGenDefIndexKnown, out var numericItem))
+            {
+                ApplyGenItem(player, numericItem);
+                return;
+            }
+
+            if (GenCodeResolver.TryExtractShareCode(command.ArgString, out var shareCode))
+            {
+                ResolveAndApplyShareCode(player, shareCode);
+                return;
+            }
+
             // Chat messages get truncated around 255 chars, so a long sticker-heavy code pasted
             // in chat arrives cut off and can't parse. Point the player at the console command.
             var key = command.CallingContext == CommandCallingContext.Chat && command.ArgString.Length >= 120
@@ -2013,6 +2028,12 @@ public partial class WeaponPaints
             return;
         }
 
+        ApplyGenItem(player, item);
+    }
+
+    // Routes a decoded gen item to the knife / glove / weapon apply path.
+    private void ApplyGenItem(CCSPlayerController player, InspectItemPreview item)
+    {
         if (WeaponDefindex.TryGetValue(item.DefIndex, out var className))
         {
             if (className.StartsWith("weapon_knife") || className.StartsWith("weapon_bayonet"))
@@ -2028,6 +2049,45 @@ public partial class WeaponPaints
         {
             player.Print(Localizer["wp_gen_unknown_item"]);
         }
+    }
+
+    private static bool IsGenDefIndexKnown(int defIndex)
+    {
+        return WeaponDefindex.ContainsKey(defIndex) || TryFindGloveByDefIndex(defIndex);
+    }
+
+    // Share codes need an HTTP round-trip, so the lookup runs off-thread and marshals back via
+    // Server.NextFrame before touching the player (threading rule: no entity access from tasks).
+    // The slot+steamid pair revalidates the player after the await — the slot may have been
+    // reused by someone else if the requester disconnected mid-lookup.
+    private void ResolveAndApplyShareCode(CCSPlayerController player, string shareCode)
+    {
+        if (!string.IsNullOrEmpty(Localizer["wp_gen_resolving"]))
+            player.Print(Localizer["wp_gen_resolving"]);
+
+        var playerSlot = player.Slot;
+        var steamId = player.SteamID;
+
+        _ = Task.Run(async () =>
+        {
+            var linkText = await GenCodeResolver.ResolveShareCodeAsync(shareCode);
+
+            Server.NextFrame(() =>
+            {
+                var p = Utilities.GetPlayerFromSlot(playerSlot);
+                if (p == null || !Utility.IsPlayerValid(p) || p.SteamID != steamId)
+                    return;
+
+                if (linkText == null || InspectItemPreview.TryParse(linkText, out var resolved) != InspectParseResult.Ok)
+                {
+                    if (!string.IsNullOrEmpty(Localizer["wp_gen_api_failed"]))
+                        p.Print(Localizer["wp_gen_api_failed"]);
+                    return;
+                }
+
+                ApplyGenItem(p, resolved);
+            });
+        });
     }
 
     private static bool TryFindGloveByDefIndex(int defIndex)

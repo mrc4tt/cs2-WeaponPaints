@@ -73,6 +73,8 @@
 	"wp_gen_unknown_item": "{lightred}That item type isn't supported (weapons, knives and gloves only)",
 	"wp_gen_no_permission": "{lightred}You don't have access to this command",
 	"wp_gen_applied": "Applied {lime}{0}{default} to your loadout",
+	"wp_gen_resolving": "Looking up that gen code...",
+	"wp_gen_api_failed": "{lightred}Couldn't resolve that gen code - the lookup service may be down, try the full inspect link instead",
 
 	"None": "None"
 }

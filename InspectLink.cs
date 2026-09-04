@@ -327,3 +327,176 @@ internal sealed partial class InspectItemPreview
         }
     }
 }
+
+// Numeric gen-code support, layered on top of the hex parser above:
+//
+//  - Classic space-separated codes ("!gen <defindex> <paint> <seed> <wear> [stickerId wear]*",
+//    also tolerated with wear before seed) are decoded fully offline.
+//  - cs2inspects.com share codes (a single large numeric id, e.g. "2002300386" — also the first
+//    token of the site's longer display string) carry no item data at all; they are resolved
+//    through the public api.cs2inspects.com getGenCode endpoint, whose response contains a normal
+//    inspect link that the hex parser then decodes.
+internal static class GenCodeResolver
+{
+    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(8) };
+
+    // Classic numeric gen code. Returns false when the input isn't fully numeric or the first
+    // token isn't a defindex the caller recognizes (so share codes fall through to the resolver).
+    public static bool TryParseNumeric(string input, Func<int, bool> isKnownDefIndex, out InspectItemPreview item)
+    {
+        item = new InspectItemPreview();
+
+        var tokens = Tokenize(input, out var extendedFormat);
+        if (tokens.Length < 4)
+            return false;
+
+        foreach (var token in tokens)
+        {
+            if (!float.TryParse(token, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out _))
+                return false;
+        }
+
+        if (!int.TryParse(tokens[0], out var defIndex) || !isKnownDefIndex(defIndex))
+            return false;
+        if (!int.TryParse(tokens[1], out var paint) || paint < 0)
+            return false;
+
+        // Header order varies by generator: "<seed> <wear>" (OpenGen-style) vs "<wear> <seed>"
+        // (cs2locker-style). A decimal point marks the wear; two bare ints default to seed-first.
+        var third = tokens[2];
+        var fourth = tokens[3];
+        string seedToken, wearToken;
+        if (third.Contains('.') && !fourth.Contains('.'))
+            (wearToken, seedToken) = (third, fourth);
+        else
+            (seedToken, wearToken) = (third, fourth);
+
+        if (!int.TryParse(seedToken, out var seed) || seed < 0 || seed > 1000)
+            return false;
+        if (!float.TryParse(wearToken, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var wear) || wear < 0f || wear > 1f)
+            return false;
+
+        item.DefIndex = defIndex;
+        item.PaintIndex = paint;
+        item.PaintSeed = seed;
+        item.PaintWear = wear;
+
+        // Stickers. Classic: "<id> <wear>" pairs, pair index == slot. Extended "!gens":
+        // "<slot> <id> <wear> <x> <y> <rotation>" six-token groups.
+        var pos = 4;
+        var pairSlot = 0;
+        while (pos < tokens.Length)
+        {
+            if (extendedFormat)
+            {
+                if (pos + 6 > tokens.Length)
+                    break;
+                if (int.TryParse(tokens[pos], out var slot)
+                    && int.TryParse(tokens[pos + 1], out var id)
+                    && float.TryParse(tokens[pos + 2], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var stickerWear)
+                    && id > 0 && slot is >= 0 and <= 4)
+                {
+                    item.Stickers.Add(new InspectSticker { Slot = slot, Id = (uint)id, Wear = stickerWear });
+                }
+                pos += 6;
+            }
+            else
+            {
+                if (pos + 2 > tokens.Length || pairSlot > 4)
+                    break;
+                if (int.TryParse(tokens[pos], out var id)
+                    && float.TryParse(tokens[pos + 1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var stickerWear)
+                    && id > 0)
+                {
+                    item.Stickers.Add(new InspectSticker { Slot = pairSlot, Id = (uint)id, Wear = stickerWear });
+                }
+                pairSlot++;
+                pos += 2;
+            }
+        }
+
+        // Trailing tokens (StatTrak count, nametag flags) vary per generator and are ignored.
+        return true;
+    }
+
+    // A cs2inspects share code: the whole input is numeric and the first token is a pure-digit id
+    // too large to be a defindex. The rest of the site's display string (paint/seed/wear/stickers)
+    // is redundant — the id alone resolves the item.
+    public static bool TryExtractShareCode(string input, out string shareCode)
+    {
+        shareCode = "";
+
+        var tokens = Tokenize(input, out _);
+        if (tokens.Length == 0)
+            return false;
+
+        var first = tokens[0];
+        if (first.Length is < 6 or > 16 || !first.All(char.IsDigit))
+            return false;
+        if (!ulong.TryParse(first, out var value) || value <= 65535)
+            return false;
+
+        foreach (var token in tokens)
+        {
+            if (!float.TryParse(token, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out _))
+                return false;
+        }
+
+        shareCode = first;
+        return true;
+    }
+
+    // Resolves a share code via api.cs2inspects.com and returns the inspect-link text out of the
+    // response (null on any failure). Runs on a background thread — never call from the main
+    // thread, and marshal back via Server.NextFrame before touching entities with the result.
+    public static async Task<string?> ResolveShareCodeAsync(string shareCode)
+    {
+        try
+        {
+            var url = "https://api.cs2inspects.com/getGenCode?url=" + Uri.EscapeDataString(shareCode);
+            using var response = await Http.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var body = await response.Content.ReadAsStringAsync();
+            using var doc = System.Text.Json.JsonDocument.Parse(body);
+
+            if (doc.RootElement.ValueKind != System.Text.Json.JsonValueKind.Object)
+                return null;
+            if (doc.RootElement.TryGetProperty("InspectLinkConsole", out var console) && console.GetString() is { Length: > 0 } consoleLink)
+                return consoleLink;
+            if (doc.RootElement.TryGetProperty("InspectLink", out var link) && link.GetString() is { Length: > 0 } steamLink)
+                return steamLink;
+
+            return null;
+        }
+        catch (Exception e)
+        {
+            Utility.Log($"Gen share-code lookup failed: {e.Message}");
+            return null;
+        }
+    }
+
+    private static string[] Tokenize(string input, out bool extendedFormat)
+    {
+        var text = input.Trim().Trim('"', '\'');
+        var tokens = text.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        extendedFormat = false;
+        if (tokens.Length > 0)
+        {
+            var head = tokens[0].TrimStart('!');
+            if (head.Equals("gens", StringComparison.OrdinalIgnoreCase))
+            {
+                extendedFormat = true;
+                tokens = tokens[1..];
+            }
+            else if (head.Equals("gen", StringComparison.OrdinalIgnoreCase) || head.Equals("g", StringComparison.OrdinalIgnoreCase))
+            {
+                tokens = tokens[1..];
+            }
+        }
+
+        return tokens;
+    }
+}
