@@ -236,9 +236,35 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             }
         }
 
-        if (!File.Exists(Path.GetDirectoryName(Path.GetDirectoryName(ModuleDirectory)) + "/gamedata/weaponpaints.json"))
+        var gamedataPath = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(ModuleDirectory))!, "gamedata", "weaponpaints.json");
+        if (!File.Exists(gamedataPath))
         {
-            Logger.LogError("You need to upload \"weaponpaints.json\" to \"gamedata directory\"!");
+            Logger.LogError("You need to upload \"weaponpaints.json\" to the gamedata directory: {GamedataPath}", gamedataPath);
+            Unload(false);
+            return;
+        }
+
+        try
+        {
+            using var gamedata = JsonDocument.Parse(File.ReadAllText(gamedataPath));
+            var missingKeys = RequiredGamedataKeys
+                .Where(key => !gamedata.RootElement.TryGetProperty(key, out _))
+                .ToList();
+
+            if (missingKeys.Count > 0)
+            {
+                Logger.LogError(
+                    "gamedata/weaponpaints.json is outdated — missing key(s): {MissingKeys}. Re-upload the weaponpaints.json bundled with this release to {GamedataPath}",
+                    string.Join(", ", missingKeys), gamedataPath);
+                Unload(false);
+                return;
+            }
+
+            InitGamedataSignatures();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load gamedata signatures from {GamedataPath}", gamedataPath);
             Unload(false);
             return;
         }

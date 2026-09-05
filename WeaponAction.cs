@@ -209,10 +209,16 @@ namespace WeaponPaints
             if (fallbackPaintKit == 0 && !hasExtras)
                 return;
 
+            // Resolved BEFORE the stickers are applied: the mesh variant is an input to sticker
+            // placement. Each variant binds its own material and its own StickerMarkup, so the fifth
+            // slot's borrowed home differs between hd and legacy (see StickerAnchors). Paint 0 / unknown
+            // paint miss the index and resolve legacy, matching the mesh the engine renders.
+            isLegacyModel = !SkinsLegacyModelIndex.TryGetValue((weaponDefIndex, fallbackPaintKit), out var legacyApply2) || legacyApply2;
+
             if (weaponInfo.KeyChain != null)
                 SetKeychain(player, weapon);
             if (weaponInfo.Stickers.Count > 0)
-                SetStickers(player, weapon);
+                SetStickers(player, weapon, isLegacyModel);
 
             // Mark item as a real econ item and force CEconItemView::Update so the client
             // refreshes its cached attribute view. Without this, the texture renders from
@@ -240,7 +246,6 @@ namespace WeaponPaints
             // field, caused "Couldn't resolve offset 3128 ... 3128 not resolved" spam. Redundant with
             // UpdateItemView + FallbackPaintKit/Xuid marks + native NetworkedDynamicAttributes writes.
 
-            isLegacyModel = !SkinsLegacyModelIndex.TryGetValue((weaponDefIndex, fallbackPaintKit), out var legacyApply2) || legacyApply2;
             UpdatePlayerWeaponMeshGroupMask(player, weapon, isLegacyModel);
         }
 
@@ -367,7 +372,7 @@ namespace WeaponPaints
             return signature.ToString();
         }
 
-        private void SetStickers(CCSPlayerController? player, CBasePlayerWeapon weapon)
+        private void SetStickers(CCSPlayerController? player, CBasePlayerWeapon weapon, bool isLegacyModel)
         {
             if (player == null || !player.IsValid)
                 return;
@@ -415,15 +420,37 @@ namespace WeaponPaints
                 // per-slot anchor (writing 0/0 for every sticker used to bunch them onto one spot).
                 // schema must be non-zero for the engine to honour the custom offset/rotation;
                 // default to 1 when the DB value is 0 but an offset is present.
-                if (sticker.OffsetX != 0f || sticker.OffsetY != 0f)
+                //
+                // Fifth-slot exception: 29 of the 69 weapon+mesh variants author only four sticker
+                // homes, so slot 4 left on its own anchor points at a home that does not exist and the
+                // engine skips it (zero baked scale). StickerAnchors is the measured table of which
+                // authored home slot 4 borrows on those variants, and by how far to shift from it. A row
+                // that already names its own anchor (schema != 0) wins outright — a site doing the shift
+                // itself writes pre-shifted offsets, and adding the delta again would double-shift. The
+                // table is only consulted when the column says nothing, and returns null for every other
+                // slot / weapon / variant, so nothing else moves.
+                float stickerOffsetX = sticker.OffsetX;
+                float stickerOffsetY = sticker.OffsetY;
+                uint schema = sticker.Schema;
+                bool anchored = false;
+
+                if (schema == 0 && StickerAnchors.For(weaponDefIndex, isLegacyModel, stickerSlot) is { } borrowed)
                 {
-                    uint schema = sticker.Schema != 0 ? sticker.Schema : 1u;
+                    schema = borrowed.Anchor;
+                    stickerOffsetX += borrowed.Dx;
+                    stickerOffsetY += borrowed.Dy;
+                    anchored = true; // has no native home to be left alone at — write even at 0,0
+                }
+
+                if (anchored || stickerOffsetX != 0f || stickerOffsetY != 0f)
+                {
+                    if (schema == 0) schema = 1u;
                     CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} schema", ViewAsFloat(schema));
-                    CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} offset x", sticker.OffsetX);
-                    CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} offset y", sticker.OffsetY);
+                    CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} offset x", stickerOffsetX);
+                    CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} offset y", stickerOffsetY);
                     CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} schema", ViewAsFloat(schema));
-                    CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} offset x", sticker.OffsetX);
-                    CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} offset y", sticker.OffsetY);
+                    CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} offset x", stickerOffsetX);
+                    CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} offset y", stickerOffsetY);
                 }
                 float scale = sticker.Scale <= 0f ? 1f : sticker.Scale;
                 CAttributeListSetOrAddAttributeValueByName.Invoke(networked, $"sticker slot {stickerSlot} wear", sticker.Wear);

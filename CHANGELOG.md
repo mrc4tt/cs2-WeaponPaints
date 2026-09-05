@@ -7,6 +7,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **Fresh installs failed to load with `Method CAttributeList_SetOrAddAttributeValueByName not found in
+  gamedata.json`.** The sig-tracker rename of the key in `gamedata/weaponpaints.json` to
+  `CAttributeList::SetOrAddAttributeValueByName` was never carried over to the code, so the static
+  initializer threw before the config-time gamedata check could run. Servers still running the
+  pre-rename JSON kept working, which masked the breakage. The code now resolves the `::`-named key,
+  and the required keys are listed once in `Variables.cs` (`RequiredGamedataKeys`) so future renames
+  have a single place to sync.
+- **A missing or outdated `weaponpaints.json` now fails with a readable error instead of a
+  `TypeInitializationException` cascade.** The signature lookups moved out of the static field
+  initializers into `InitGamedataSignatures()`, called from `OnConfigParsed` after the installed
+  `gamedata/weaponpaints.json` is validated. Missing file, unparsable JSON, or a missing key is now
+  logged with the keys and the expected path, and the plugin unloads cleanly.
 - **The plugin could not load on Windows.** The `UpdateItemView` signature no longer matched anything in
   `server.dll` on CS2 build 14174, and that entry is resolved at static-field initialisation
   (`Variables.cs`) rather than lazily, so the failure took the whole plugin down rather than just the one

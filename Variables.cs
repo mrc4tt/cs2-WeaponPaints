@@ -146,12 +146,33 @@ public partial class WeaponPaints
     private static readonly Dictionary<int, DateTime> LastCommandTime = new(); // Prevents double-call from chat/console
     internal static Database? Database;
 
-    private static readonly MemoryFunctionVoid<nint, string, float> CAttributeListSetOrAddAttributeValueByName = new(GameData.GetSignature("CAttributeList_SetOrAddAttributeValueByName"));
+    // Keys resolved from gamedata. Must match gamedata/weaponpaints.json exactly — when a
+    // sig-tracker proposal renames a key, it must land here and in the JSON in the same commit.
+    internal const string SetOrAddAttributeValueByNameKey = "CAttributeList::SetOrAddAttributeValueByName";
+    internal const string UpdateItemViewKey = "UpdateItemView";
+    internal static readonly string[] RequiredGamedataKeys = [SetOrAddAttributeValueByNameKey, UpdateItemViewKey];
+
+    // Resolved in InitGamedataSignatures() (called from OnConfigParsed after weaponpaints.json
+    // is validated there), not in field initializers: a GetSignature failure in the cctor
+    // surfaces as a cryptic TypeInitializationException and preempts the friendly gamedata
+    // error. Hot reload re-runs OnConfigParsed, so this stays correct across live reloads.
+    private static MemoryFunctionVoid<nint, string, float>? _setAttributeValueByName;
+    private static MemoryFunctionWithReturn<nint, nint, nint>? _updateItemView;
+
+    private static MemoryFunctionVoid<nint, string, float> CAttributeListSetOrAddAttributeValueByName =>
+        _setAttributeValueByName ?? throw new InvalidOperationException("Gamedata signatures not initialized — OnConfigParsed did not complete");
 
     // CEconItemView::Update — forces the engine to re-publish item attributes after we mutate
     // them. Cleaner than the lastinv + bodygroup toggle hacks for getting glove changes to
     // actually render. Signature lifted from M-archand/cs2-WeaponPaints@1cedb61.
-    private static readonly MemoryFunctionWithReturn<nint, nint, nint> UpdateItemView = new(GameData.GetSignature("UpdateItemView"));
+    private static MemoryFunctionWithReturn<nint, nint, nint> UpdateItemView =>
+        _updateItemView ?? throw new InvalidOperationException("Gamedata signatures not initialized — OnConfigParsed did not complete");
+
+    internal static void InitGamedataSignatures()
+    {
+        _setAttributeValueByName = new(GameData.GetSignature(SetOrAddAttributeValueByNameKey));
+        _updateItemView = new(GameData.GetSignature(UpdateItemViewKey));
+    }
 
     //we dont need anymore because we use AcceptInput
     //private static readonly MemoryFunctionWithReturn<nint, string, int, int> SetBodygroupFunc = new(
@@ -159,7 +180,7 @@ public partial class WeaponPaints
 
     //private static readonly Func<nint, string, int, int> SetBodygroup = SetBodygroupFunc.Invoke;
 
-    private static Dictionary<int, string> WeaponDefindex { get; } =
+    internal static Dictionary<int, string> WeaponDefindex { get; } =
         new()
         {
             { 1, "weapon_deagle" },
