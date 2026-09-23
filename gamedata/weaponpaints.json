@@ -2,7 +2,7 @@
   "CAttributeList::SetOrAddAttributeValueByName": {
     "signatures": {
       "library": "server",
-      "windows": "40 53 55 41 56 48 81 EC ? ? ? ? 0F 29 74 24 ?",
+      "windows": "48 89 4C 24 ? 53 41 55 41 56",
       "linux": "55 48 89 E5 41 57 41 56 41 55 49 89 FD 41 54 53 48 89 F3 48 83 EC ? F3 0F 11 85 ? ? ? ?"
     }
   },
@@ -10,7 +10,7 @@
     "signatures": {
       "library": "server",
       "windows": "48 89 54 24 ? 48 89 4C 24 ? 53 57 48 81 EC ? ? ? ?",
-      "linux": "55 49 89 F0 48 89 E5 41 57 41 56 49 89 FE 41 55 41 54 53 48 81 EC ? ? ? ?"
+      "linux": "55 49 89 F0 48 89 E5 41 57 41 56 49 89 FE"
     }
   },
   "CCSPlayerInventory::GetItemInLoadout": {
@@ -23,7 +23,7 @@
   "CEconItemView::CEconItemView": {
     "signatures": {
       "library": "server",
-      "windows": "48 89 5C 24 ? 48 89 6C 24 ? 48 89 74 24 ? 57 41 54 41 55 41 56 41 57 48 83 EC ? 48 8B F9 48 8D 05",
+      "windows": "48 89 5C 24 ? 48 89 6C 24 ? 48 89 74 24 ? 57 41 54 41 55 41 56 41 57 48 83 EC ? 48 8B F9 48 8D 05 ? ? ? ?",
       "linux": "55 48 8D 05 ? ? ? ? 66 0F EF C0 48 89 E5 41 57 45 31 FF"
     }
   },
