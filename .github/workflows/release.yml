@@ -1,0 +1,74 @@
+# GitHub side of the build. The repo lives on git.miksen.me (Forgejo) and is
+# push-mirrored to github.com/mrc4tt/cs2-WeaponPaints; Forgejo runs
+# .forgejo/workflows/release.yml and ignores this directory, GitHub runs only
+# this one. Same zip layout as the Forgejo release.
+name: Release
+
+on:
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - "**/README.md"
+      - "**/.gitignore"
+      - "**/LICENSE"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PROJECT_PATH: "WeaponPaints.csproj"
+  PROJECT_NAME: "WeaponPaints"
+  OUTPUT_PATH: "./WeaponPaints"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      # CS2MenuManager comes from the Forgejo package registry (nuget.config),
+      # which serves it anonymously, so no credentials are needed here.
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build ${{ env.PROJECT_PATH }} -c Release -o ${{ env.OUTPUT_PATH }} -p:BuildNumber=${{ github.run_number }}
+
+      - name: Prepare release structure
+        run: |
+          rm -f \
+            ${{ env.OUTPUT_PATH }}/CounterStrikeSharp.API.dll \
+            ${{ env.OUTPUT_PATH }}/McMaster.NETCore.Plugins.dll \
+            ${{ env.OUTPUT_PATH }}/Microsoft.DotNet.PlatformAbstractions.dll \
+            ${{ env.OUTPUT_PATH }}/Microsoft.Extensions.DependencyModel.dll \
+            ${{ env.OUTPUT_PATH }}/CS2MenuManager.dll
+          PLUGIN_DIR="staging/addons/counterstrikesharp/plugins/${{ env.PROJECT_NAME }}"
+          mkdir -p "$PLUGIN_DIR"
+          rm -rf ${{ env.OUTPUT_PATH }}/gamedata
+          cp -r ${{ env.OUTPUT_PATH }}/* "$PLUGIN_DIR/"
+          if [ -d gamedata ]; then
+            cp -r gamedata staging/addons/counterstrikesharp/
+          fi
+          (cd staging && zip -qr "../${{ env.PROJECT_NAME }}.zip" .)
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION=$(tr -d '[:space:]' < VERSION)
+          TAG="v${VERSION}-build.${{ github.run_number }}"
+          gh release create "$TAG" "${{ env.PROJECT_NAME }}.zip" \
+            --target "${{ github.sha }}" \
+            --title "WeaponPaints ${VERSION} (build ${{ github.run_number }})" \
+            --notes "Extract into game/csgo/ - plugin lands in addons/counterstrikesharp/plugins/${{ env.PROJECT_NAME }}. Commit: ${{ github.sha }}"
