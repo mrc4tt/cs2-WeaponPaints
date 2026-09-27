@@ -120,6 +120,11 @@ namespace WeaponPaints
                 GPlayersNativePin.TryRemove(player.Slot, out _);
             }
 
+            // Always, not only when PetsEnabled: a pet spawned before a config change must still go.
+            RemovePlayerPet(player.Slot);
+            GPlayersPet.TryRemove(player.Slot, out _);
+            PetSpawnQueue.TryRemove(player.Slot, out _);
+
             _temporaryPlayerWeaponWear.TryRemove(player.Slot, out _);
             _stickerWearAssignments.TryRemove(player.Slot, out _);
             _stickerWearOwners.TryRemove(player.Slot, out _);
@@ -152,6 +157,8 @@ namespace WeaponPaints
                 WeaponSync = new WeaponSynchronization(Database, Config);
 
             _fadeSeed = 0;
+            _c4StickerSource = null;
+            _c4StickerAccountId = 0;
             // Re-seed rather than reset to a constant, so the client cannot match these item IDs
             // against materials it generated for the previous map's sticker layouts.
             _nextItemId = NewItemIdSeed();
@@ -234,6 +241,72 @@ namespace WeaponPaints
         {
             _gBCommandsAllowed = true;
             _mvpPlayed = false;
+            return HookResult.Continue;
+        }
+
+        private HookResult OnRoundPrestart(EventRoundPrestart @event, GameEventInfo info)
+        {
+            // Prestart, not round_start: the new bomb is handed out while the round restarts, and a
+            // reset on round_start could land after it and wipe the row that just decorated it.
+            _c4StickerSource = null;
+            _c4StickerAccountId = 0;
+            return HookResult.Continue;
+        }
+
+        // Planting removes weapon_c4 and creates planted_c4 (CPlantedC4), a different entity with its
+        // own m_AttributeManager. Whether the game carries the bomb's item across is not known, so: if
+        // the planted bomb's item already has networked attributes the game copied something and it is
+        // left alone; otherwise the stickers of the row that decorated this round's bomb are written
+        // onto it, in the tick it was planted (bomb_planted fires from the plant itself). Stickers only —
+        // whether planted_c4 draws a charm is unknown. UNTESTED IN GAME (ported from SkinHubgg
+        // WeaponPaints cc57c51, where it is untested too). Hangs off the game event rather than an
+        // OnEntitySpawned "planted_c4" check so it does not depend on CSSharp's entity listeners.
+        private HookResult OnBombPlanted(EventBombPlanted @event, GameEventInfo info)
+        {
+            if (!Config.Additional.SkinEnabled)
+                return HookResult.Continue;
+
+            var source = _c4StickerSource;
+            if (source == null || !source.Stickers.Any(s => s.Id != 0))
+                return HookResult.Continue;
+
+            try
+            {
+                foreach (var planted in Utilities.FindAllEntitiesByDesignerName<CPlantedC4>("planted_c4"))
+                {
+                    if (!planted.IsValid)
+                        continue;
+
+                    var item = planted.AttributeManager?.Item;
+                    if (item == null || item.AttributeList == null || item.NetworkedDynamicAttributes == null)
+                        continue;
+                    if (item.NetworkedDynamicAttributes.Attributes.Count > 0)
+                        continue;
+
+                    if (item.ItemDefinitionIndex == 0)
+                        item.ItemDefinitionIndex = C4DefIndex;
+                    UpdatePlayerEconItemId(item);
+                    item.AccountID = _c4StickerAccountId;
+                    item.Initialized = true;
+
+                    // The C4 has one (hd) mesh.
+                    WriteStickerAttributes(item, C4DefIndex, source, false);
+
+                    try
+                    {
+                        UpdateItemView.Invoke(item.Handle, nint.Zero);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogWarning("UpdateItemView (planted C4) failed: {Message}", ex.Message);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning("Could not copy the C4 stickers onto the planted bomb: {Message}", ex.Message);
+            }
+
             return HookResult.Continue;
         }
 
@@ -502,6 +575,10 @@ namespace WeaponPaints
             RegisterEventHandler<EventRoundMvp>(OnRoundMvp);
             RegisterListener<Listeners.OnEntitySpawned>(OnEntityCreated);
             RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
+            RegisterEventHandler<EventRoundPrestart>(OnRoundPrestart);
+            RegisterEventHandler<EventBombPlanted>(OnBombPlanted);
+
+            RegisterPetListeners();
 
             // ShowSkinImage OnTick removed — per-tick HTML sends are too expensive
             // If skin image display is needed in the future, use a 0.5s repeating timer instead

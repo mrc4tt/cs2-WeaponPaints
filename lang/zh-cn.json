@@ -54,5 +54,26 @@
     "wp_gen_no_permission": "{lightred}你没有权限使用此命令",
     "wp_gen_applied": "已将 {lime}{0}{default} 应用到你的装备",
 
+    "wp_info_pet": "输入 {lime}!pet{default} 打开宠物菜单",
+    "wp_pet_menu_title": "宠物菜单",
+    "wp_pet_menu_stage_title": "为 {lime}{0}{default} 选择阶段",
+    "wp_pet_menu_random_look": "随机新外观",
+    "wp_pet_menu_select": "您选择了 {lime}{0}{default} 作为您的宠物",
+    "wp_pet_menu_removed": "您的宠物将留在家中",
+    "wp_pet_stage_egg": "蛋",
+    "wp_pet_stage_chick": "小鸡",
+    "wp_pet_stage_pullet": "青年鸡",
+    "wp_pet_stage_hen": "母鸡",
+    "wp_pet_stage_set": "您的宠物现在是 {lime}{0}{default}",
+    "wp_pet_name_set": "您的宠物现在叫 {lime}{0}{default}",
+    "wp_pet_name_cleared": "您的宠物不再有名字",
+    "wp_pet_seed_set": "您的宠物外观种子现在是 {lime}{0}{default}",
+    "wp_pet_variant_set": "您的宠物颜色现在是 {lime}#{0}{default}",
+    "wp_pet_variant_cleared": "您的宠物颜色现在为默认颜色",
+    "wp_pet_none": "您还没有宠物。输入 {lime}!pet{default} 来选择一个",
+    "wp_pet_invalid": "{lightred}该值无效",
+    "wp_pet_no_permission": "{lightred}您没有宠物的使用权限",
+    "wp_pet_usage": "{lime}!pet{default} 菜单, {lime}!pet name <名字>{default}, {lime}!pet seed [数字]{default}, {lime}!pet color <数字|random|default>{default}, {lime}!pet stage <chick|pullet|hen>{default}, {lime}!pet off{default}",
+
     "None": "无"
 }

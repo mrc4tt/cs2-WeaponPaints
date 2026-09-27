@@ -54,5 +54,26 @@
     "wp_gen_no_permission": "{lightred}Você não tem acesso a este comando",
     "wp_gen_applied": "{lime}{0}{default} aplicado ao seu loadout",
 
+    "wp_info_pet": "Digite {lime}!pet{default} para abrir o menu de pets",
+    "wp_pet_menu_title": "Menu de Pets",
+    "wp_pet_menu_stage_title": "Selecione o estágio de {lime}{0}{default}",
+    "wp_pet_menu_random_look": "Nova aparência aleatória",
+    "wp_pet_menu_select": "Você escolheu {lime}{0}{default} como seu pet",
+    "wp_pet_menu_removed": "Seu pet vai ficar em casa",
+    "wp_pet_stage_egg": "Ovo",
+    "wp_pet_stage_chick": "Pintinho",
+    "wp_pet_stage_pullet": "Franga",
+    "wp_pet_stage_hen": "Galinha",
+    "wp_pet_stage_set": "O estágio do seu pet agora é {lime}{0}{default}",
+    "wp_pet_name_set": "Seu pet agora se chama {lime}{0}{default}",
+    "wp_pet_name_cleared": "Seu pet não tem mais nome",
+    "wp_pet_seed_set": "A seed de aparência do seu pet agora é {lime}{0}{default}",
+    "wp_pet_variant_set": "A cor do seu pet agora é {lime}#{0}{default}",
+    "wp_pet_variant_cleared": "Seu pet agora tem a cor padrão",
+    "wp_pet_none": "Você ainda não tem um pet. Digite {lime}!pet{default} para escolher um",
+    "wp_pet_invalid": "{lightred}Esse valor não é válido",
+    "wp_pet_no_permission": "{lightred}Você não tem acesso a pets",
+    "wp_pet_usage": "{lime}!pet{default} menu, {lime}!pet name <nome>{default}, {lime}!pet seed [número]{default}, {lime}!pet color <número|random|default>{default}, {lime}!pet stage <chick|pullet|hen>{default}, {lime}!pet off{default}",
+
     "None": "Nenhum"
 }

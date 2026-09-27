@@ -31,6 +31,7 @@ internal class WeaponSynchronization
                 WeaponPaints.GPlayersMusic.TryRemove(player.Slot, out _);
                 WeaponPaints.GPlayerWeaponsInfo.TryRemove(player.Slot, out _);
                 WeaponPaints.GPlayersPin.TryRemove(player.Slot, out _);
+                WeaponPaints.GPlayersPet.TryRemove(player.Slot, out _);
             }
 
             await using var connection = await _database.GetConnectionAsync();
@@ -47,6 +48,8 @@ internal class WeaponSynchronization
                 await GetWeaponPaintsFromDatabaseAsync(player, connection);
             if (_config.Additional.PinsEnabled)
                 await GetPinsFromDatabaseAsync(player, connection);
+            if (_config.Additional.PetsEnabled)
+                await GetPetFromDatabaseAsync(player, connection);
         }
         catch (Exception ex)
         {
@@ -442,6 +445,91 @@ internal class WeaponSynchronization
         catch (Exception ex)
         {
             WeaponPaints.Instance.Logger.LogWarning("GetPinsFromDatabase failed: {Message}", ex.Message);
+        }
+    }
+
+    private async Task GetPetFromDatabaseAsync(PlayerInfo? player, MySqlConnection connection)
+    {
+        try
+        {
+            if (!_config.Additional.PetsEnabled || player == null || string.IsNullOrEmpty(player.SteamId))
+                return;
+
+            const string query = "SELECT `pet_id`, `pet_stage`, `pet_variant`, `pet_seed`, `pet_name` FROM `wp_player_pets` WHERE `steamid` = @steamid";
+            var row = await connection.QueryFirstOrDefaultAsync(query, new { steamid = player.SteamId }) as IDictionary<string, object>;
+
+            static object? Column(IDictionary<string, object> source, string name) =>
+                source.TryGetValue(name, out var value) && value is not DBNull ? value : null;
+
+            // No row = no pet (GetPlayerData already dropped the cached one, so a pet removed on the
+            // website disappears on the next refresh). Convert.* rather than casts: MySqlConnector hands
+            // back sbyte for TINYINT, uint for INT UNSIGNED and int for INT, and a website that created
+            // the table itself may have picked other widths.
+            if (row != null && Column(row, "pet_id") is { } petId)
+            {
+                WeaponPaints.GPlayersPet[player.Slot] = new PetInfo
+                {
+                    PetId = Convert.ToInt32(petId, CultureInfo.InvariantCulture),
+                    Stage = Column(row, "pet_stage") is { } stage ? Convert.ToInt32(stage, CultureInfo.InvariantCulture) : WeaponPaints.PetStageHen,
+                    Variant = Column(row, "pet_variant") is { } variant ? Convert.ToInt32(variant, CultureInfo.InvariantCulture) : null,
+                    Seed = Column(row, "pet_seed") is { } seed ? Convert.ToUInt32(seed, CultureInfo.InvariantCulture) : 0u,
+                    Name = Column(row, "pet_name") is { } name ? Convert.ToString(name, CultureInfo.InvariantCulture) : null,
+                };
+            }
+
+            // Spawned / replaced / removed by PetThink on the game thread; this runs on a worker.
+            WeaponPaints.QueuePetSpawn(player.Slot);
+        }
+        catch (Exception ex)
+        {
+            WeaponPaints.Instance.Logger.LogWarning("GetPetFromDatabase failed: {Message}", ex.Message);
+        }
+    }
+
+    // pet == null removes the row: pet_id is NOT NULL, so "no pet" is the absence of a row, the same
+    // way a website writes it.
+    internal async Task SyncPetToDatabase(PlayerInfo player, PetInfo? pet)
+    {
+        if (!_config.Additional.PetsEnabled || string.IsNullOrEmpty(player.SteamId))
+            return;
+
+        try
+        {
+            await using var connection = await _database.GetConnectionAsync();
+
+            if (pet == null)
+            {
+                await connection.ExecuteAsync("DELETE FROM `wp_player_pets` WHERE `steamid` = @steamid", new { steamid = player.SteamId });
+                return;
+            }
+
+            const string query =
+                @"
+                INSERT INTO `wp_player_pets` (`steamid`, `pet_id`, `pet_stage`, `pet_variant`, `pet_seed`, `pet_name`)
+                VALUES (@steamid, @pet_id, @pet_stage, @pet_variant, @pet_seed, @pet_name)
+                ON DUPLICATE KEY UPDATE
+                    `pet_id` = @pet_id,
+                    `pet_stage` = @pet_stage,
+                    `pet_variant` = @pet_variant,
+                    `pet_seed` = @pet_seed,
+                    `pet_name` = @pet_name";
+
+            await connection.ExecuteAsync(
+                query,
+                new
+                {
+                    steamid = player.SteamId,
+                    pet_id = pet.PetId,
+                    pet_stage = pet.Stage,
+                    pet_variant = pet.Variant,
+                    pet_seed = pet.Seed,
+                    pet_name = string.IsNullOrEmpty(pet.Name) ? null : pet.Name,
+                }
+            );
+        }
+        catch (Exception e)
+        {
+            WeaponPaints.Instance.Logger.LogWarning("SyncPetToDatabase failed: {Message}", e.Message);
         }
     }
 

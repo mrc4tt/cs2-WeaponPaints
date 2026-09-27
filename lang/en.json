@@ -76,5 +76,26 @@
 	"wp_gen_resolving": "Looking up that gen code...",
 	"wp_gen_api_failed": "{lightred}Couldn't resolve that gen code - the lookup service may be down, try the full inspect link instead",
 
+	"wp_info_pet": "Type {lime}!pet{default} to open the pet menu",
+	"wp_pet_menu_title": "Pet Menu",
+	"wp_pet_menu_stage_title": "Select stage for {lime}{0}{default}",
+	"wp_pet_menu_random_look": "New random look",
+	"wp_pet_menu_select": "You have chosen {lime}{0}{default} as your pet",
+	"wp_pet_menu_removed": "Your pet will stay home",
+	"wp_pet_stage_egg": "Egg",
+	"wp_pet_stage_chick": "Chick",
+	"wp_pet_stage_pullet": "Pullet",
+	"wp_pet_stage_hen": "Hen",
+	"wp_pet_stage_set": "Your pet is now a {lime}{0}{default}",
+	"wp_pet_name_set": "Your pet is now called {lime}{0}{default}",
+	"wp_pet_name_cleared": "Your pet no longer has a name",
+	"wp_pet_seed_set": "Your pet's look seed is now {lime}{0}{default}",
+	"wp_pet_variant_set": "Your pet's color is now {lime}#{0}{default}",
+	"wp_pet_variant_cleared": "Your pet's color is now the default",
+	"wp_pet_none": "You have no pet yet. Type {lime}!pet{default} to pick one",
+	"wp_pet_invalid": "{lightred}That value is not valid",
+	"wp_pet_no_permission": "{lightred}You don't have access to pets",
+	"wp_pet_usage": "{lime}!pet{default} menu, {lime}!pet name <name>{default}, {lime}!pet seed [number]{default}, {lime}!pet color <number|random|default>{default}, {lime}!pet stage <chick|pullet|hen>{default}, {lime}!pet off{default}",
+
 	"None": "None"
 }

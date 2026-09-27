@@ -314,4 +314,28 @@ public partial class WeaponPaints
     // Per-slot cache of CS2's faction/map default pawn model, captured on spawn before any
     // custom agent overrides it. Used to restore immediately when player picks "Agent | Default".
     internal static readonly ConcurrentDictionary<int, string> OriginalPawnModel = new();
+
+    // weapon_c4. CS2 1.41.8.2 made the bomb sticker/charm-capable (four sticker homes on its one hd
+    // mesh). Deliberately NOT in WeaponDefindex / WeaponList: those drive the !skins menu, !g and
+    // RefreshWeapons' kill+regive, and the C4 has no paint kit and must never be regiven. Every C4
+    // row in wp_player_skins is weapon_paint_id = 0, which the "sticker without skin" path already
+    // carries — see GivePlayerWeaponSkin.
+    internal const int C4DefIndex = 49;
+
+    // The row that decorated this round's bomb and whose account it went to, so the planted_c4
+    // entity (a different entity with its own econ item) can be given the same stickers even
+    // after the carrier dropped the bomb, died or left. Reset on round prestart and map start.
+    private WeaponInfo? _c4StickerSource;
+    private uint _c4StickerAccountId;
+
+    // Chicken pets (CS2 1.41.8.2), see Pets.cs. One pet per player (the pet item is "noteam"),
+    // keyed by slot like every other GPlayers* dictionary — cleared in OnPlayerDisconnect.
+    internal static readonly ConcurrentDictionary<int, PetInfo> GPlayersPet = new();
+
+    // Slots whose pet should be (re)spawned as soon as they are alive. Filled by the DB loader on a
+    // worker thread, drained by PetThink on the game thread, so no worker ever touches an entity.
+    internal static readonly ConcurrentDictionary<int, byte> PetSpawnQueue = new();
+
+    // slot -> the chicken this plugin spawned for that player (by raw entity handle).
+    private readonly ConcurrentDictionary<int, ActivePet> _activePets = new();
 }

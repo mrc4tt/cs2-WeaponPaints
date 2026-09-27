@@ -20,7 +20,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
     public WeaponPaintsConfig Config { get; set; } = new();
     internal static WeaponPaintsSqlConfig SqlConfig { get; set; } = new();
     public override string ModuleAuthor => "Nereziel & daffyy (Forked by Miksen)";
-    public override string ModuleDescription => "Skin, gloves, agents and knife selector, standalone and web-based";
+    public override string ModuleDescription => "Skin, gloves, agents, knife and pet selector, standalone and web-based";
     public override string ModuleName => "WeaponPaints";
     public override string ModuleVersion => _moduleVersion;
 
@@ -43,6 +43,8 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             GPlayersPin.Clear();
             GPlayersNativePin.Clear();
             GPlayersMusic.Clear();
+            GPlayersPet.Clear();
+            PetSpawnQueue.Clear();
             GPlayersPendingSeedWearInput.Clear();
             OriginalPawnModel.Clear();
             _temporaryPlayerWeaponWear.Clear();
@@ -333,6 +335,11 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
     {
         ClearPickupRefreshTimers();
 
+        // The chickens are world entities this plugin spawned: remove them so a reload does not leave
+        // orphaned, ownerless pets behind. On a server shutdown the map ends first and OnMapEndPets
+        // has already emptied the list, so this touches nothing.
+        RemoveAllPets();
+
         try
         {
             VirtualFunctions.GiveNamedItemFunc.Unhook(OnGiveNamedItemPost, HookMode.Post);
@@ -361,6 +368,8 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
                 SetupMusicMenu();
             if (Config.Additional.PinsEnabled)
                 SetupPinsMenu();
+            if (Config.Additional.PetsEnabled)
+                SetupPetsMenu();
 
             RegisterCommands();
         }

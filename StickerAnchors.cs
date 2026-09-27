@@ -82,6 +82,13 @@ namespace WeaponPaints
             { "weapon_ak47", (new StickerAnchor(1, 0.14699425f, 0.028994253f), new StickerAnchor(1, 0.12881461f, 0.03781461f)) },
             { "weapon_awp", (new StickerAnchor(1, 0.26138917f, 0.041389152f), null) },
             { "weapon_bizon", (new StickerAnchor(1, -0.16905054f, -0.00005054744f), new StickerAnchor(1, 0.11569809f, 0.054698095f)) },
+            // CS2 1.41.8.2 made the C4 sticker-capable: weapon_c4.vmdl authors exactly four homes (0 Autograph,
+            // 1 Team1, 2 Team2, 3 Map) on body_hd and bakes g_vSticker4Scale [0 0], so slot 4 hangs off home 1
+            // and is shifted onto the +X side face of the brick. From the same generator's output for the C4
+            // (SkinHubgg/WeaponPaints cc57c51). The C4 has one mesh, so both halves carry the same row and the
+            // plugin only ever asks for hd. Reached through C4DefIndex in For, not WeaponDefindex.
+            // Unverified in game.
+            { "weapon_c4", (new StickerAnchor(1, -0.12920119f, 0.2734928f), new StickerAnchor(1, -0.12920119f, 0.2734928f)) },
             { "weapon_deagle", (null, new StickerAnchor(1, 0.13099661f, 0.031996623f)) },
             { "weapon_elite", (new StickerAnchor(2, -0.017009478f, 0.09099052f), new StickerAnchor(2, -0.034058955f, 0.06794105f)) },
             // legacy borrows a home authored 12.5 against the 12.2 the fifth wants - the one variant of the
@@ -115,7 +122,11 @@ namespace WeaponPaints
         internal static StickerAnchor? For(int weaponDefIndex, bool isLegacyModel, int stickerSlot)
         {
             if (stickerSlot != FifthStickerSlot) return null;
-            if (!WeaponPaints.WeaponDefindex.TryGetValue(weaponDefIndex, out var weaponName)) return null;
+            // weapon_c4 is deliberately kept out of WeaponDefindex (no paint for the !skins menu), so it
+            // is named here directly — without this its row above would never be reached.
+            string? weaponName;
+            if (weaponDefIndex == WeaponPaints.C4DefIndex) weaponName = "weapon_c4";
+            else if (!WeaponPaints.WeaponDefindex.TryGetValue(weaponDefIndex, out weaponName)) return null;
             if (!Table.TryGetValue(weaponName, out var entry)) return null;
 
             return isLegacyModel ? entry.Legacy : entry.Hd;

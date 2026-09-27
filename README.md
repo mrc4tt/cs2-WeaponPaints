@@ -14,6 +14,8 @@ Unfinished, unoptimized and not fully functional ugly demo weapon paints plugin 
 - Added command **`!agents`** to show menu with agents
 - Added command **`!pins`** to show menu with pins
 - Added command **`!music`** to show menu with music
+- Added command **`!pet`** to show menu with chicken pets (CS2 1.41.8.2), see [Pets](#pets)
+- Stickers and charms on the **C4** (CS2 1.41.8.2), see [C4 stickers and charms](#c4-stickers-and-charms)
 - Translations support, submit a PR if you want to share your translation
 
 ## Images
@@ -32,6 +34,61 @@ Unfinished, unoptimized and not fully functional ugly demo weapon paints plugin 
 - Edit **`addons/counterstrikesharp/configs/plugins/WeaponPaints/WeaponPaints.json`** include database credentials
 - In **`addons/counterstrikesharp/configs/core.json`** set **FollowCS2ServerGuidelines** to **`false`**
 - Copy from plugins folder gamedata file **`weaponpaints.json`** to folder **`addons/counterstrikesharp/gamedata/`**
+
+## C4 stickers and charms
+CS2 1.41.8.2 made the C4 sticker-capable. The C4 has no paint kits, so a C4 row is always
+`weapon_paint_id = 0` - it goes through the same "sticker/charm without a skin" path as any unpainted gun.
+
+- Row: `wp_player_skins(steamid, weapon_team 2 (or 0), weapon_defindex 49, weapon_paint_id 0, weapon_sticker_0..4, weapon_keychain)`.
+  No schema change.
+- All five sticker slots are written. The model only has four sticker homes, so slot 4 borrows home 1 and is
+  shifted onto the side of the bomb (`StickerAnchors`), the same way the fifth sticker works on the four-home guns.
+- The C4 always uses its one hd mesh and is not in the `!skins` menu (nothing to paint). `!sticker` works while
+  holding it; the bomb is updated in place, never dropped and re-given.
+- When the bomb is planted, the planted bomb gets the same stickers if the game did not carry them over itself.
+  **Untested in game.**
+
+## Pets
+CS2 1.41.8.2 added chicken pets (item 4681). The plugin spawns its own `chicken` that follows the player,
+carrying the pet id, stage, seed and name, and a `<player>'s <name>` label. **This has not been run on a server
+yet.**
+
+- **Colour** is `pet_variant`: a material group index (Catalana 0-13, Silkie 0-9, Polish 0-12; 0 = default, the
+  chick has none). `NULL` or an index the model does not have means the default colour. A pet picked in `!pet`
+  gets a colour rolled with the game's own weights; `!pet color` changes it.
+- **Seed** (`pet_seed`) drives the body shape of a pullet/hen and a small colour jitter. Seed 0 is refused.
+- **Stage** (`pet_stage`) is clamped to 0-3. Eggs never leave the nest.
+- Spawned shortly after the owner spawns, stays put when the owner dies, comes back on the next spawn, and is
+  removed on team change, disconnect, map end and plugin unload. The game removes owned chickens at every round
+  start; the plugin puts them back a frame later. A player the game itself gave a pet gets no second one.
+
+| Command | What it does |
+| --- | --- |
+| `!pet` | Menu: pick a pet and its stage, or None. "New random look" rolls a new seed and colour |
+| `!pet name <text>` | Name the pet (32 characters max; empty clears it) |
+| `!pet seed [number]` | A new random seed, or a specific one (not 0) |
+| `!pet color <number\|random\|default>` | Pick a colour, roll one, or go back to the default |
+| `!pet stage <chick\|pullet\|hen>` | Change the stage |
+| `!pet off` | No pet |
+
+Config (`Additional`): `PetsEnabled` (default `true`), `CommandPet` (default `["pet"]`), `PetPermission`
+(default `""` = everyone, e.g. `"@css/vip"` - also decides whether a player's pet is spawned at all).
+
+Table (created automatically; the column layout matches SkinHubgg/WeaponPaints so a site written for it works):
+
+```sql
+CREATE TABLE IF NOT EXISTS `wp_player_pets` (
+  `steamid`     varchar(18)  NOT NULL PRIMARY KEY,  -- one pet per player, pets are "noteam"
+  `pet_id`      int          NOT NULL,              -- 1 egg, 2 chick, 3 catalana, 4 silkie, 5 polish
+  `pet_stage`   tinyint      NOT NULL DEFAULT 3,    -- 0 egg, 1 chick, 2 pullet, 3 hen
+  `pet_variant` int          NULL,                  -- material group index; NULL = default colour
+  `pet_seed`    int unsigned NOT NULL DEFAULT 0,    -- "pet seed" attribute
+  `pet_name`    varchar(32)  NULL                   -- name tag
+);
+```
+
+The pet models are precached on map load, so a plugin loaded mid-map may show pets on the default chicken model
+until the next map.
 
 ## Plugin Configuration
 <details>

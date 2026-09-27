@@ -54,5 +54,26 @@
     "wp_gen_no_permission": "{lightred}У вас немає доступу до цієї команди",
     "wp_gen_applied": "Застосовано {lime}{0}{default} до вашого спорядження",
 
+    "wp_info_pet": "Введіть {lime}!pet{default}, щоб відкрити меню улюбленця",
+    "wp_pet_menu_title": "Меню Улюбленця",
+    "wp_pet_menu_stage_title": "Оберіть стадію для {lime}{0}{default}",
+    "wp_pet_menu_random_look": "Новий випадковий вигляд",
+    "wp_pet_menu_select": "Ви обрали {lime}{0}{default} як свого улюбленця",
+    "wp_pet_menu_removed": "Ваш улюбленець залишиться вдома",
+    "wp_pet_stage_egg": "Яйце",
+    "wp_pet_stage_chick": "Курча",
+    "wp_pet_stage_pullet": "Молодка",
+    "wp_pet_stage_hen": "Курка",
+    "wp_pet_stage_set": "Стадія вашого улюбленця: {lime}{0}{default}",
+    "wp_pet_name_set": "Тепер вашого улюбленця звуть {lime}{0}{default}",
+    "wp_pet_name_cleared": "У вашого улюбленця більше немає імені",
+    "wp_pet_seed_set": "Сід вигляду вашого улюбленця тепер {lime}{0}{default}",
+    "wp_pet_variant_set": "Колір вашого улюбленця тепер {lime}#{0}{default}",
+    "wp_pet_variant_cleared": "Колір вашого улюбленця тепер стандартний",
+    "wp_pet_none": "У вас ще немає улюбленця. Введіть {lime}!pet{default}, щоб обрати",
+    "wp_pet_invalid": "{lightred}Неприпустиме значення",
+    "wp_pet_no_permission": "{lightred}У вас немає доступу до улюбленців",
+    "wp_pet_usage": "{lime}!pet{default} меню, {lime}!pet name <ім'я>{default}, {lime}!pet seed [число]{default}, {lime}!pet color <число|random|default>{default}, {lime}!pet stage <chick|pullet|hen>{default}, {lime}!pet off{default}",
+
     "None": "Немає"
 }

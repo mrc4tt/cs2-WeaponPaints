@@ -54,5 +54,26 @@
     "wp_gen_no_permission": "{lightred}Jums nav piekļuves šai komandai",
     "wp_gen_applied": "{lime}{0}{default} pielietots jūsu ekipējumam",
 
+    "wp_info_pet": "Ievadiet {lime}!pet{default}, lai atvērtu mājdzīvnieku izvēlni",
+    "wp_pet_menu_title": "Mājdzīvnieku Izvēlne",
+    "wp_pet_menu_stage_title": "Izvēlieties stadiju: {lime}{0}{default}",
+    "wp_pet_menu_random_look": "Jauns nejaušs izskats",
+    "wp_pet_menu_select": "Jūs esat izvēlējies {lime}{0}{default} kā savu mājdzīvnieku",
+    "wp_pet_menu_removed": "Jūsu mājdzīvnieks paliks mājās",
+    "wp_pet_stage_egg": "Ola",
+    "wp_pet_stage_chick": "Cālis",
+    "wp_pet_stage_pullet": "Jaunvista",
+    "wp_pet_stage_hen": "Vista",
+    "wp_pet_stage_set": "Jūsu mājdzīvnieka stadija tagad: {lime}{0}{default}",
+    "wp_pet_name_set": "Jūsu mājdzīvnieka vārds tagad ir {lime}{0}{default}",
+    "wp_pet_name_cleared": "Jūsu mājdzīvniekam vairs nav vārda",
+    "wp_pet_seed_set": "Jūsu mājdzīvnieka izskata sēkla tagad ir {lime}{0}{default}",
+    "wp_pet_variant_set": "Jūsu mājdzīvnieka krāsa tagad ir {lime}#{0}{default}",
+    "wp_pet_variant_cleared": "Jūsu mājdzīvnieka krāsa tagad ir noklusējuma krāsa",
+    "wp_pet_none": "Jums vēl nav mājdzīvnieka. Ievadiet {lime}!pet{default}, lai to izvēlētos",
+    "wp_pet_invalid": "{lightred}Šī vērtība nav derīga",
+    "wp_pet_no_permission": "{lightred}Jums nav piekļuves mājdzīvniekiem",
+    "wp_pet_usage": "{lime}!pet{default} izvēlne, {lime}!pet name <vārds>{default}, {lime}!pet seed [skaitlis]{default}, {lime}!pet color <skaitlis|random|default>{default}, {lime}!pet stage <chick|pullet|hen>{default}, {lime}!pet off{default}",
+
     "None": "Nav"
 }

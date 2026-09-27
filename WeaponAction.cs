@@ -37,11 +37,17 @@ namespace WeaponPaints
 
             int weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
 
+            // The C4 has no paint kits: every C4 row is paint 0 and only ever carries stickers and/or a
+            // charm, which the "sticker without skin" route below already applies. It is kept out of the
+            // random-skin branch (a random "skin" for it is paint 0 plus texture attributes that describe
+            // nothing, and would wipe the attributes of a player's real bomb) and pinned to its one hd mesh.
+            bool isC4 = weaponDefIndex == C4DefIndex;
+
             // Check FIRST if player has custom skin - if not, preserve Steam inventory skin
             if (!isKnife)
             {
                 bool hasCustomSkin = HasChangedPaint(player, weaponDefIndex, out _);
-                bool giveRandomSkin = Config.Additional.GiveRandomSkin;
+                bool giveRandomSkin = Config.Additional.GiveRandomSkin && !isC4;
 
                 // No custom skin and no random skin: preserve the player's inventory/default
                 // weapon — UNLESS they set stickers/keychain on it. In that case fall through to
@@ -101,7 +107,7 @@ namespace WeaponPaints
 
             bool isLegacyModel;
 
-            if (Config.Additional.GiveRandomSkin && !HasChangedPaint(player, weaponDefIndex, out _))
+            if (Config.Additional.GiveRandomSkin && !isC4 && !HasChangedPaint(player, weaponDefIndex, out _))
             {
                 // Random skins
                 weapon.FallbackPaintKit = GetRandomPaint(weaponDefIndex);
@@ -213,12 +219,21 @@ namespace WeaponPaints
             // placement. Each variant binds its own material and its own StickerMarkup, so the fifth
             // slot's borrowed home differs between hd and legacy (see StickerAnchors). Paint 0 / unknown
             // paint miss the index and resolve legacy, matching the mesh the engine renders.
-            isLegacyModel = !SkinsLegacyModelIndex.TryGetValue((weaponDefIndex, fallbackPaintKit), out var legacyApply2) || legacyApply2;
+            // weapon_c4.vmdl has no mesh groups and no legacy mesh: the bomb is always its one hd mesh,
+            // which is also the variant StickerAnchors must resolve for its fifth slot.
+            isLegacyModel = !isC4 && (!SkinsLegacyModelIndex.TryGetValue((weaponDefIndex, fallbackPaintKit), out var legacyApply2) || legacyApply2);
 
             if (weaponInfo.KeyChain != null)
                 SetKeychain(player, weapon);
             if (weaponInfo.Stickers.Count > 0)
                 SetStickers(player, weapon, isLegacyModel);
+
+            // Remember the row that decorated this round's bomb for the planted_c4 copy (OnBombPlanted).
+            if (isC4)
+            {
+                _c4StickerSource = weaponInfo;
+                _c4StickerAccountId = (uint)player.SteamID;
+            }
 
             // Mark item as a real econ item and force CEconItemView::Update so the client
             // refreshes its cached attribute view. Without this, the texture renders from
@@ -388,12 +403,25 @@ namespace WeaponPaints
             if (!TryGetWeaponInfo(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null)
                 return;
 
+            WriteStickerAttributes(weapon.AttributeManager.Item, weaponDefIndex, weaponInfo, isLegacyModel);
+
+            if (_temporaryPlayerWeaponWear.TryGetValue(player.Slot, out var playerWear) && playerWear.TryGetValue(weaponDefIndex, out float storedWear))
+            {
+                weapon.FallbackWear = storedWear;
+            }
+        }
+
+        // The sticker attributes of one row, written onto any econ item: a held weapon's, or the
+        // planted bomb's (planted_c4 is not a weapon — see OnBombPlanted). Split out of SetStickers for
+        // that reason only; the body is unchanged.
+        private static void WriteStickerAttributes(CEconItemView item, int weaponDefIndex, WeaponInfo weaponInfo, bool isLegacyModel)
+        {
             // Dual-write to BOTH attribute lists. Stickers written only to NetworkedDynamicAttributes
             // get dropped when UpdateItemView (CEconItemView::Update) rebuilds the client econ view
             // from AttributeList — the same reason the paint kit is written to both lists above. Without
             // this, stickers don't render on the live !sticker apply (kill+regive runs UpdateItemView).
-            var networked = weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle;
-            var attributeList = weapon.AttributeManager.Item.AttributeList.Handle;
+            var networked = item.NetworkedDynamicAttributes.Handle;
+            var attributeList = item.AttributeList.Handle;
 
             // When at least one real sticker is present we SKIP empty slots (do not write id 0):
             // writing id 0 to unused slots disrupts the compositor and drops an animated foil/holo
@@ -465,11 +493,6 @@ namespace WeaponPaints
                 CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} wear", sticker.Wear);
                 CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} scale", scale);
                 CAttributeListSetOrAddAttributeValueByName.Invoke(attributeList, $"sticker slot {stickerSlot} rotation", sticker.Rotation);
-            }
-
-            if (_temporaryPlayerWeaponWear.TryGetValue(player.Slot, out var playerWear) && playerWear.TryGetValue(weaponDefIndex, out float storedWear))
-            {
-                weapon.FallbackWear = storedWear;
             }
         }
 
@@ -784,6 +807,38 @@ namespace WeaponPaints
                     continue;
 
                 GivePlayerWeaponSkin(player, weapon.Value);
+            }
+        }
+
+        // Re-applies the player's C4 row onto the bomb they carry, in place. The C4 must never go
+        // through RefreshWeapons' kill+regive (it only regives rifle/pistol gear slots anyway, and
+        // killing the bomb would take it out of the round), so a live sticker/charm change reaches the
+        // bomb this way. The wear bump first: SetStickers re-reads the value it caches, and the new
+        // layout gets its own wear so the client re-bakes the decals (see StickerWearStep).
+        private void RefreshC4InPlace(CCSPlayerController? player)
+        {
+            if (!_gBCommandsAllowed)
+                return;
+            if (player == null || !player.IsValid || player.PlayerPawn.Value?.WeaponServices == null || !player.PawnIsAlive)
+                return;
+
+            foreach (var handle in player.PlayerPawn.Value.WeaponServices.MyWeapons)
+            {
+                var weapon = handle.Value;
+                if (weapon == null || !weapon.IsValid || weapon.AttributeManager?.Item == null)
+                    continue;
+                if (weapon.AttributeManager.Item.ItemDefinitionIndex != C4DefIndex)
+                    continue;
+
+                try
+                {
+                    IncrementWearForWeaponWithStickers(player, weapon);
+                    GivePlayerWeaponSkin(player, weapon);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning("RefreshC4InPlace failed: {Message}", ex.Message);
+                }
             }
         }
 
@@ -1200,6 +1255,11 @@ namespace WeaponPaints
 
         private void UpdatePlayerWeaponMeshGroupMask(CCSPlayerController player, CBasePlayerWeapon weapon, bool isLegacy)
         {
+            // weapon_c4.vmdl has no mesh groups (no "body" group to set, no legacy mesh to pick), so
+            // the bomb always keeps its one hd mesh.
+            if (weapon.AttributeManager.Item.ItemDefinitionIndex == C4DefIndex)
+                return;
+
             UpdateWeaponMeshGroupMask(weapon, isLegacy);
         }
 

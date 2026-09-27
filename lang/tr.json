@@ -54,5 +54,26 @@
     "wp_gen_no_permission": "{lightred}Bu komuta erişiminiz yok",
     "wp_gen_applied": "{lime}{0}{default} loadout'unuza uygulandı",
 
+    "wp_info_pet": "Evcil hayvan menüsünü açmak için {lime}!pet{default} yazın",
+    "wp_pet_menu_title": "Evcil Hayvan Menüsü",
+    "wp_pet_menu_stage_title": "{lime}{0}{default} için evre seçin",
+    "wp_pet_menu_random_look": "Yeni rastgele görünüm",
+    "wp_pet_menu_select": "{lime}{0}{default} olarak evcil hayvanınızı seçtiniz",
+    "wp_pet_menu_removed": "Evcil hayvanınız evde kalacak",
+    "wp_pet_stage_egg": "Yumurta",
+    "wp_pet_stage_chick": "Civciv",
+    "wp_pet_stage_pullet": "Piliç",
+    "wp_pet_stage_hen": "Tavuk",
+    "wp_pet_stage_set": "Evcil hayvanınızın evresi artık {lime}{0}{default}",
+    "wp_pet_name_set": "Evcil hayvanınızın adı artık {lime}{0}{default}",
+    "wp_pet_name_cleared": "Evcil hayvanınızın artık bir adı yok",
+    "wp_pet_seed_set": "Evcil hayvanınızın görünüm seed'i artık {lime}{0}{default}",
+    "wp_pet_variant_set": "Evcil hayvanınızın rengi artık {lime}#{0}{default}",
+    "wp_pet_variant_cleared": "Evcil hayvanınızın rengi artık varsayılan",
+    "wp_pet_none": "Henüz bir evcil hayvanınız yok. Seçmek için {lime}!pet{default} yazın",
+    "wp_pet_invalid": "{lightred}Bu değer geçerli değil",
+    "wp_pet_no_permission": "{lightred}Evcil hayvanlara erişiminiz yok",
+    "wp_pet_usage": "{lime}!pet{default} menü, {lime}!pet name <ad>{default}, {lime}!pet seed [sayı]{default}, {lime}!pet color <sayı|random|default>{default}, {lime}!pet stage <chick|pullet|hen>{default}, {lime}!pet off{default}",
+
     "None": "Yok"
 }

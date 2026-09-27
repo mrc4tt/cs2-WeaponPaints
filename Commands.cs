@@ -92,6 +92,8 @@ public partial class WeaponPaints
         // dropped stickers (e.g. sticker slot 0 vanished after !wp while !sticker,
         // which uses this same full call, kept it).
         RefreshWeapons(player);
+        // RefreshWeapons only regives rifle/pistol gear slots; the carried C4 is re-applied in place.
+        RefreshC4InPlace(player);
         GivePlayerAgent(player);
         GivePlayerMusicKit(player);
         AddTimer(0.15f, () => GivePlayerPin(player), CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
@@ -142,6 +144,12 @@ public partial class WeaponPaints
             if (!string.IsNullOrEmpty(Localizer["wp_info_pin"]))
             {
                 player!.Print(Localizer["wp_info_pin"]);
+            }
+
+        if (Config.Additional.PetsEnabled)
+            if (!string.IsNullOrEmpty(Localizer["wp_info_pet"]))
+            {
+                player!.Print(Localizer["wp_info_pet"]);
             }
 
         if (!Config.Additional.KnifeEnabled)
@@ -1891,6 +1899,8 @@ public partial class WeaponPaints
                 var isKnife = active != null && active.IsValid && active.AttributeManager.Item.ItemDefinitionIndex == weaponDefIndex && (active.DesignerName.Contains("knife") || active.DesignerName.Contains("bayonet"));
                 if (isKnife)
                     RefreshKnife(player);
+                else if (weaponDefIndex == C4DefIndex)
+                    RefreshC4InPlace(player); // the bomb is never killed+regiven
                 else
                     RefreshWeapons(player);
             }, CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
@@ -1943,6 +1953,8 @@ public partial class WeaponPaints
                 var isKnife = active != null && active.IsValid && active.AttributeManager.Item.ItemDefinitionIndex == weaponDefIndex && (active.DesignerName.Contains("knife") || active.DesignerName.Contains("bayonet"));
                 if (isKnife)
                     RefreshKnife(player);
+                else if (weaponDefIndex == C4DefIndex)
+                    RefreshC4InPlace(player); // the bomb is never killed+regiven
                 else
                     RefreshWeapons(player);
             }, CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);

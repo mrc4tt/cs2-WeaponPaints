@@ -54,5 +54,26 @@
     "wp_gen_no_permission": "{lightred}Não tens acesso a este comando",
     "wp_gen_applied": "{lime}{0}{default} aplicado ao teu loadout",
 
+    "wp_info_pet": "Digite {lime}!pet{default} para abrir o menu de animais de estimação",
+    "wp_pet_menu_title": "Menu de Animais de Estimação",
+    "wp_pet_menu_stage_title": "Selecione a fase de {lime}{0}{default}",
+    "wp_pet_menu_random_look": "Novo aspeto aleatório",
+    "wp_pet_menu_select": "Escolheu {lime}{0}{default} como o seu animal de estimação",
+    "wp_pet_menu_removed": "O seu animal de estimação vai ficar em casa",
+    "wp_pet_stage_egg": "Ovo",
+    "wp_pet_stage_chick": "Pintainho",
+    "wp_pet_stage_pullet": "Franga",
+    "wp_pet_stage_hen": "Galinha",
+    "wp_pet_stage_set": "A fase do seu animal de estimação é agora {lime}{0}{default}",
+    "wp_pet_name_set": "O seu animal de estimação chama-se agora {lime}{0}{default}",
+    "wp_pet_name_cleared": "O seu animal de estimação já não tem nome",
+    "wp_pet_seed_set": "A seed de aspeto do seu animal de estimação é agora {lime}{0}{default}",
+    "wp_pet_variant_set": "A cor do seu animal de estimação é agora {lime}#{0}{default}",
+    "wp_pet_variant_cleared": "O seu animal de estimação tem agora a cor predefinida",
+    "wp_pet_none": "Ainda não tem um animal de estimação. Digite {lime}!pet{default} para escolher um",
+    "wp_pet_invalid": "{lightred}Esse valor não é válido",
+    "wp_pet_no_permission": "{lightred}Não tem acesso a animais de estimação",
+    "wp_pet_usage": "{lime}!pet{default} menu, {lime}!pet name <nome>{default}, {lime}!pet seed [número]{default}, {lime}!pet color <número|random|default>{default}, {lime}!pet stage <chick|pullet|hen>{default}, {lime}!pet off{default}",
+
     "None": "Nenhum"
 }

@@ -86,6 +86,19 @@ namespace WeaponPaints
 					        `steamid` VARCHAR(32) NOT NULL PRIMARY KEY,
 					        `stamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
+                        // One pet per player, like agents: the pet item is "noteam" in items_game. Column
+                        // names and types match SkinHubgg/WeaponPaints' wp_player_pets (and the SkinHub site's
+                        // formatPetRow/parsePetRow), so a site written for that schema works unchanged here.
+                        // A new table only - no existing table is touched.
+                        @"
+					    CREATE TABLE IF NOT EXISTS `wp_player_pets` (
+					        `steamid` varchar(18) NOT NULL PRIMARY KEY,
+					        `pet_id` int NOT NULL COMMENT 'pet_definitions id: 1 egg, 2 chick, 3 catalana, 4 silkie, 5 polish',
+					        `pet_stage` tinyint NOT NULL DEFAULT 3 COMMENT 'upgrade level: 0 egg, 1 chick, 2 pullet, 3 hen',
+					        `pet_variant` int NULL DEFAULT NULL COMMENT 'item style = material group index; NULL = no style, the default group',
+					        `pet_seed` int unsigned NOT NULL DEFAULT 0 COMMENT 'pet seed attribute',
+					        `pet_name` varchar(32) NULL DEFAULT NULL COMMENT 'name tag for the current stage'
+					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
                     ];
 
                     foreach (var query in createTableQueries)

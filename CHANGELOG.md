@@ -48,6 +48,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Stickers and charms on the C4** (CS2 1.41.8.2). A `wp_player_skins` row with `weapon_defindex = 49`
+  (always `weapon_paint_id = 0`) now applies its stickers and charm to the bomb through the existing
+  "sticker without skin" path. The C4 is pinned to its one hd mesh (no `body` bodygroup write), kept out of
+  `GiveRandomSkin`, and its fifth sticker slot borrows home 1 via a new `weapon_c4` row in `StickerAnchors`.
+  `!sticker` on the held bomb, `!wp` and the web refresh re-apply it in place (`RefreshC4InPlace`) - the bomb is
+  never killed and re-given. On `bomb_planted` the stickers are copied onto the `planted_c4` entity when the game
+  did not carry any attributes across (untested in game). Ported from SkinHubgg/WeaponPaints `cc57c51`.
+- **Chicken pets** (CS2 1.41.8.2): `!pet` menu and `!pet name|seed|color|stage|off` subcommands, a new
+  `wp_player_pets` table (auto-created; no existing table is touched), and `PetsEnabled` / `PetPermission` /
+  `CommandPet` config (`ConfigVersion` 20). The plugin spawns its own `chicken` carrying pet item 4681 with the
+  pet id, stage, seed, name and owner, sets its colour with the `Skin` input on every spawn, re-asserts the
+  leader, and restores it after the game's round-start chicken clean-up. Not run on a server yet. Ported from
+  SkinHubgg/WeaponPaints `cc57c51` + `ea290cc`; the optional CDN `pets.json` dataset, the CDN thumbnail and the
+  experimental team-intro pet were not ported.
+
 - `gamedata/weaponpaints.json` gains the signatures and offsets for the `CCSPlayerInventory::GetItemInLoadout`
   ("inventory simulator") path: `GetItemInLoadout`, `CEconItemView::CEconItemView`, `CEconItemView::operator=`,
   `SendInventoryUpdateEvent`, `CCSPlayer_ItemServices::SetWearables`, `CCSPlayerPawn::SetModelFromClass`,
