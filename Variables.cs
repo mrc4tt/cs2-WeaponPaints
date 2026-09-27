@@ -146,8 +146,10 @@ public partial class WeaponPaints
     private static readonly Dictionary<int, DateTime> LastCommandTime = new(); // Prevents double-call from chat/console
     internal static Database? Database;
 
-    // Keys resolved from gamedata. Must match gamedata/weaponpaints.json exactly — when a
-    // sig-tracker proposal renames a key, it must land here and in the JSON in the same commit.
+    // Keys resolved from gamedata. A key in gamedata/weaponpaints.json may be spelled with
+    // "::" or "_" (CAttributeList::SetOrAddAttributeValueByName or
+    // CAttributeList_SetOrAddAttributeValueByName) - ResolveGamedataKey accepts either and
+    // GetSignature is then called with the spelling the file actually uses.
     internal const string SetOrAddAttributeValueByNameKey = "CAttributeList::SetOrAddAttributeValueByName";
     internal const string UpdateItemViewKey = "UpdateItemView";
     internal static readonly string[] RequiredGamedataKeys = [SetOrAddAttributeValueByNameKey, UpdateItemViewKey];
@@ -168,10 +170,18 @@ public partial class WeaponPaints
     private static MemoryFunctionWithReturn<nint, nint, nint> UpdateItemView =>
         _updateItemView ?? throw new InvalidOperationException("Gamedata signatures not initialized — OnConfigParsed did not complete");
 
-    internal static void InitGamedataSignatures()
+    // "A::B" and "A_B" name the same entry; compare in the "_" form.
+    private static string GamedataKeyForm(string key) => key.Replace("::", "_");
+
+    // The spelling of `key` present in the gamedata file (exact match first), or null.
+    internal static string? ResolveGamedataKey(string key, IReadOnlyCollection<string> fileKeys)
+        => fileKeys.FirstOrDefault(k => k == key)
+           ?? fileKeys.FirstOrDefault(k => GamedataKeyForm(k) == GamedataKeyForm(key));
+
+    internal static void InitGamedataSignatures(IReadOnlyDictionary<string, string> fileKeyFor)
     {
-        _setAttributeValueByName = new(GameData.GetSignature(SetOrAddAttributeValueByNameKey));
-        _updateItemView = new(GameData.GetSignature(UpdateItemViewKey));
+        _setAttributeValueByName = new(GameData.GetSignature(fileKeyFor[SetOrAddAttributeValueByNameKey]));
+        _updateItemView = new(GameData.GetSignature(fileKeyFor[UpdateItemViewKey]));
     }
 
     //we dont need anymore because we use AcceptInput

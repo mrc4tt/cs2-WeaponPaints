@@ -247,9 +247,16 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         try
         {
             using var gamedata = JsonDocument.Parse(File.ReadAllText(gamedataPath));
-            var missingKeys = RequiredGamedataKeys
-                .Where(key => !gamedata.RootElement.TryGetProperty(key, out _))
-                .ToList();
+            var fileKeys = gamedata.RootElement.EnumerateObject().Select(p => p.Name).ToList();
+            var fileKeyFor = new Dictionary<string, string>();
+            var missingKeys = new List<string>();
+            foreach (var key in RequiredGamedataKeys)
+            {
+                if (ResolveGamedataKey(key, fileKeys) is { } fileKey)
+                    fileKeyFor[key] = fileKey;
+                else
+                    missingKeys.Add(key);
+            }
 
             if (missingKeys.Count > 0)
             {
@@ -260,7 +267,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
                 return;
             }
 
-            InitGamedataSignatures();
+            InitGamedataSignatures(fileKeyFor);
         }
         catch (Exception ex)
         {
