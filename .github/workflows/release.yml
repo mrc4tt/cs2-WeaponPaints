@@ -1,74 +1,80 @@
-# GitHub side of the build. The repo lives on git.miksen.me (Forgejo) and is
+# GitHub side of the release. The repo lives on git.miksen.me (Forgejo) and is
 # push-mirrored to github.com/mrc4tt/cs2-WeaponPaints; Forgejo runs
 # .forgejo/workflows/release.yml and ignores this directory, GitHub runs only
-# this one. Same zip layout as the Forgejo release.
+# this one.
+#
+# GitHub does not build. Forgejo's run creates a `build-N` tag and a "Build N"
+# release with WeaponPaints.zip; the push mirror carries the tag here, and this
+# workflow republishes that same release - same tag, same name, same zip. So the
+# numbering follows Forgejo (not GitHub's own run_number, which started at 1) and
+# both sites ship byte-identical files.
+#
+# Backfill or retry one build: Actions -> Release -> Run workflow, tag build-N.
 name: Release
 
 on:
   push:
-    branches: ["main"]
-    paths-ignore:
-      - "**/README.md"
-      - "**/.gitignore"
-      - "**/LICENSE"
+    tags: ["build-*"]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Forgejo build tag to publish, e.g. build-89"
+        required: true
 
 permissions:
   contents: write
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
   cancel-in-progress: false
 
 env:
-  PROJECT_PATH: "WeaponPaints.csproj"
-  PROJECT_NAME: "WeaponPaints"
-  OUTPUT_PATH: "./WeaponPaints"
+  FORGEJO_API: "https://git.miksen.me/api/v1/repos/mikkel/weaponpaints"
+  ASSET: "WeaponPaints.zip"
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.0.x
-
-      # CS2MenuManager comes from the Forgejo package registry (nuget.config),
-      # which serves it anonymously, so no credentials are needed here.
-      - name: Restore
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build ${{ env.PROJECT_PATH }} -c Release -o ${{ env.OUTPUT_PATH }} -p:BuildNumber=${{ github.run_number }}
-
-      - name: Prepare release structure
-        run: |
-          rm -f \
-            ${{ env.OUTPUT_PATH }}/CounterStrikeSharp.API.dll \
-            ${{ env.OUTPUT_PATH }}/McMaster.NETCore.Plugins.dll \
-            ${{ env.OUTPUT_PATH }}/Microsoft.DotNet.PlatformAbstractions.dll \
-            ${{ env.OUTPUT_PATH }}/Microsoft.Extensions.DependencyModel.dll \
-            ${{ env.OUTPUT_PATH }}/CS2MenuManager.dll
-          PLUGIN_DIR="staging/addons/counterstrikesharp/plugins/${{ env.PROJECT_NAME }}"
-          mkdir -p "$PLUGIN_DIR"
-          rm -rf ${{ env.OUTPUT_PATH }}/gamedata
-          cp -r ${{ env.OUTPUT_PATH }}/* "$PLUGIN_DIR/"
-          if [ -d gamedata ]; then
-            cp -r gamedata staging/addons/counterstrikesharp/
-          fi
-          (cd staging && zip -qr "../${{ env.PROJECT_NAME }}.zip" .)
-
-      - name: Create release
+      - name: Fetch the Forgejo release
+        id: forgejo
         env:
-          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.inputs.tag || github.ref_name }}
         run: |
           set -euo pipefail
-          VERSION=$(tr -d '[:space:]' < VERSION)
-          TAG="v${VERSION}-build.${{ github.run_number }}"
-          gh release create "$TAG" "${{ env.PROJECT_NAME }}.zip" \
-            --target "${{ github.sha }}" \
-            --title "WeaponPaints ${VERSION} (build ${{ github.run_number }})" \
-            --notes "Extract into game/csgo/ - plugin lands in addons/counterstrikesharp/plugins/${{ env.PROJECT_NAME }}. Commit: ${{ github.sha }}"
+          # The mirror can push the tag before Forgejo's run has created the
+          # release or uploaded the zip (the tag is created first), so wait.
+          URL=""
+          for i in $(seq 1 40); do
+            if curl -fsS "$FORGEJO_API/releases/tags/$TAG" -o release.json; then
+              URL=$(jq -r --arg a "$ASSET" '.assets[] | select(.name == $a) | .browser_download_url' release.json)
+              [ -n "$URL" ] && break
+            fi
+            echo "release $TAG not complete on Forgejo yet ($i/40)"; sleep 30
+          done
+          [ -n "$URL" ] || { echo "no $ASSET on Forgejo release $TAG"; exit 1; }
+          curl -fsSL "$URL" -o "$ASSET"
+          jq -r '.name' release.json > name.txt
+          jq -r '.body' release.json > body.txt
+          echo "" >> body.txt
+          echo "Same file as $(jq -r '.html_url' release.json)" >> body.txt
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Publish on GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ steps.forgejo.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ASSET" --clobber
+            gh release edit "$TAG" --title "$(cat name.txt)" --notes-file body.txt
+          else
+            # The tag already exists here (mirrored), so no --target.
+            gh release create "$TAG" "$ASSET" --verify-tag \
+              --title "$(cat name.txt)" --notes-file body.txt
+          fi
+          # Never leave it as a draft, and keep the newest build marked latest.
+          gh release edit "$TAG" --draft=false --latest
+          gh release view "$TAG" --json isDraft -q 'if .isDraft then error("still a draft") else "published" end'
