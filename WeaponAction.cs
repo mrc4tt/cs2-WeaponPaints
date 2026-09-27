@@ -170,7 +170,7 @@ namespace WeaponPaints
 
             weapon.FallbackSeed = weaponInfo is { Paint: 38, Seed: 0 } ? _fadeSeed++ : weaponInfo.Seed;
 
-            weapon.FallbackWear = weaponInfo.Wear;
+            weapon.FallbackWear = ClampWear(weaponInfo.Wear);
 
             // After RemoveAll(), the attribute list has no paint-kit entry so the HUD
             // weapon-slot label can't resolve "Weapon | SkinName" and falls back to the
@@ -306,8 +306,14 @@ namespace WeaponPaints
                 weaponDefIndex,
                 weaponInfo.Paint
             );
-            return weaponInfo.Wear;
+            return ClampWear(weaponInfo.Wear);
         }
+
+        // Wear 0 (factory new stored as 0) can leave the paint unrendered on some weapons
+        // since CS2 1.41.8.x; the random-skin path already uses 0.01f. Out-of-range values
+        // get the same floor. Upstream: Nereziel/cs2-WeaponPaints#532.
+        private static float ClampWear(float wear)
+            => wear > 0f && wear <= 1f ? wear : 0.001f;
 
         private static bool TryClaimStickerWear(
             Dictionary<(int DefIndex, int Paint, int WearBits), string> owners,
@@ -1014,12 +1020,12 @@ namespace WeaponPaints
                             item.NetworkedDynamicAttributes.Attributes.RemoveAll();
                             CAttributeListSetOrAddAttributeValueByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture prefab", weaponInfo.Paint);
                             CAttributeListSetOrAddAttributeValueByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture seed", weaponInfo.Seed);
-                            CAttributeListSetOrAddAttributeValueByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture wear", weaponInfo.Wear);
+                            CAttributeListSetOrAddAttributeValueByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture wear", ClampWear(weaponInfo.Wear));
 
                             item.AttributeList.Attributes.RemoveAll();
                             CAttributeListSetOrAddAttributeValueByName.Invoke(item.AttributeList.Handle, "set item texture prefab", weaponInfo.Paint);
                             CAttributeListSetOrAddAttributeValueByName.Invoke(item.AttributeList.Handle, "set item texture seed", weaponInfo.Seed);
-                            CAttributeListSetOrAddAttributeValueByName.Invoke(item.AttributeList.Handle, "set item texture wear", weaponInfo.Wear);
+                            CAttributeListSetOrAddAttributeValueByName.Invoke(item.AttributeList.Handle, "set item texture wear", ClampWear(weaponInfo.Wear));
 
                             item.Initialized = true;
 
