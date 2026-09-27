@@ -28,6 +28,9 @@ env:
 
 jobs:
   build:
+    # A "ci:" commit only touches the pipeline, never the plugin: no build, no
+    # release, so the build-N numbering only moves for real changes.
+    if: ${{ !startsWith(github.event.head_commit.message, 'ci:') }}
     runs-on: ubuntu-latest
     # Auth for the "forgejo" NuGet source (CS2MenuManager) in nuget.config.
     env:
@@ -53,7 +56,7 @@ jobs:
         run: dotnet build ${{ env.PROJECT_PATH }} -c Release -o ${{ env.OUTPUT_PATH }} -p:BuildNumber=${{ env.BUILD_NUMBER }}
 
   publish:
-    if: github.event_name == 'push'
+    if: ${{ github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'ci:') }}
     runs-on: ubuntu-latest
     needs: build
     # Auth for the "forgejo" NuGet source (CS2MenuManager) in nuget.config.
