@@ -268,6 +268,32 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             }
 
             InitGamedataSignatures(fileKeyFor);
+
+            // CounterStrikeSharp's own gamedata must resolve too. A missing or stale entry used to
+            // surface only mid-game as "Failed to find signature for 'CEntityInstance_AcceptInput'"
+            // from every skin apply - knives and skins silently not changing. Say it once, here.
+            var brokenCoreKeys = new List<string>();
+            foreach (var key in RequiredCoreGamedataKeys)
+            {
+                try
+                {
+                    if (NativeAPI.FindSignature(Addresses.ServerPath, GameData.GetSignature(key)) == IntPtr.Zero)
+                        brokenCoreKeys.Add($"{key} (signature does not match this CS2 build)");
+                }
+                catch (Exception)
+                {
+                    brokenCoreKeys.Add($"{key} (missing)");
+                }
+            }
+
+            if (brokenCoreKeys.Count > 0)
+            {
+                Logger.LogError(
+                    "CounterStrikeSharp's gamedata.json (addons/counterstrikesharp/gamedata/gamedata.json) is outdated or incomplete: {Keys}. WeaponPaints needs these for knives, skins and gloves - update CounterStrikeSharp, or its gamedata.json, for this CS2 build.",
+                    string.Join(", ", brokenCoreKeys));
+                Unload(false);
+                return;
+            }
         }
         catch (Exception ex)
         {

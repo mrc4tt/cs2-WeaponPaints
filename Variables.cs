@@ -154,6 +154,11 @@ public partial class WeaponPaints
     internal const string UpdateItemViewKey = "UpdateItemView";
     internal static readonly string[] RequiredGamedataKeys = [SetOrAddAttributeValueByNameKey, UpdateItemViewKey];
 
+    // Keys this plugin needs from CounterStrikeSharp's OWN gamedata.json (not weaponpaints.json):
+    // AcceptInput drives the knife subclass change and bodygroups, AddEntityIOEvent removes the
+    // replaced weapons. With either one missing every skin/knife apply throws halfway through.
+    internal static readonly string[] RequiredCoreGamedataKeys = ["CEntityInstance_AcceptInput", "CEntitySystem_AddEntityIOEvent"];
+
     // Resolved in InitGamedataSignatures() (called from OnConfigParsed after weaponpaints.json
     // is validated there), not in field initializers: a GetSignature failure in the cctor
     // surfaces as a cryptic TypeInitializationException and preempts the friendly gamedata
