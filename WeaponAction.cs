@@ -1299,7 +1299,9 @@ namespace WeaponPaints
         {
             if (player.IsBot)
                 return;
-            if (!GPlayersMusic.TryGetValue(player.Slot, out var musicInfo) || !musicInfo.TryGetValue(player.Team, out var musicId) || musicId == 0)
+            // No entry = player never picked a kit: leave whatever the engine assigned.
+            // An explicit 0 ("None") still has to run so a previously applied kit is cleared.
+            if (!GPlayersMusic.TryGetValue(player.Slot, out var musicInfo) || !musicInfo.TryGetValue(player.Team, out var musicId))
                 return;
 
             if (player.InventoryServices == null)

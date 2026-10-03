@@ -324,7 +324,8 @@ namespace WeaponPaints
             if (player.Team is CsTeam.None or CsTeam.Spectator)
                 return HookResult.Continue;
 
-            if (!(GPlayersMusic.TryGetValue(player.Slot, out var musicInfo) && musicInfo.TryGetValue(player.Team, out var musicId) && musicId != 0))
+            // Explicit 0 ("None") falls through too so the event carries no kit instead of a stale one.
+            if (!(GPlayersMusic.TryGetValue(player.Slot, out var musicInfo) && musicInfo.TryGetValue(player.Team, out var musicId)))
                 return HookResult.Continue;
 
             @event.Musickitid = musicId;
