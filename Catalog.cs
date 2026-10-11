@@ -110,6 +110,10 @@ public partial class WeaponPaints
         if (command != null)
             command.ReplyToCommand(online ? "[WeaponPaints] Downloading the item catalog..." : "[WeaponPaints] Reloading the bundled item catalog...");
 
+        // GC pauses stop the game thread too; logged with the result to see what the parse costs it.
+        var gcPauseStart = GC.GetTotalPauseDuration();
+        var gen2Start = GC.CollectionCount(2);
+
         _ = Task.Run(async () =>
         {
             try
@@ -164,7 +168,7 @@ public partial class WeaponPaints
                     Logger.LogWarning("Could not write the catalog cache to {Dir}: {Message}", cacheDir, ex.Message);
                 }
 
-                var summary = $"Item catalog merged from the online API: +{merged.Added.Skins} skins, +{merged.Added.Gloves} gloves, +{merged.Added.Stickers} stickers, +{merged.Added.Keychains} charms, +{merged.Added.Agents} agents, +{merged.Added.Music} music kits, +{merged.Added.Pins} pins.";
+                var summary = $"Item catalog merged from the online API: +{merged.Added.Skins} skins, +{merged.Added.Gloves} gloves, +{merged.Added.Stickers} stickers, +{merged.Added.Keychains} charms, +{merged.Added.Agents} agents, +{merged.Added.Music} music kits, +{merged.Added.Pins} pins. GC pauses meanwhile: {(GC.GetTotalPauseDuration() - gcPauseStart).TotalMilliseconds:F0} ms ({GC.CollectionCount(2) - gen2Start} gen2).";
                 Logger.LogInformation(summary);
                 Reply(summary);
             }
