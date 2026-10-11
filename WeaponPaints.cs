@@ -349,7 +349,8 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
     // memory (at their defaults) and never reach the operator's WeaponPaints.json. When the file's
     // ConfigVersion is behind the class, add the missing keys (class defaults, recursing into
     // objects present on both sides) and bump ConfigVersion. Existing values, arrays and unknown
-    // keys are never touched, so nothing an operator set (DB credentials included) changes.
+    // keys are never touched (except WeaponPaintsConfig.ObsoleteKeys, removed features), so nothing
+    // an operator set (DB credentials included) changes.
     // No backup copy is kept (the file holds DB credentials); temp file + move, so any failure
     // leaves the original untouched.
     // Older builds wrote a "// Migrated by WeaponPaints ..." line on top of the config. Drop those
@@ -399,6 +400,11 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
                 return;
 
             AddMissingConfigKeys(file, defaults);
+            foreach (var key in WeaponPaintsConfig.ObsoleteKeys)
+            {
+                file.Remove(key);
+                (file["Additional"] as JsonObject)?.Remove(key);
+            }
             file["ConfigVersion"] = currentVersion;
 
             var json = file.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });

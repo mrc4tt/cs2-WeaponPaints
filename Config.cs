@@ -170,7 +170,16 @@ namespace WeaponPaints
     public class WeaponPaintsConfig : BasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 22;
+        public override int Version { get; set; } = 23;
+
+        // Keys of removed features (the AstraSkins port). MigrateConfigFile deletes them from
+        // Additional or the root of an existing WeaponPaints.json.
+        internal static readonly string[] ObsoleteKeys =
+        [
+            "TeamPreviewEnabled", "AgentVoiceEnabled", "ApplyCosmeticsOnBotTakeover", "MusicKitMvpCounter",
+            "PrecacheAgentModels", "MaxNameTagLength", "BlockedNameTagWords", "CommandSearch",
+            "CommandReset", "CommandResetPlayer", "AdminResetPermission",
+        ];
 
         [JsonPropertyName("DatabaseHost")]
         public string DatabaseHost { get; set; } = "";
