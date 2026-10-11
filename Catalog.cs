@@ -43,6 +43,9 @@ public partial class WeaponPaints
 
     // The catalog file to read for `name`: the merged cache when it is at least as new as the
     // bundled file (a plugin update ships newer bundled files, which then win until the next merge).
+    // Every file WriteCache produces.
+    private static readonly string[] CatalogNames = ["skins", "gloves", "stickers", "keychains", "agents", "music", "collectibles"];
+
     internal string CatalogPath(string name)
     {
         var bundled = Path.Combine(ModuleDirectory, "data", $"{name}_{Config.SkinsLanguage}.json");
@@ -84,6 +87,7 @@ public partial class WeaponPaints
         var language = string.IsNullOrWhiteSpace(Config.SkinsLanguage) ? "en" : Config.SkinsLanguage;
         var timeout = TimeSpan.FromSeconds(Math.Max(10, Config.CatalogApiTimeoutSeconds));
         var cacheDir = Path.Combine(ModuleDirectory, "data", "cache");
+        var cacheActive = CatalogNames.All(n => CatalogPath(n).StartsWith(cacheDir, StringComparison.Ordinal));
         var localTask = _localCatalogTask;
         var knownWeapons = new HashSet<int>(WeaponDefindex.Keys);
         var replyTo = command?.CallingPlayer is { IsValid: true } p ? p.Slot : -1;
@@ -122,9 +126,9 @@ public partial class WeaponPaints
 
                 if (!online)
                 {
-                    var skins = Utility.BuildSkins(JsonConvert.DeserializeObject<List<JObject>>(File.ReadAllText(CatalogPath("skins"))) ?? []);
-                    var stickers = Utility.BuildStickers(JsonConvert.DeserializeObject<List<JObject>>(File.ReadAllText(CatalogPath("stickers"))) ?? []);
-                    var charms = Utility.BuildKeychains(JsonConvert.DeserializeObject<List<JObject>>(File.ReadAllText(CatalogPath("keychains"))) ?? []);
+                    var skins = Utility.BuildSkins(Utility.ReadCatalogFile(CatalogPath("skins")));
+                    var stickers = Utility.BuildStickers(Utility.ReadCatalogFile(CatalogPath("stickers")));
+                    var charms = Utility.BuildKeychains(Utility.ReadCatalogFile(CatalogPath("keychains")));
                     Server.NextFrame(() =>
                     {
                         Utility.InstallSkins(skins);
@@ -137,7 +141,17 @@ public partial class WeaponPaints
 
                 // Snapshot the installed lists (reference reads; installed lists are never mutated).
                 var current = new CatalogMerge.Lists(SkinsList, GlovesList, StickersList, KeychainsList, AgentsList, MusicList, PinsList);
-                var merged = await CatalogMerge.FetchAndMergeAsync(CatalogHttp, baseUrl, language, timeout, current, knownWeapons).ConfigureAwait(false);
+                // Conditional requests only when every installed list came from the cache those
+                // validators describe; a newer bundled file (plugin update) must be merged again.
+                var validators = cacheActive ? CatalogMerge.ReadValidators(cacheDir, language) : null;
+                var merged = await CatalogMerge.FetchAndMergeAsync(CatalogHttp, baseUrl, language, timeout, current, knownWeapons, validators).ConfigureAwait(false);
+                if (merged == null)
+                {
+                    var unchanged = "Item catalog: online API unchanged since the cached merge, nothing to do.";
+                    Logger.LogInformation(unchanged);
+                    Reply(unchanged);
+                    return;
+                }
 
                 var skinsCatalog = Utility.BuildSkins(merged.Lists.Skins);
                 var stickersCatalog = Utility.BuildStickers(merged.Lists.Stickers);
@@ -161,6 +175,7 @@ public partial class WeaponPaints
                 try
                 {
                     CatalogMerge.WriteCache(cacheDir, language, merged.Lists);
+                    CatalogMerge.WriteValidators(cacheDir, language, merged.Validators);
                 }
                 catch (Exception ex)
                 {
@@ -198,24 +213,37 @@ internal static class CatalogMerge
 
     internal sealed record Counts(int Skins, int Gloves, int Stickers, int Keychains, int Agents, int Music, int Pins);
 
-    internal sealed record Result(Lists Lists, Counts Added, Dictionary<(int, int), (float Min, float Max)> FloatRange);
+    internal sealed record Result(Lists Lists, Counts Added, Dictionary<(int, int), (float Min, float Max)> FloatRange,
+        Dictionary<string, string> Validators);
 
     // Collectible types the bundled pins file leaves out (they aren't pins/coins you equip).
     private static readonly HashSet<string> SkippedCollectibleTypes = new(StringComparer.OrdinalIgnoreCase) { "Stars for Operation" };
 
-    internal static async Task<Result> FetchAndMergeAsync(HttpClient http, string baseUrl, string language, TimeSpan timeout,
-        Lists current, HashSet<int> knownWeapons)
+    private static readonly string[] ApiFiles = ["skins", "stickers", "keychains", "agents", "music_kits", "collectibles"];
+
+    // Downloads the six API files and merges them into `current`. With `validators` (the ETag /
+    // Last-Modified of the files the active cache was merged from) every request is conditional:
+    // when all six answer 304 Not Modified, nothing is downloaded, parsed or merged and null is
+    // returned. Parsing + merging allocates tens of MB, and the GC pauses that causes stop the game
+    // thread too, so skipping it on an unchanged API is what keeps a reload free of long frames.
+    internal static async Task<Result?> FetchAndMergeAsync(HttpClient http, string baseUrl, string language, TimeSpan timeout,
+        Lists current, HashSet<int> knownWeapons, Dictionary<string, string>? validators)
     {
         using var deadline = new CancellationTokenSource(timeout);
         var token = deadline.Token;
+        var urls = ApiFiles.Select(f => $"{baseUrl}/{language}/{f}.json").ToArray();
+        var newValidators = new Dictionary<string, string>();
 
-        var skinsTask = FetchAsync(http, $"{baseUrl}/{language}/skins.json", token);
-        var stickersTask = FetchAsync(http, $"{baseUrl}/{language}/stickers.json", token);
-        var keychainsTask = FetchAsync(http, $"{baseUrl}/{language}/keychains.json", token);
-        var agentsTask = FetchAsync(http, $"{baseUrl}/{language}/agents.json", token);
-        var musicTask = FetchAsync(http, $"{baseUrl}/{language}/music_kits.json", token);
-        var pinsTask = FetchAsync(http, $"{baseUrl}/{language}/collectibles.json", token);
-        Task<JsonDocument>[] all = [skinsTask, stickersTask, keychainsTask, agentsTask, musicTask, pinsTask];
+        if (validators != null && urls.All(validators.ContainsKey))
+        {
+            var checks = await Task.WhenAll(urls.Select(u => IsUnchangedAsync(http, u, validators[u], token))).ConfigureAwait(false);
+            if (checks.All(c => c))
+                return null;
+        }
+
+        var tasks = urls.Select(u => FetchAsync(http, u, newValidators, token)).ToArray();
+        var (skinsTask, stickersTask, keychainsTask, agentsTask, musicTask, pinsTask) = (tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5]);
+        Task<JsonDocument>[] all = tasks;
 
         try
         {
@@ -234,7 +262,8 @@ internal static class CatalogMerge
             return new Result(
                 new Lists(skins, gloves, stickers, keychains, agents, music, pins),
                 new Counts(addedSkins, addedGloves, addedStickers, addedKeychains, addedAgents, addedMusic, addedPins),
-                floatRange);
+                floatRange,
+                newValidators);
         }
         finally
         {
@@ -246,10 +275,40 @@ internal static class CatalogMerge
         }
     }
 
-    private static async Task<JsonDocument> FetchAsync(HttpClient http, string url, CancellationToken token)
+    // Validator string: "etag:<ETag>" or "lm:<Last-Modified>", whichever the server sent.
+    private static string? ValidatorOf(HttpResponseMessage response)
+    {
+        if (response.Headers.ETag is { } etag)
+            return "etag:" + etag;
+        if (response.Content.Headers.LastModified is { } modified)
+            return "lm:" + modified.ToString("R");
+        return null;
+    }
+
+    private static async Task<bool> IsUnchangedAsync(HttpClient http, string url, string validator, CancellationToken token)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        if (validator.StartsWith("etag:", StringComparison.Ordinal) && System.Net.Http.Headers.EntityTagHeaderValue.TryParse(validator[5..], out var etag))
+            request.Headers.IfNoneMatch.Add(etag);
+        else if (validator.StartsWith("lm:", StringComparison.Ordinal) && DateTimeOffset.TryParse(validator[3..], out var modified))
+            request.Headers.IfModifiedSince = modified;
+        else
+            return false;
+
+        // Headers only: a 200 body is never read (FetchAsync downloads the files again in that case).
+        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+        return response.StatusCode == HttpStatusCode.NotModified;
+    }
+
+    private static async Task<JsonDocument> FetchAsync(HttpClient http, string url, Dictionary<string, string> validators, CancellationToken token)
     {
         using var response = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
+        if (ValidatorOf(response) is { } validator)
+        {
+            lock (validators)
+                validators[url] = validator;
+        }
         await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
         var document = await JsonDocument.ParseAsync(stream, cancellationToken: token).ConfigureAwait(false);
         if (document.RootElement.ValueKind != JsonValueKind.Array)
@@ -497,6 +556,32 @@ internal static class CatalogMerge
     }
 
     // Atomic per file (temp + move): a crash mid-write never leaves a truncated catalog behind.
+    private static string ValidatorsPath(string cacheDir, string language) => Path.Combine(cacheDir, $"validators_{language}.json");
+
+    internal static Dictionary<string, string>? ReadValidators(string cacheDir, string language)
+    {
+        try
+        {
+            var path = ValidatorsPath(cacheDir, language);
+            return File.Exists(path) ? JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(path)) : null;
+        }
+        catch (Exception)
+        {
+            // Unreadable = no validators: the next refresh downloads everything and rewrites it.
+            return null;
+        }
+    }
+
+    // Written only after the cache files themselves, so the validators never describe a cache
+    // that failed to write.
+    internal static void WriteValidators(string cacheDir, string language, Dictionary<string, string> validators)
+    {
+        var path = ValidatorsPath(cacheDir, language);
+        var temp = path + ".tmp";
+        File.WriteAllText(temp, JsonConvert.SerializeObject(validators));
+        File.Move(temp, path, overwrite: true);
+    }
+
     internal static void WriteCache(string cacheDir, string language, Lists lists)
     {
         Directory.CreateDirectory(cacheDir);

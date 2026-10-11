@@ -149,8 +149,13 @@ namespace WeaponPaints
         // Install* (swap the static references). Readers only ever see a complete list + its
         // indexes; nothing mutates an installed list. Load*FromFile = read file, build, install.
 
-        private static List<JObject> ReadCatalogFile(string filePath)
-            => JsonConvert.DeserializeObject<List<JObject>>(File.ReadAllText(filePath)) ?? [];
+        // Streams the file into the JObject tree instead of first reading it into one big string
+        // (stickers is ~2MB = a 4MB string on the large object heap per load).
+        internal static List<JObject> ReadCatalogFile(string filePath)
+        {
+            using var reader = new JsonTextReader(new StreamReader(filePath));
+            return JsonSerializer.CreateDefault().Deserialize<List<JObject>>(reader) ?? [];
+        }
 
         internal sealed record SkinsCatalog(
             List<JObject> List,
