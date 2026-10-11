@@ -30,7 +30,6 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
 
     public override void Load(bool hotReload)
     {
-        var loadTimer = System.Diagnostics.Stopwatch.StartNew();
         Instance = this;
 
         // Before anything can queue a read: picks up writes the previous instance left running.
@@ -132,8 +131,6 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             var interval = Math.Max(1f, Config.WebRefreshIntervalSeconds);
             AddTimer(interval, PollWebRefresh, CounterStrikeSharp.API.Modules.Timers.TimerFlags.REPEAT);
         }
-
-        _loadMs = loadTimer.Elapsed.TotalMilliseconds;
     }
 
     // Guards against overlapping polls when a DB hiccup makes one run longer than the interval.
@@ -198,15 +195,8 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         });
     }
 
-    // Game-thread time of each startup phase, logged once after OnAllPluginsLoaded (a live reload
-    // runs all of them inside one frame).
-    private readonly System.Diagnostics.Stopwatch _startupTimer = new();
-    private double _configParsedMs, _loadMs;
-    private string _configPhases = "";
-
     public void OnConfigParsed(WeaponPaintsConfig config)
     {
-        _startupTimer.Restart();
         MigrateConfigFile(config);
         Config = config;
 
@@ -298,10 +288,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
                 return;
             }
 
-            var phaseStart = _startupTimer.Elapsed.TotalMilliseconds;
             InitGamedataSignatures(fileKeyFor);
-            var sigsDone = _startupTimer.Elapsed.TotalMilliseconds;
-            _configPhases = $"own sigs {sigsDone - phaseStart:F1} ms";
 
             // CounterStrikeSharp's own gamedata must resolve too. A missing or stale entry used to
             // surface only mid-game as "Failed to find signature for 'CEntityInstance_AcceptInput'"
@@ -330,7 +317,6 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             }
 
             AppDomain.CurrentDomain.SetData(VerifiedCoreSignaturesKey, verified);
-            _configPhases += $", core sigs {_startupTimer.Elapsed.TotalMilliseconds - sigsDone:F1} ms";
 
             if (brokenCoreKeys.Count > 0)
             {
@@ -368,7 +354,6 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         _localizer = Localizer;
 
         Utility.Config = config;
-        _configParsedMs = _startupTimer.Elapsed.TotalMilliseconds;
     }
 
     // CSSharp's ConfigManager never rewrites an existing config file: new fields only exist in
@@ -492,7 +477,6 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
 
     public override void OnAllPluginsLoaded(bool hotReload)
     {
-        var menusTimer = System.Diagnostics.Stopwatch.StartNew();
         try
         {
             if (Config.Additional.KnifeEnabled)
@@ -511,9 +495,6 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
                 SetupPetsMenu();
 
             RegisterCommands();
-
-            Logger.LogInformation("Startup on the game thread: config {Config:F1} ms ({Phases}), load {Load:F1} ms, menus + commands {Menus:F1} ms",
-                _configParsedMs, _configPhases, _loadMs, menusTimer.Elapsed.TotalMilliseconds);
         }
         catch (Exception)
         {
