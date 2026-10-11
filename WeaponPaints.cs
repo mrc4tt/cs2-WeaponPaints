@@ -293,19 +293,30 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             // CounterStrikeSharp's own gamedata must resolve too. A missing or stale entry used to
             // surface only mid-game as "Failed to find signature for 'CEntityInstance_AcceptInput'"
             // from every skin apply - knives and skins silently not changing. Say it once, here.
+            // Each FindSignature is a full linear scan of libserver (tens of ms on the game thread), so
+            // a signature that matched once is remembered for the life of the process: a hot reload
+            // (same binary) then skips the scans. A changed gamedata signature is a new key, scanned again.
+            var verified = AppDomain.CurrentDomain.GetData(VerifiedCoreSignaturesKey) as HashSet<string> ?? [];
             var brokenCoreKeys = new List<string>();
             foreach (var key in RequiredCoreGamedataKeys)
             {
                 try
                 {
-                    if (NativeAPI.FindSignature(Addresses.ServerPath, GameData.GetSignature(key)) == IntPtr.Zero)
+                    var signature = GameData.GetSignature(key);
+                    if (verified.Contains(signature))
+                        continue;
+                    if (NativeAPI.FindSignature(Addresses.ServerPath, signature) == IntPtr.Zero)
                         brokenCoreKeys.Add($"{key} (signature does not match this CS2 build)");
+                    else
+                        verified.Add(signature);
                 }
                 catch (Exception)
                 {
                     brokenCoreKeys.Add($"{key} (missing)");
                 }
             }
+
+            AppDomain.CurrentDomain.SetData(VerifiedCoreSignaturesKey, verified);
 
             if (brokenCoreKeys.Count > 0)
             {

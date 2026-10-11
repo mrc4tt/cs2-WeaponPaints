@@ -184,6 +184,9 @@ public partial class WeaponPaints
     // replaced weapons. With either one missing every skin/knife apply throws halfway through.
     internal static readonly string[] RequiredCoreGamedataKeys = ["CEntityInstance_AcceptInput", "CEntitySystem_AddEntityIOEvent"];
 
+    // AppDomain data key: core signatures already found in this process (survives hot reloads).
+    internal const string VerifiedCoreSignaturesKey = "WeaponPaints.VerifiedCoreSignatures";
+
     // Resolved in InitGamedataSignatures() (called from OnConfigParsed after weaponpaints.json
     // is validated there), not in field initializers: a GetSignature failure in the cctor
     // surfaces as a cryptic TypeInitializationException and preempts the friendly gamedata
