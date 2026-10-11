@@ -10,6 +10,20 @@
         public int StatTrakCount { get; set; }
         public KeyChainInfo? KeyChain { get; set; }
         public List<StickerInfo> Stickers { get; set; } = new();
+
+        // Deep copy, taken on the game thread before handing the row to a database write so the
+        // background task never reads state the game thread is still changing.
+        public WeaponInfo Clone() => new()
+        {
+            Paint = Paint,
+            Seed = Seed,
+            Wear = Wear,
+            Nametag = Nametag,
+            StatTrak = StatTrak,
+            StatTrakCount = StatTrakCount,
+            KeyChain = KeyChain?.Clone(),
+            Stickers = Stickers.Select(s => s.Clone()).ToList(),
+        };
     }
 
     public class StickerInfo
@@ -21,6 +35,8 @@
         public float Wear { get; set; }
         public float Scale { get; set; }
         public float Rotation { get; set; }
+
+        public StickerInfo Clone() => (StickerInfo)MemberwiseClone();
     }
 
     public class KeyChainInfo
@@ -31,6 +47,13 @@
         public float OffsetZ { get; set; }
         public uint Seed { get; set; }
         public float Rotation { get; set; }
+
+        // Sticker-slab charms carry the sticker drawn on the slab; highlight charms carry the
+        // highlight reel id. 0 = none. Inspect-link fields 12 / 11.
+        public uint Sticker { get; set; }
+        public uint Highlight { get; set; }
+
+        public KeyChainInfo Clone() => (KeyChainInfo)MemberwiseClone();
     }
 
     // A player's chicken pet, exactly as wp_player_pets stores it. See Pets.cs.

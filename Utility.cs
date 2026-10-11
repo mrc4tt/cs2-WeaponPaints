@@ -75,6 +75,11 @@ namespace WeaponPaints
 					        UNIQUE (`steamid`, `weapon_team`) -- Unique constraint
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
                         @"
+					    CREATE TABLE IF NOT EXISTS `wp_player_music_settings` (
+					        `steamid` varchar(64) NOT NULL PRIMARY KEY,
+					        `music_off` tinyint(1) NOT NULL DEFAULT 0
+					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
+                        @"
 					    CREATE TABLE IF NOT EXISTS `wp_player_pins` (
 					        `steamid` varchar(64) NOT NULL,
 					        `weapon_team` int(1) NOT NULL,
@@ -98,6 +103,18 @@ namespace WeaponPaints
 					        `pet_variant` int NULL DEFAULT NULL COMMENT 'item style = material group index; NULL = no style, the default group',
 					        `pet_seed` int unsigned NOT NULL DEFAULT 0 COMMENT 'pet seed attribute',
 					        `pet_name` varchar(32) NULL DEFAULT NULL COMMENT 'name tag for the current stage'
+					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
+                        // Remembered wear/seed per paint (PaintMemoryEnabled): picking a skin again restores
+                        // its old float and seed. A new table only - wp_player_skins is not touched.
+                        @"
+					    CREATE TABLE IF NOT EXISTS `wp_player_paint_memory` (
+					        `steamid` varchar(18) NOT NULL,
+					        `weapon_team` int(1) NOT NULL,
+					        `weapon_defindex` int(6) NOT NULL,
+					        `weapon_paint_id` int(6) NOT NULL,
+					        `weapon_wear` float NOT NULL DEFAULT 0.01,
+					        `weapon_seed` int(16) NOT NULL DEFAULT 0,
+					        PRIMARY KEY (`steamid`, `weapon_team`, `weapon_defindex`, `weapon_paint_id`)
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
                     ];
 
@@ -128,34 +145,33 @@ namespace WeaponPaints
             return player is { IsValid: true, IsBot: false, IsHLTV: false, UserId: not null };
         }
 
-        internal static void LoadSkinsFromFile(string filePath, ILogger logger)
-        {
-            try
-            {
-                var json = File.ReadAllText(filePath);
-                var deserializedSkins = JsonConvert.DeserializeObject<List<JObject>>(json);
-                WeaponPaints.SkinsList = deserializedSkins ?? [];
-                RebuildSkinsIndexes();
-            }
-            catch (Exception ex)
-            {
-                logger?.LogError($"Failed to load skins from file: {ex.Message}");
-            }
-        }
+        // Catalog loading is split into Build* (pure: parse + indexes, safe on any thread) and
+        // Install* (swap the static references). Readers only ever see a complete list + its
+        // indexes; nothing mutates an installed list. Load*FromFile = read file, build, install.
 
-        private static void RebuildSkinsIndexes()
+        private static List<JObject> ReadCatalogFile(string filePath)
+            => JsonConvert.DeserializeObject<List<JObject>>(File.ReadAllText(filePath)) ?? [];
+
+        internal sealed record SkinsCatalog(
+            List<JObject> List,
+            Dictionary<string, List<JObject>> ByWeapon,
+            Dictionary<(int, int), bool> Legacy,
+            Dictionary<(int, int), (float Min, float Max)> FloatRange);
+
+        internal static SkinsCatalog BuildSkins(List<JObject> list)
         {
             var byWeapon = new Dictionary<string, List<JObject>>();
             var legacyByDefPaint = new Dictionary<(int, int), bool>();
+            var floatRange = new Dictionary<(int, int), (float, float)>();
 
-            foreach (var skin in WeaponPaints.SkinsList)
+            foreach (var skin in list)
             {
                 var weaponName = skin["weapon_name"]?.ToString();
                 if (!string.IsNullOrEmpty(weaponName))
                 {
-                    if (!byWeapon.TryGetValue(weaponName, out var list))
-                        byWeapon[weaponName] = list = new List<JObject>();
-                    list.Add(skin);
+                    if (!byWeapon.TryGetValue(weaponName, out var weaponSkins))
+                        byWeapon[weaponName] = weaponSkins = new List<JObject>();
+                    weaponSkins.Add(skin);
                 }
 
                 if (skin["weapon_defindex"] == null || skin["paint"] == null)
@@ -163,19 +179,42 @@ namespace WeaponPaints
                 var defindex = (int?)skin["weapon_defindex"] ?? 0;
                 var paint = (int?)skin["paint"] ?? 0;
                 legacyByDefPaint[(defindex, paint)] = skin.Value<bool>("legacy_model");
+
+                // Present only in catalogs merged from the online API (data/cache).
+                if (skin["min_float"] != null && skin["max_float"] != null)
+                    floatRange[(defindex, paint)] = ((float?)skin["min_float"] ?? 0f, (float?)skin["max_float"] ?? 1f);
             }
 
-            WeaponPaints.SkinsByWeaponName = byWeapon;
-            WeaponPaints.SkinsLegacyModelIndex = legacyByDefPaint;
+            return new SkinsCatalog(list, byWeapon, legacyByDefPaint, floatRange);
+        }
+
+        internal static void InstallSkins(SkinsCatalog catalog)
+        {
+            WeaponPaints.SkinsByWeaponName = catalog.ByWeapon;
+            WeaponPaints.SkinsLegacyModelIndex = catalog.Legacy;
+            // The online merge keeps its own (fuller) range table; a bundled file has none.
+            if (catalog.FloatRange.Count > 0 || WeaponPaints.SkinFloatRange.Count == 0)
+                WeaponPaints.SkinFloatRange = catalog.FloatRange;
+            WeaponPaints.SkinsList = catalog.List;
+        }
+
+        internal static void LoadSkinsFromFile(string filePath, ILogger logger)
+        {
+            try
+            {
+                InstallSkins(BuildSkins(ReadCatalogFile(filePath)));
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError($"Failed to load skins from file: {ex.Message}");
+            }
         }
 
         internal static void LoadPinsFromFile(string filePath, ILogger logger)
         {
             try
             {
-                var json = File.ReadAllText(filePath);
-                var deserializedPins = JsonConvert.DeserializeObject<List<JObject>>(json);
-                WeaponPaints.PinsList = deserializedPins ?? [];
+                WeaponPaints.PinsList = ReadCatalogFile(filePath);
             }
             catch (Exception ex)
             {
@@ -183,22 +222,31 @@ namespace WeaponPaints
             }
         }
 
+        internal sealed record GlovesCatalog(List<JObject> List, Dictionary<string, JObject> ByPaintName);
+
+        internal static GlovesCatalog BuildGloves(List<JObject> list)
+        {
+            var byPaint = new Dictionary<string, JObject>();
+            foreach (var glove in list)
+            {
+                var paintName = glove["paint_name"]?.ToString();
+                if (!string.IsNullOrEmpty(paintName))
+                    byPaint[paintName] = glove;
+            }
+            return new GlovesCatalog(list, byPaint);
+        }
+
+        internal static void InstallGloves(GlovesCatalog catalog)
+        {
+            WeaponPaints.GlovesByPaintName = catalog.ByPaintName;
+            WeaponPaints.GlovesList = catalog.List;
+        }
+
         internal static void LoadGlovesFromFile(string filePath, ILogger logger)
         {
             try
             {
-                var json = File.ReadAllText(filePath);
-                var deserializedSkins = JsonConvert.DeserializeObject<List<JObject>>(json);
-                WeaponPaints.GlovesList = deserializedSkins ?? [];
-
-                var byPaint = new Dictionary<string, JObject>();
-                foreach (var glove in WeaponPaints.GlovesList)
-                {
-                    var paintName = glove["paint_name"]?.ToString();
-                    if (!string.IsNullOrEmpty(paintName))
-                        byPaint[paintName] = glove;
-                }
-                WeaponPaints.GlovesByPaintName = byPaint;
+                InstallGloves(BuildGloves(ReadCatalogFile(filePath)));
             }
             catch (Exception ex)
             {
@@ -206,44 +254,58 @@ namespace WeaponPaints
             }
         }
 
+        internal sealed record AgentsCatalog(
+            List<JObject> List,
+            Dictionary<(string, int), JObject> ByNameTeam,
+            Dictionary<int, List<JObject>> ByTeam,
+            HashSet<string> ModelSet,
+            Dictionary<string, string> ByBasename);
+
+        internal static AgentsCatalog BuildAgents(List<JObject> list)
+        {
+            var byNameTeam = new Dictionary<(string, int), JObject>();
+            var byTeam = new Dictionary<int, List<JObject>>();
+            var modelSet = new HashSet<string>();
+            var byBasename = new Dictionary<string, string>();
+
+            foreach (var agent in list)
+            {
+                var name = agent["agent_name"]?.ToString();
+                var team = (int?)agent["team"] ?? 0;
+                if (!string.IsNullOrEmpty(name))
+                    byNameTeam[(name, team)] = agent;
+
+                if (!byTeam.TryGetValue(team, out var teamAgents))
+                    byTeam[team] = teamAgents = new List<JObject>();
+                teamAgents.Add(agent);
+
+                var model = agent["model"]?.ToString();
+                if (!string.IsNullOrEmpty(model))
+                {
+                    modelSet.Add(model);
+                    var slash = model.LastIndexOf('/');
+                    var basename = slash >= 0 ? model.Substring(slash + 1) : model;
+                    byBasename[basename] = model;
+                }
+            }
+
+            return new AgentsCatalog(list, byNameTeam, byTeam, modelSet, byBasename);
+        }
+
+        internal static void InstallAgents(AgentsCatalog catalog)
+        {
+            WeaponPaints.AgentsByNameAndTeam = catalog.ByNameTeam;
+            WeaponPaints.AgentsByTeam = catalog.ByTeam;
+            WeaponPaints.AgentsModelSet = catalog.ModelSet;
+            WeaponPaints.AgentsModelByBasename = catalog.ByBasename;
+            WeaponPaints.AgentsList = catalog.List;
+        }
+
         internal static void LoadAgentsFromFile(string filePath, ILogger logger)
         {
             try
             {
-                var json = File.ReadAllText(filePath);
-                var deserializedSkins = JsonConvert.DeserializeObject<List<JObject>>(json);
-                WeaponPaints.AgentsList = deserializedSkins ?? [];
-
-                var byNameTeam = new Dictionary<(string, int), JObject>();
-                var byTeam = new Dictionary<int, List<JObject>>();
-                var modelSet = new HashSet<string>();
-                var byBasename = new Dictionary<string, string>();
-
-                foreach (var agent in WeaponPaints.AgentsList)
-                {
-                    var name = agent["agent_name"]?.ToString();
-                    var team = (int?)agent["team"] ?? 0;
-                    if (!string.IsNullOrEmpty(name))
-                        byNameTeam[(name, team)] = agent;
-
-                    if (!byTeam.TryGetValue(team, out var list))
-                        byTeam[team] = list = new List<JObject>();
-                    list.Add(agent);
-
-                    var model = agent["model"]?.ToString();
-                    if (!string.IsNullOrEmpty(model))
-                    {
-                        modelSet.Add(model);
-                        var slash = model.LastIndexOf('/');
-                        var basename = slash >= 0 ? model.Substring(slash + 1) : model;
-                        byBasename[basename] = model;
-                    }
-                }
-
-                WeaponPaints.AgentsByNameAndTeam = byNameTeam;
-                WeaponPaints.AgentsByTeam = byTeam;
-                WeaponPaints.AgentsModelSet = modelSet;
-                WeaponPaints.AgentsModelByBasename = byBasename;
+                InstallAgents(BuildAgents(ReadCatalogFile(filePath)));
             }
             catch (Exception ex)
             {
@@ -269,22 +331,32 @@ namespace WeaponPaints
             return null;
         }
 
+        internal sealed record StickersCatalog(List<JObject> List, Dictionary<uint, JObject> ById, StickerBrowseIndex Browse);
+
+        internal static StickersCatalog BuildStickers(List<JObject> list)
+        {
+            var byId = new Dictionary<uint, JObject>();
+            foreach (var sticker in list)
+            {
+                var idTok = sticker["id"]?.ToString();
+                if (!string.IsNullOrEmpty(idTok) && uint.TryParse(idTok, out var id))
+                    byId[id] = sticker;
+            }
+            return new StickersCatalog(list, byId, StickerBrowseIndex.Build(list));
+        }
+
+        internal static void InstallStickers(StickersCatalog catalog)
+        {
+            WeaponPaints.StickersById = catalog.ById;
+            WeaponPaints.StickerBrowse = catalog.Browse;
+            WeaponPaints.StickersList = catalog.List;
+        }
+
         internal static void LoadStickersFromFile(string filePath, ILogger logger)
         {
             try
             {
-                var json = File.ReadAllText(filePath);
-                var deserialized = JsonConvert.DeserializeObject<List<JObject>>(json);
-                WeaponPaints.StickersList = deserialized ?? [];
-
-                var byId = new Dictionary<uint, JObject>();
-                foreach (var sticker in WeaponPaints.StickersList)
-                {
-                    var idTok = sticker["id"]?.ToString();
-                    if (!string.IsNullOrEmpty(idTok) && uint.TryParse(idTok, out var id))
-                        byId[id] = sticker;
-                }
-                WeaponPaints.StickersById = byId;
+                InstallStickers(BuildStickers(ReadCatalogFile(filePath)));
             }
             catch (Exception ex)
             {
@@ -292,13 +364,42 @@ namespace WeaponPaints
             }
         }
 
+        internal sealed record KeychainsCatalog(List<JObject> List, Dictionary<uint, JObject> ById);
+
+        internal static KeychainsCatalog BuildKeychains(List<JObject> list)
+        {
+            var byId = new Dictionary<uint, JObject>();
+            foreach (var charm in list)
+            {
+                if (uint.TryParse(charm["id"]?.ToString(), out var id))
+                    byId[id] = charm;
+            }
+            return new KeychainsCatalog(list, byId);
+        }
+
+        internal static void InstallKeychains(KeychainsCatalog catalog)
+        {
+            WeaponPaints.KeychainsById = catalog.ById;
+            WeaponPaints.KeychainsList = catalog.List;
+        }
+
+        internal static void LoadKeychainsFromFile(string filePath, ILogger logger)
+        {
+            try
+            {
+                InstallKeychains(BuildKeychains(ReadCatalogFile(filePath)));
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError($"Failed to load charms from file: {ex.Message}");
+            }
+        }
+
         internal static void LoadMusicFromFile(string filePath, ILogger logger)
         {
             try
             {
-                var json = File.ReadAllText(filePath);
-                var deserializedSkins = JsonConvert.DeserializeObject<List<JObject>>(json);
-                WeaponPaints.MusicList = deserializedSkins ?? [];
+                WeaponPaints.MusicList = ReadCatalogFile(filePath);
             }
             catch (Exception ex)
             {

@@ -110,9 +110,28 @@ public partial class WeaponPaints
     // Tracks which players are mid chat-input for !seed / !float (no-arg form). The next
     // non-command say message from these players is intercepted and parsed instead of
     // hitting normal chat. Cleared on disconnect, on successful apply, and on cancel.
-    internal enum PendingSeedWearKind { Seed, Wear, GloveSeed, GloveWear }
-    internal static readonly ConcurrentDictionary<int, PendingSeedWearKind> GPlayersPendingSeedWearInput = new();
+    // Seed/Wear/Nametag act on the held weapon unless DefIndex is set (customize menu, which works
+    // on a weapon the player isn't holding). StickerSearch: DefIndex + Slot (-1 = all five slots).
+    internal enum PendingSeedWearKind { Seed, Wear, GloveSeed, GloveWear, Nametag, StickerSearch }
+    internal readonly record struct PendingChatInput(PendingSeedWearKind Kind, int DefIndex = -1, int Slot = -1)
+    {
+        // A prompt the player forgot about must not swallow their chat forever (see PendingInputTimeoutMs).
+        public long CreatedAt { get; init; } = Environment.TickCount64;
+    }
+
+    internal const long PendingInputTimeoutMs = 60_000;
+    internal static readonly ConcurrentDictionary<int, PendingChatInput> GPlayersPendingSeedWearInput = new();
+
+    // slot -> (team, defindex, paint) -> remembered (wear, seed). See PaintMemoryEnabled.
+    internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<(CsTeam Team, int DefIndex, int Paint), (float Wear, int Seed)>> GPlayersPaintMemory = new();
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ushort>> GPlayersMusic = new();
+    // Snapshot of player's engine-assigned (Steam inventory) music kit, captured once before
+    // any custom kit overwrites it. Restored when the player picks "None" in the music menu.
+    internal static readonly ConcurrentDictionary<int, ushort> GPlayersNativeMusic = new();
+    // Slots that toggled !musicoff: the MVP anthem is sent to them with nomusic. Other kit music
+    // (round start, bomb, deathcam) is client-side and only snd_musicvolume can silence it.
+    // Persisted in wp_player_music_settings.
+    internal static readonly ConcurrentDictionary<int, bool> GPlayersMusicOff = new();
     internal static readonly ConcurrentDictionary<int, ConcurrentDictionary<CsTeam, ushort>> GPlayersPin = new();
     // Snapshot of player's default (server-assigned) pin per team, captured once before
     // any custom pin overwrites InventoryServices.Rank[5]. Used by RestorePlayerDefaultPin
@@ -138,6 +157,12 @@ public partial class WeaponPaints
     // that lost their path prefix (e.g. "st6/ctm_st6_variantn" -> "ctm_st6/ctm_st6_variantn").
     internal static Dictionary<string, string> AgentsModelByBasename = new();
     internal static Dictionary<uint, JObject> StickersById = new();
+    internal static List<JObject> KeychainsList = [];
+    internal static Dictionary<uint, JObject> KeychainsById = new();
+    // (defindex, paint) -> real float range, from the online catalog (min_float/max_float).
+    internal static Dictionary<(int DefIndex, int Paint), (float Min, float Max)> SkinFloatRange = new();
+    // Grouping for the sticker browser, rebuilt with the sticker catalog. See StickerBrowser.cs.
+    internal static StickerBrowseIndex StickerBrowse = StickerBrowseIndex.Empty;
     internal static WeaponSynchronization? WeaponSync;
     private static bool _gBCommandsAllowed = true;
     private readonly Dictionary<int, string> _playerWeaponImage = new();

@@ -28,6 +28,8 @@ internal sealed class InspectSticker
     public float OffsetY;
     public float OffsetZ;
     public uint Pattern; // keychain seed
+    public uint Highlight; // keychain highlight reel (field 11)
+    public uint StickerId; // sticker drawn on a sticker-slab charm (field 12)
 }
 
 // Decoder for CS2 inspect payloads: the hex-encoded CEconItemPreviewDataBlock protobuf carried by
@@ -243,6 +245,12 @@ internal sealed partial class InspectItemPreview
                     break;
                 case 10:
                     sticker.Pattern = (uint)ReadVarint(data, ref pos);
+                    break;
+                case 11 when wire == 0:
+                    sticker.Highlight = (uint)ReadVarint(data, ref pos);
+                    break;
+                case 12 when wire == 0:
+                    sticker.StickerId = (uint)ReadVarint(data, ref pos);
                     break;
                 default:
                     Skip(data, ref pos, wire);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Globalization;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
@@ -53,7 +54,7 @@ public partial class WeaponPaints
             {
                 try
                 {
-                    await WeaponSync.GetPlayerData(playerInfo);
+                    await QueueGetPlayerData(playerInfo);
                     _weaponDataReady[playerInfo.Slot] = true;
                     // After DB sync, refresh player cosmetics and weapons
                     Server.NextFrame(() =>
@@ -80,6 +81,77 @@ public partial class WeaponPaints
         {
             player.Print(Localizer["wp_command_refresh_done"]);
         }
+    }
+
+    // css_wp_refresh <all|steamid64|#userid|name>: reload the targets' rows (queued behind their
+    // pending writes) and re-apply on the game thread. Server console is always allowed.
+    private void OnCommandRefreshAdmin(CCSPlayerController? caller, CommandInfo command)
+    {
+        if (caller != null && !AdminManager.PlayerHasPermissions(caller, Config.Additional.RefreshAdminPermission))
+        {
+            command.ReplyToCommand("[WeaponPaints] No permission.");
+            return;
+        }
+        if (WeaponSync == null)
+            return;
+
+        var arg = command.ArgCount >= 2 ? command.ArgString.Trim().Trim('"') : "";
+        if (arg.Length == 0)
+        {
+            command.ReplyToCommand($"[WeaponPaints] Usage: {command.GetArg(0)} <all|steamid64|#userid|name>");
+            return;
+        }
+
+        var humans = Utilities.GetPlayers()
+            .Where(p => p is { IsValid: true, IsBot: false, IsHLTV: false, Connected: PlayerConnectedState.Connected })
+            .ToList();
+
+        List<CCSPlayerController> targets;
+        if (arg.Equals("all", StringComparison.OrdinalIgnoreCase) || arg == "@all")
+            targets = humans;
+        else if (ulong.TryParse(arg, out var steamId64) && arg.Length >= 15)
+            targets = humans.Where(p => p.SteamID == steamId64).ToList();
+        else if (arg.StartsWith('#') && int.TryParse(arg[1..], out var userId))
+            targets = humans.Where(p => p.UserId == userId).ToList();
+        else
+        {
+            var exact = humans.Where(p => string.Equals(p.PlayerName, arg, StringComparison.OrdinalIgnoreCase)).ToList();
+            targets = exact.Count > 0 ? exact : humans.Where(p => p.PlayerName.Contains(arg, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (targets.Count > 1)
+            {
+                command.ReplyToCommand($"[WeaponPaints] '{arg}' matches {targets.Count} players ({string.Join(", ", targets.Select(t => t.PlayerName))}) - use #userid or the SteamID64.");
+                return;
+            }
+        }
+
+        if (targets.Count == 0)
+        {
+            command.ReplyToCommand($"[WeaponPaints] No connected player matches '{arg}'.");
+            return;
+        }
+
+        foreach (var target in targets)
+        {
+            // Unsaved StatTrak kills first, so the reload can't read an older count.
+            FlushStatTrak(target.Slot);
+
+            var playerInfo = PlayerInfo.From(target);
+            var slot = target.Slot;
+            var steamId = target.SteamID;
+            _ = Task.Run(async () =>
+            {
+                await QueueGetPlayerData(playerInfo);
+                _weaponDataReady[slot] = true;
+                Server.NextFrame(() =>
+                {
+                    var current = Utilities.GetPlayerFromSlot(slot);
+                    if (current is { IsValid: true } && current.SteamID == steamId)
+                        ApplyRefreshedCosmetics(current);
+                });
+            });
+        }
+
+        command.ReplyToCommand($"[WeaponPaints] Refreshing {targets.Count} player(s): {string.Join(", ", targets.Select(t => t.PlayerName))}");
     }
 
     // Main-thread only. Shared by !wp and the web-refresh poller — call after GetPlayerData
@@ -151,6 +223,10 @@ public partial class WeaponPaints
             {
                 player!.Print(Localizer["wp_info_pet"]);
             }
+
+        PrintLocalized(player!, "wp_info_nametag");
+        if (Config.Additional.CopySkinEnabled)
+            PrintLocalized(player!, "wp_info_copy");
 
         if (!Config.Additional.KnifeEnabled)
             return;
@@ -224,108 +300,28 @@ public partial class WeaponPaints
         ApplyHeldWeaponSeed(player, seedValue);
     }
 
-    // Shared apply path for !float/wear and the chat-input no-arg flow. Caller is
-    // responsible for the input parse + clamp; this assumes a sane value.
+    // Shared apply path for !float/wear and the chat-input no-arg flow: resolve the held weapon,
+    // then the same path the customize menu uses (ApplyWeaponWear / ApplyWeaponSeed).
     private void ApplyHeldWeaponWear(CCSPlayerController player, float floatValue)
     {
-        floatValue = Math.Clamp(floatValue, 0.00f, 1.00f);
-
-        var weapon = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
-        if (weapon == null || !weapon.IsValid)
+        var weaponDefIndex = HeldWeaponDefIndex(player);
+        if (weaponDefIndex < 0)
         {
-            if (!string.IsNullOrEmpty(Localizer["wp_float_no_weapon"]))
-                player.Print(Localizer["wp_float_no_weapon"]);
+            PrintLocalized(player, "wp_float_no_weapon");
             return;
         }
-
-        var weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
-
-        if (!HasChangedPaint(player, weaponDefIndex, out _))
-        {
-            if (!string.IsNullOrEmpty(Localizer["wp_float_no_skin"]))
-                player.Print(Localizer["wp_float_no_skin"]);
-            return;
-        }
-
-        var playerSkins = GPlayerWeaponsInfo.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
-        var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [player.Team];
-
-        foreach (var team in teamsToCheck)
-        {
-            var teamWeapons = playerSkins.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>());
-            if (teamWeapons.TryGetValue(weaponDefIndex, out var weaponInfo))
-                weaponInfo.Wear = floatValue;
-        }
-
-        // Clear any temporary wear override so the next apply uses the new value
-        if (_temporaryPlayerWeaponWear.TryGetValue(player.Slot, out var tempWear))
-            tempWear.TryRemove(weaponDefIndex, out _);
-
-        var playerInfo = PlayerInfo.From(player);
-
-        if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
-        {
-            bool isKnife = weapon.DesignerName.Contains("knife") || weapon.DesignerName.Contains("bayonet");
-            if (isKnife)
-                RefreshKnife(player);
-            else
-                RefreshSingleWeapon(player, weaponDefIndex);
-        }
-
-        if (WeaponSync != null)
-            _ = Task.Run(async () => await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo));
-
-        if (!string.IsNullOrEmpty(Localizer["wp_float_set"]))
-            player.Print(Localizer["wp_float_set", floatValue.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)]);
+        ApplyWeaponWear(player, weaponDefIndex, floatValue);
     }
 
     private void ApplyHeldWeaponSeed(CCSPlayerController player, int seedValue)
     {
-        seedValue = Math.Clamp(seedValue, 0, 1000);
-
-        var weapon = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
-        if (weapon == null || !weapon.IsValid)
+        var weaponDefIndex = HeldWeaponDefIndex(player);
+        if (weaponDefIndex < 0)
         {
-            if (!string.IsNullOrEmpty(Localizer["wp_seed_no_weapon"]))
-                player.Print(Localizer["wp_seed_no_weapon"]);
+            PrintLocalized(player, "wp_seed_no_weapon");
             return;
         }
-
-        var weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
-
-        if (!HasChangedPaint(player, weaponDefIndex, out _))
-        {
-            if (!string.IsNullOrEmpty(Localizer["wp_seed_no_skin"]))
-                player.Print(Localizer["wp_seed_no_skin"]);
-            return;
-        }
-
-        var playerSkins = GPlayerWeaponsInfo.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
-        var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [player.Team];
-
-        foreach (var team in teamsToCheck)
-        {
-            var teamWeapons = playerSkins.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>());
-            if (teamWeapons.TryGetValue(weaponDefIndex, out var weaponInfo))
-                weaponInfo.Seed = seedValue;
-        }
-
-        var playerInfo = PlayerInfo.From(player);
-
-        if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
-        {
-            bool isKnife = weapon.DesignerName.Contains("knife") || weapon.DesignerName.Contains("bayonet");
-            if (isKnife)
-                RefreshKnife(player);
-            else
-                RefreshSingleWeapon(player, weaponDefIndex);
-        }
-
-        if (WeaponSync != null)
-            _ = Task.Run(async () => await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo));
-
-        if (!string.IsNullOrEmpty(Localizer["wp_seed_set"]))
-            player.Print(Localizer["wp_seed_set", seedValue]);
+        ApplyWeaponSeed(player, weaponDefIndex, seedValue);
     }
 
     private void OnCommandGloveFloat(CCSPlayerController? player, CommandInfo command)
@@ -447,8 +443,7 @@ public partial class WeaponPaints
         if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
             GivePlayerGloves(player);
 
-        if (WeaponSync != null)
-            _ = Task.Run(async () => await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo));
+        QueueWeaponRowWrite(player, gloveDefIndex, teamsToCheck);
 
         if (!string.IsNullOrEmpty(Localizer["wp_float_set"]))
             player.Print(Localizer["wp_float_set", floatValue.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)]);
@@ -487,8 +482,7 @@ public partial class WeaponPaints
         if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
             GivePlayerGloves(player);
 
-        if (WeaponSync != null)
-            _ = Task.Run(async () => await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo));
+        QueueWeaponRowWrite(player, gloveDefIndex, teamsToCheck);
 
         if (!string.IsNullOrEmpty(Localizer["wp_seed_set"]))
             player.Print(Localizer["wp_seed_set", seedValue]);
@@ -510,7 +504,7 @@ public partial class WeaponPaints
             return;
         }
 
-        GPlayersPendingSeedWearInput[player.Slot] = kind;
+        GPlayersPendingSeedWearInput[player.Slot] = new PendingChatInput(kind);
 
         var promptKey = kind == PendingSeedWearKind.GloveSeed ? "wp_seed_prompt" : "wp_float_prompt";
         if (!string.IsNullOrEmpty(Localizer[promptKey]))
@@ -536,7 +530,7 @@ public partial class WeaponPaints
             return;
         }
 
-        GPlayersPendingSeedWearInput[player.Slot] = kind;
+        GPlayersPendingSeedWearInput[player.Slot] = new PendingChatInput(kind);
 
         var promptKey = kind == PendingSeedWearKind.Seed ? "wp_seed_prompt" : "wp_float_prompt";
         if (!string.IsNullOrEmpty(Localizer[promptKey]))
@@ -550,8 +544,13 @@ public partial class WeaponPaints
     {
         if (!Utility.IsPlayerValid(player) || player is null)
             return HookResult.Continue;
-        if (!GPlayersPendingSeedWearInput.TryGetValue(player.Slot, out var kind))
+        if (!GPlayersPendingSeedWearInput.TryGetValue(player.Slot, out var pending))
             return HookResult.Continue;
+        if (Environment.TickCount64 - pending.CreatedAt > PendingInputTimeoutMs)
+        {
+            GPlayersPendingSeedWearInput.TryRemove(player.Slot, out _);
+            return HookResult.Continue;
+        }
 
         var input = info.GetArg(1)?.Trim().Trim('"');
         if (string.IsNullOrEmpty(input))
@@ -564,35 +563,63 @@ public partial class WeaponPaints
             return HookResult.Continue;
         }
 
-        if (kind is PendingSeedWearKind.Seed or PendingSeedWearKind.GloveSeed)
+        var kind = pending.Kind;
+        var targeted = pending.DefIndex >= 0;
+
+        switch (kind)
         {
-            if (!int.TryParse(input, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var seedValue))
+            case PendingSeedWearKind.Seed or PendingSeedWearKind.GloveSeed:
             {
-                if (!string.IsNullOrEmpty(Localizer["wp_seed_invalid"]))
-                    player.Print(Localizer["wp_seed_invalid"]);
+                if (!int.TryParse(input, NumberStyles.Integer, CultureInfo.InvariantCulture, out var seedValue))
+                {
+                    PrintLocalized(player, "wp_seed_invalid");
+                    return HookResult.Handled;
+                }
+                if (kind == PendingSeedWearKind.GloveSeed)
+                    ApplyGloveSeed(player, seedValue);
+                else if (targeted)
+                    ApplyWeaponSeed(player, pending.DefIndex, seedValue);
+                else
+                    ApplyHeldWeaponSeed(player, seedValue);
+                break;
+            }
+            case PendingSeedWearKind.Wear or PendingSeedWearKind.GloveWear:
+            {
+                if (!float.TryParse(input, NumberStyles.Float, CultureInfo.InvariantCulture, out var floatValue)
+                    && !float.TryParse(input, NumberStyles.Float, CultureInfo.CurrentCulture, out floatValue))
+                {
+                    PrintLocalized(player, "wp_float_invalid");
+                    return HookResult.Handled;
+                }
+                if (kind == PendingSeedWearKind.GloveWear)
+                    ApplyGloveWear(player, floatValue);
+                else if (targeted)
+                    ApplyWeaponWear(player, pending.DefIndex, floatValue);
+                else
+                    ApplyHeldWeaponWear(player, floatValue);
+                break;
+            }
+            case PendingSeedWearKind.Nametag:
+            {
+                var defIndex = targeted ? pending.DefIndex : HeldWeaponDefIndex(player);
+                if (defIndex >= 0)
+                    ApplyWeaponNametag(player, defIndex, input == "-" ? null : input);
+                break;
+            }
+            case PendingSeedWearKind.StickerSearch:
+            {
+                GPlayersPendingSeedWearInput.TryRemove(player.Slot, out _);
+                OpenStickerSearchResults(player, pending.DefIndex, pending.Slot, input);
                 return HookResult.Handled;
             }
-            if (kind == PendingSeedWearKind.GloveSeed)
-                ApplyGloveSeed(player, seedValue);
-            else
-                ApplyHeldWeaponSeed(player, seedValue);
-        }
-        else
-        {
-            if (!float.TryParse(input, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var floatValue)
-                && !float.TryParse(input, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.CurrentCulture, out floatValue))
-            {
-                if (!string.IsNullOrEmpty(Localizer["wp_float_invalid"]))
-                    player.Print(Localizer["wp_float_invalid"]);
-                return HookResult.Handled;
-            }
-            if (kind == PendingSeedWearKind.GloveWear)
-                ApplyGloveWear(player, floatValue);
-            else
-                ApplyHeldWeaponWear(player, floatValue);
         }
 
         GPlayersPendingSeedWearInput.TryRemove(player.Slot, out _);
+
+        // Typed from the customize menu: bring it back with the new value.
+        if (targeted && Config.Additional.CustomizeMenuEnabled && kind is PendingSeedWearKind.Seed or PendingSeedWearKind.Wear or PendingSeedWearKind.Nametag)
+            OpenWeaponCustomizeMenu(player, pending.DefIndex, null);
+
         return HookResult.Handled;
     }
 
@@ -740,9 +767,8 @@ public partial class WeaponPaints
 
     private void OpenSkinSelectionMenuForWeapon(CCSPlayerController player, string weaponClassname, string weaponDisplayName)
     {
-        var skinsForSelectedWeapon = SkinsList.Where(skin => skin.TryGetValue("weapon_name", out var weaponName) && weaponName?.ToString() == weaponClassname)?.ToList();
-
-        if (skinsForSelectedWeapon == null || skinsForSelectedWeapon.Count == 0)
+        // Index lookup instead of a scan of the whole ~2k-entry skin list per menu open.
+        if (!SkinsByWeaponName.TryGetValue(weaponClassname, out var skinsForSelectedWeapon) || skinsForSelectedWeapon.Count == 0)
         {
             if (!string.IsNullOrEmpty(Localizer["wp_skin_no_skins_found"]))
             {
@@ -773,65 +799,59 @@ public partial class WeaponPaints
                 || !int.TryParse(selectedPaintId, out var paintId)
             )
                 return;
+
+            if (Config.Additional.ShowSkinImage)
             {
-                if (Config.Additional.ShowSkinImage)
+                JObject? foundSkin = null;
+                if (weaponSkins != null)
                 {
-                    JObject? foundSkin = null;
-                    if (weaponSkins != null)
+                    foreach (var s in weaponSkins)
                     {
-                        foreach (var s in weaponSkins)
+                        if (((int?)s["paint"] ?? 0) == paintId && s["image"] != null)
                         {
-                            if (((int?)s["paint"] ?? 0) == paintId && s["image"] != null)
-                            {
-                                foundSkin = s;
-                                break;
-                            }
+                            foundSkin = s;
+                            break;
                         }
                     }
-                    var image = foundSkin?["image"]?.ToString() ?? "";
-                    _playerWeaponImage[p.Slot] = image;
-                    AddTimer(2.0f, () => _playerWeaponImage.Remove(p.Slot), TimerFlags.STOP_ON_MAPCHANGE);
                 }
+                var image = foundSkin?["image"]?.ToString() ?? "";
+                _playerWeaponImage[p.Slot] = image;
+                AddTimer(2.0f, () => _playerWeaponImage.Remove(p.Slot), TimerFlags.STOP_ON_MAPCHANGE);
+            }
 
-                p.Print(Localizer["wp_skin_menu_select", selectedSkin]);
-                var playerSkins = GPlayerWeaponsInfo.GetOrAdd(p.Slot, new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
+            p.Print(Localizer["wp_skin_menu_select", selectedSkin]);
 
-                var teamsToCheck = p.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : [p.Team];
+            // Remember the outgoing paint's wear/seed before it is replaced.
+            var teamsToCheck = TeamsFor(p);
+            RememberPaint(p, weaponDefIndex, teamsToCheck);
 
-                foreach (var team in teamsToCheck)
+            var playerSkins = GPlayerWeaponsInfo.GetOrAdd(p.Slot, _ => new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
+            foreach (var team in teamsToCheck)
+            {
+                var teamWeapons = playerSkins.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>());
+                var value = teamWeapons.GetOrAdd(weaponDefIndex, _ => new WeaponInfo());
+                value.Paint = paintId;
+                if (Config.Additional.PaintMemoryEnabled && TryRecallPaint(p.Slot, team, weaponDefIndex, paintId, out var remembered))
                 {
-                    var teamWeapons = playerSkins.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>());
-                    var value = teamWeapons.GetOrAdd(weaponDefIndex, _ => new WeaponInfo());
-                    value.Paint = paintId;
-                    value.Wear = 0.01f;
-                    value.Seed = 0;
-                }
-
-                var playerInfo = PlayerInfo.From(p);
-
-                if (!_gBCommandsAllowed || (LifeState_t)p.LifeState != LifeState_t.LIFE_ALIVE || WeaponSync == null)
-                    return;
-
-                // Refresh only the specific weapon we changed the skin for (preserves knife)
-                bool isKnife = weaponClassname.Contains("knife") || weaponClassname.Contains("bayonet");
-                if (isKnife)
-                {
-                    RefreshKnife(p);
+                    value.Wear = remembered.Wear;
+                    value.Seed = remembered.Seed;
                 }
                 else
                 {
-                    RefreshSingleWeapon(p, weaponDefIndex);
-                }
-
-                try
-                {
-                    _ = Task.Run(async () => await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo));
-                }
-                catch (Exception ex)
-                {
-                    Utility.Log($"Error syncing weapon paints: {ex.Message}");
+                    value.Wear = ClampWearForPaint(weaponDefIndex, paintId, 0.01f);
+                    value.Seed = 0;
                 }
             }
+
+            if (_temporaryPlayerWeaponWear.TryGetValue(p.Slot, out var tempWear))
+                tempWear.TryRemove(weaponDefIndex, out _);
+
+            // Persist whether or not the player is alive (dead players used to lose the pick).
+            QueueWeaponRowWrite(p, weaponDefIndex, teamsToCheck);
+            ScheduleWeaponRefresh(p, weaponDefIndex);
+
+            if (Config.Additional.CustomizeMenuEnabled && paintId != 0)
+                OpenWeaponCustomizeMenu(p, weaponDefIndex, skinSubMenu);
         };
 
         foreach (var skin in skinsForSelectedWeapon)
@@ -864,7 +884,7 @@ public partial class WeaponPaints
     {
         Config.Additional.CommandStattrak.ForEach(c =>
         {
-            AddCommand(
+            AddGatedCommand(
                 $"css_{c}",
                 "Stattrak toggle",
                 (player, info) =>
@@ -879,12 +899,12 @@ public partial class WeaponPaints
 
         Config.Additional.CommandMenu.ForEach(c =>
         {
-            AddCommand($"css_{c}", "Pick your preferred menu style", (player, info) => OnCommandMenu(player, info));
+            AddGatedCommand($"css_{c}", "Pick your preferred menu style", (player, info) => OnCommandMenu(player, info));
         });
 
         Config.Additional.CommandSkin.ForEach(c =>
         {
-            AddCommand(
+            AddGatedCommand(
                 $"css_{c}",
                 "Skins info",
                 (player, info) =>
@@ -898,7 +918,7 @@ public partial class WeaponPaints
 
         Config.Additional.CommandRefresh.ForEach(c =>
         {
-            AddCommand(
+            AddGatedCommand(
                 $"css_{c}",
                 "Skins refresh",
                 (player, info) =>
@@ -913,7 +933,7 @@ public partial class WeaponPaints
         // Register float command
         Config.Additional.CommandFloat.ForEach(c =>
         {
-            AddCommand(
+            AddGatedCommand(
                 $"css_{c}",
                 "Set weapon float/wear value",
                 (player, info) =>
@@ -928,7 +948,7 @@ public partial class WeaponPaints
         // Register seed command
         Config.Additional.CommandSeed.ForEach(c =>
         {
-            AddCommand(
+            AddGatedCommand(
                 $"css_{c}",
                 "Set weapon pattern seed",
                 (player, info) =>
@@ -943,7 +963,7 @@ public partial class WeaponPaints
         // Register glove float command
         Config.Additional.CommandGloveFloat.ForEach(c =>
         {
-            AddCommand(
+            AddGatedCommand(
                 $"css_{c}",
                 "Set glove float/wear value",
                 (player, info) =>
@@ -958,7 +978,7 @@ public partial class WeaponPaints
         // Register glove seed command
         Config.Additional.CommandGloveSeed.ForEach(c =>
         {
-            AddCommand(
+            AddGatedCommand(
                 $"css_{c}",
                 "Set glove pattern seed",
                 (player, info) =>
@@ -973,7 +993,7 @@ public partial class WeaponPaints
         // Register sticker command
         Config.Additional.CommandSticker.ForEach(c =>
         {
-            AddCommand(
+            AddGatedCommand(
                 $"css_{c}",
                 "Apply sticker to held weapon",
                 (player, info) =>
@@ -990,7 +1010,7 @@ public partial class WeaponPaints
         {
             Config.Additional.CommandGen.ForEach(c =>
             {
-                AddCommand(
+                AddGatedCommand(
                     $"css_{c}",
                     "Apply a skin from an inspect link or gen code",
                     (player, info) =>
@@ -1003,6 +1023,46 @@ public partial class WeaponPaints
             });
         }
 
+        Config.Additional.CommandNametag.ForEach(c =>
+        {
+            AddGatedCommand(
+                $"css_{c}",
+                "Set the name tag of the held weapon",
+                (player, info) =>
+                {
+                    if (!Utility.IsPlayerValid(player))
+                        return;
+                    OnCommandNametag(player, info);
+                }
+            );
+        });
+
+        if (Config.Additional.CopySkinEnabled)
+        {
+            Config.Additional.CommandCopySkin.ForEach(c =>
+            {
+                AddGatedCommand(
+                    $"css_{c}",
+                    "Copy the skin of the weapon held by the player you spectate",
+                    (player, info) =>
+                    {
+                        if (!Utility.IsPlayerValid(player))
+                            return;
+                        OnCommandCopySkin(player, info);
+                    }
+                );
+            });
+        }
+
+        RegisterCatalogCommands();
+
+        // Admin refresh: plain AddCommand (not the VIP gate) — it checks its own permission and
+        // must work from the server console.
+        Config.Additional.CommandRefreshAdmin.ForEach(c =>
+        {
+            AddCommand($"css_{c}", "Reload and re-apply a player's skins (admin)", OnCommandRefreshAdmin);
+        });
+
         // Chat-input interceptor for !seed / !float no-arg flow. Pre-hook so we can swallow
         // the value message (HookResult.Handled) without it appearing in public chat.
         AddCommandListener("say", OnPlayerChatSeedWearInput, HookMode.Pre);
@@ -1012,7 +1072,7 @@ public partial class WeaponPaints
         {
             Config.Additional.CommandKill.ForEach(c =>
             {
-                AddCommand(
+                AddGatedCommand(
                     $"css_{c}",
                     "kill yourself",
                     (player, _) =>
@@ -1040,21 +1100,11 @@ public partial class WeaponPaints
             return;
         LastCommandTime[player.Slot] = DateTime.UtcNow;
 
-        var weapon = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
-
-        if (weapon == null || !weapon.IsValid)
+        var weaponDefIndex = HeldWeaponDefIndex(player);
+        if (weaponDefIndex < 0 || !HasChangedPaint(player, weaponDefIndex, out _))
             return;
 
-        if (!HasChangedPaint(player, weapon.AttributeManager.Item.ItemDefinitionIndex, out var weaponInfo) || weaponInfo == null)
-            return;
-
-        weaponInfo.StatTrak = !weaponInfo.StatTrak;
-        RefreshWeapons(player);
-
-        if (!string.IsNullOrEmpty(Localizer["wp_stattrak_action"]))
-        {
-            player.Print(Localizer["wp_stattrak_action"]);
-        }
+        ToggleWeaponStatTrak(player, weaponDefIndex);
     }
 
     private void SetupKnifeMenu()
@@ -1099,8 +1149,7 @@ public partial class WeaponPaints
             if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
                 RefreshWeapons(player);
 
-            if (WeaponSync != null)
-                _ = Task.Run(async () => await WeaponSync.SyncKnifeToDatabase(playerInfo, knifeKey, teamsToCheck));
+            QueueDb(playerInfo, "knife", sync => sync.SyncKnifeToDatabase(playerInfo, knifeKey, teamsToCheck));
         };
         foreach (var knifePair in knivesOnly)
         {
@@ -1108,7 +1157,7 @@ public partial class WeaponPaints
         }
         Config.Additional.CommandKnife.ForEach(c =>
         {
-            AddCommand(
+            AddGatedCommand(
                 $"css_{c}",
                 "Knife Menu",
                 (player, _) =>
@@ -1146,7 +1195,7 @@ public partial class WeaponPaints
         // Register the direct skin selection command with argument support
         Config.Additional.CommandSkinSelection.ForEach(c =>
         {
-            AddCommand(
+            AddGatedCommand(
                 $"css_{c}",
                 "Skins selection menu (optionally specify weapon: !skins ak47)",
                 (player, info) =>
@@ -1223,15 +1272,9 @@ public partial class WeaponPaints
                 }
             }
 
-            if (WeaponSync == null)
-                return;
-
-            // Single DB round-trip for both syncs — previous loop ran them once per team.
-            _ = Task.Run(async () =>
-            {
-                await WeaponSync.SyncGloveToDatabase(playerInfo, (ushort)weaponDefindex, teamsToCheck);
-                await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo);
-            });
+            QueueDb(playerInfo, "glove", sync => sync.SyncGloveToDatabase(playerInfo, (ushort)weaponDefindex, teamsToCheck));
+            if (paint != 0)
+                QueueWeaponRowWrite(player, weaponDefindex, teamsToCheck);
 
             if (paint == 0)
             {
@@ -1260,7 +1303,7 @@ public partial class WeaponPaints
         // Command to open the weapon selection menu for players
         Config.Additional.CommandGlove.ForEach(c =>
         {
-            AddCommand(
+            AddGatedCommand(
                 $"css_{c}",
                 "Gloves selection menu",
                 (player, info) =>
@@ -1368,10 +1411,8 @@ public partial class WeaponPaints
                 });
             }
 
-            if (WeaponSync != null)
-            {
-                _ = Task.Run(async () => await WeaponSync.SyncAgentToDatabase(playerInfo));
-            }
+            if (GPlayersAgent.TryGetValue(player.Slot, out var agentsSnapshot))
+                QueueDb(playerInfo, "agent", sync => sync.SyncAgentToDatabase(playerInfo, agentsSnapshot));
         };
 
         foreach (var agent in AgentsList)
@@ -1390,7 +1431,7 @@ public partial class WeaponPaints
         // Command to open the agent selection menu for players
         Config.Additional.CommandAgent.ForEach(c =>
         {
-            AddCommand(
+            AddGatedCommand(
                 $"css_{c}",
                 "Agents selection menu",
                 (player, info) =>
@@ -1471,13 +1512,7 @@ public partial class WeaponPaints
                     player.Print(Localizer["wp_music_menu_select", selectedPaintName]);
                 }
 
-                if (WeaponSync != null)
-                {
-                    _ = Task.Run(async () =>
-                    {
-                        await WeaponSync.SyncMusicToDatabase(playerInfo, (ushort)paint, teamsToCheck);
-                    });
-                }
+                QueueDb(playerInfo, "music", sync => sync.SyncMusicToDatabase(playerInfo, (ushort)paint, teamsToCheck));
             }
             else
             {
@@ -1495,13 +1530,7 @@ public partial class WeaponPaints
                     player.Print(Localizer["wp_music_menu_select", Localizer["None"]]);
                 }
 
-                if (WeaponSync != null)
-                {
-                    _ = Task.Run(async () =>
-                    {
-                        await WeaponSync.SyncMusicToDatabase(playerInfo, 0, teamsToCheck);
-                    });
-                }
+                QueueDb(playerInfo, "music", sync => sync.SyncMusicToDatabase(playerInfo, 0, teamsToCheck));
             }
         };
 
@@ -1515,7 +1544,7 @@ public partial class WeaponPaints
         // Command to open the weapon selection menu for players
         Config.Additional.CommandMusic.ForEach(c =>
         {
-            AddCommand(
+            AddGatedCommand(
                 $"css_{c}",
                 "Music selection menu",
                 (player, info) =>
@@ -1542,6 +1571,30 @@ public partial class WeaponPaints
                 }
             );
         });
+
+        Config.Additional.CommandMusicOff.ForEach(c =>
+        {
+            AddGatedCommand($"css_{c}", "Toggle music kit sounds for yourself", (player, _) => OnCommandMusicOff(player));
+        });
+    }
+
+    private void OnCommandMusicOff(CCSPlayerController? player)
+    {
+        if (!Utility.IsPlayerValid(player) || player is null)
+            return;
+
+        var musicOff = !GPlayersMusicOff.TryGetValue(player.Slot, out var current) || !current;
+        if (musicOff)
+            GPlayersMusicOff[player.Slot] = true;
+        else
+            GPlayersMusicOff.TryRemove(player.Slot, out _);
+
+        var message = Localizer[musicOff ? "wp_music_off" : "wp_music_on"];
+        if (!string.IsNullOrEmpty(message))
+            player.Print(message);
+
+        var playerInfo = PlayerInfo.From(player);
+        QueueDb(playerInfo, "musicoff", sync => sync.SyncMusicOffToDatabase(playerInfo, musicOff));
     }
 
     private void SetupPinsMenu()
@@ -1603,13 +1656,7 @@ public partial class WeaponPaints
                 else
                     RestorePlayerDefaultPin(player);
 
-                if (WeaponSync != null)
-                {
-                    _ = Task.Run(async () =>
-                    {
-                        await WeaponSync.SyncPinToDatabase(playerInfo, (ushort)paint, teamsToCheck);
-                    });
-                }
+                QueueDb(playerInfo, "pin", sync => sync.SyncPinToDatabase(playerInfo, (ushort)paint, teamsToCheck));
             }
             else
             {
@@ -1632,13 +1679,7 @@ public partial class WeaponPaints
 
                 RestorePlayerDefaultPin(player);
 
-                if (WeaponSync != null)
-                {
-                    _ = Task.Run(async () =>
-                    {
-                        await WeaponSync.SyncPinToDatabase(playerInfo, 0, teamsToCheck);
-                    });
-                }
+                QueueDb(playerInfo, "pin", sync => sync.SyncPinToDatabase(playerInfo, 0, teamsToCheck));
             }
         };
 
@@ -1652,7 +1693,7 @@ public partial class WeaponPaints
         // Command to open the weapon selection menu for players
         Config.Additional.CommandPin.ForEach(c =>
         {
-            AddCommand(
+            AddGatedCommand(
                 $"css_{c}",
                 "Pin selection menu",
                 (player, info) =>
@@ -1680,297 +1721,6 @@ public partial class WeaponPaints
                 }
             );
         });
-    }
-
-    // Per-slot snapshot of the sticker list a player should see in their next sticker
-    // sub-menu. Set when !sticker is invoked (filtered or full) and read once the slot
-    // sub-menu picks a slot. Cleared on player disconnect via OnPlayerDisconnect.
-    private static readonly ConcurrentDictionary<int, List<JObject>> _stickerCommandFilters = new();
-
-    private void OnCommandSticker(CCSPlayerController? player, CommandInfo command)
-    {
-        if (!Config.Additional.SkinEnabled || !_gBCommandsAllowed)
-            return;
-        if (!Utility.IsPlayerValid(player) || player == null)
-            return;
-
-        // Prevent double-call from chat/console trigger
-        if (LastCommandTime.TryGetValue(player.Slot, out var lastTime) && (DateTime.UtcNow - lastTime).TotalMilliseconds < 100)
-            return;
-        LastCommandTime[player.Slot] = DateTime.UtcNow;
-
-        var weapon = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
-        if (weapon == null || !weapon.IsValid)
-        {
-            if (!string.IsNullOrEmpty(Localizer["wp_sticker_no_weapon"]))
-                player.Print(Localizer["wp_sticker_no_weapon"]);
-            return;
-        }
-
-        var weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
-
-        // No skin requirement: stickers can be applied to a weapon with no custom paint.
-
-        var query = "";
-        if (command.ArgCount >= 2)
-        {
-            var parts = new string[command.ArgCount - 1];
-            for (var i = 0; i < parts.Length; i++)
-                parts[i] = command.GetArg(i + 1);
-            query = string.Join(' ', parts).Trim();
-        }
-
-        List<JObject> filtered;
-        if (string.IsNullOrEmpty(query))
-        {
-            filtered = StickersList;
-        }
-        else if (uint.TryParse(query, out var idQuery) && StickersById.TryGetValue(idQuery, out var hit))
-        {
-            filtered = new List<JObject> { hit };
-        }
-        else
-        {
-            var tokens = query.ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            filtered = StickersList
-                .Where(s =>
-                {
-                    var name = s["name"]?.ToString()?.ToLowerInvariant() ?? "";
-                    return tokens.All(t => name.Contains(t));
-                })
-                .ToList();
-        }
-
-        if (filtered.Count == 0)
-        {
-            if (!string.IsNullOrEmpty(Localizer["wp_sticker_no_match"]))
-                player.Print(Localizer["wp_sticker_no_match", query]);
-            return;
-        }
-
-        _stickerCommandFilters[player.Slot] = filtered;
-        OpenStickerSlotMenu(player, weaponDefIndex);
-    }
-
-    private void OpenStickerSlotMenu(CCSPlayerController player, int weaponDefIndex)
-    {
-        var menu = Utility.CreateMenu(Localizer["wp_sticker_slot_title"]);
-        if (menu == null)
-            return;
-
-        for (var slot = 0; slot < 5; slot++)
-        {
-            var capturedSlot = slot;
-            var label = Localizer["wp_sticker_slot_label", slot].ToString();
-            if (string.IsNullOrEmpty(label))
-                label = $"Slot {slot}";
-
-            menu.AddItem(
-                label,
-                (p, _) =>
-                {
-                    if (!Utility.IsPlayerValid(p))
-                        return;
-                    OpenStickerListMenu(p, weaponDefIndex, capturedSlot);
-                }
-            );
-        }
-
-        var removeAllLabel = Localizer["wp_sticker_remove_all"].ToString();
-        if (string.IsNullOrEmpty(removeAllLabel))
-            removeAllLabel = "Remove all stickers";
-
-        menu.AddItem(
-            removeAllLabel,
-            (p, _) =>
-            {
-                if (!Utility.IsPlayerValid(p))
-                    return;
-                ClearAllStickers(p, weaponDefIndex);
-            }
-        );
-
-        menu.Display(player, 0);
-    }
-
-    private void OpenStickerListMenu(CCSPlayerController player, int weaponDefIndex, int slot)
-    {
-        if (!_stickerCommandFilters.TryGetValue(player.Slot, out var list))
-            list = StickersList;
-
-        var title = Localizer["wp_sticker_menu_title", slot].ToString();
-        if (string.IsNullOrEmpty(title))
-            title = $"Stickers - Slot {slot}";
-
-        var menu = Utility.CreateMenu(title);
-        if (menu == null)
-            return;
-
-        var clearLabel = Localizer["wp_sticker_clear_slot"].ToString();
-        if (string.IsNullOrEmpty(clearLabel))
-            clearLabel = "Clear this slot";
-
-        menu.AddItem(
-            clearLabel,
-            (p, _) =>
-            {
-                if (!Utility.IsPlayerValid(p))
-                    return;
-                ApplySticker(p, weaponDefIndex, slot, null);
-            }
-        );
-
-        foreach (var s in list)
-        {
-            var name = s["name"]?.ToString();
-            if (string.IsNullOrEmpty(name))
-                continue;
-            if (!uint.TryParse(s["id"]?.ToString(), out var id))
-                continue;
-
-            var capturedId = id;
-            menu.AddItem(
-                name,
-                (p, _) =>
-                {
-                    if (!Utility.IsPlayerValid(p))
-                        return;
-                    ApplySticker(
-                        p,
-                        weaponDefIndex,
-                        slot,
-                        new StickerInfo
-                        {
-                            Id = capturedId,
-                            Schema = 0,
-                            OffsetX = 0,
-                            OffsetY = 0,
-                            Wear = 0,
-                            Scale = 1,
-                            Rotation = 0,
-                        }
-                    );
-                }
-            );
-        }
-
-        menu.Display(player, 0);
-    }
-
-    private void ApplySticker(CCSPlayerController player, int weaponDefIndex, int slot, StickerInfo? sticker)
-    {
-        if (slot < 0 || slot > 4)
-            return;
-
-        // Sticker without skin: reuse the existing WeaponInfo if there is one (paint or not),
-        // otherwise create a paint-0 entry so the sticker can attach to the default weapon.
-        if (!TryGetWeaponInfo(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null)
-            weaponInfo = new WeaponInfo();
-
-        // Pad list to 5 slots so we can write to any index.
-        while (weaponInfo.Stickers.Count < 5)
-        {
-            weaponInfo.Stickers.Add(new StickerInfo());
-        }
-
-        weaponInfo.Stickers[slot] = sticker ?? new StickerInfo();
-
-        var playerInfo = PlayerInfo.From(player);
-        var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : new[] { player.Team };
-
-        var playerWeapons = GPlayerWeaponsInfo.GetOrAdd(player.Slot, _ => new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
-        foreach (var team in teamsToCheck)
-        {
-            var teamWeapons = playerWeapons.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>());
-            teamWeapons[weaponDefIndex] = weaponInfo;
-        }
-
-        // Defer the refresh so the sticker menu has closed and the weapon is redrawn before the
-        // kill+regive. Refreshing from inside the menu callback (menu still open) applied the
-        // attributes but the weapon wasn't composited until a later !wp — typed in chat with the
-        // menu already closed. The short delay makes the live apply behave like that !wp.
-        if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
-        {
-            AddTimer(0.25f, () =>
-            {
-                if (!Utility.IsPlayerValid(player) || (LifeState_t)player.LifeState != LifeState_t.LIFE_ALIVE)
-                    return;
-                var active = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
-                var isKnife = active != null && active.IsValid && active.AttributeManager.Item.ItemDefinitionIndex == weaponDefIndex && (active.DesignerName.Contains("knife") || active.DesignerName.Contains("bayonet"));
-                if (isKnife)
-                    RefreshKnife(player);
-                else if (weaponDefIndex == C4DefIndex)
-                    RefreshC4InPlace(player); // the bomb is never killed+regiven
-                else
-                    RefreshWeapons(player);
-            }, CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
-        }
-
-        if (WeaponSync != null)
-        {
-            _ = Task.Run(async () => await WeaponSync.SyncStickerToDatabase(playerInfo, weaponDefIndex, slot, sticker, teamsToCheck));
-        }
-
-        if (sticker != null)
-        {
-            if (!string.IsNullOrEmpty(Localizer["wp_sticker_applied"]))
-            {
-                var displayName = StickersById.TryGetValue(sticker.Id, out var so) ? so["name"]?.ToString() ?? sticker.Id.ToString() : sticker.Id.ToString();
-                player.Print(Localizer["wp_sticker_applied", displayName, slot]);
-            }
-        }
-        else
-        {
-            if (!string.IsNullOrEmpty(Localizer["wp_sticker_cleared"]))
-                player.Print(Localizer["wp_sticker_cleared", slot]);
-        }
-    }
-
-    private void ClearAllStickers(CCSPlayerController player, int weaponDefIndex)
-    {
-        if (!TryGetWeaponInfo(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null)
-            return;
-
-        // Keep 5 empty (Id 0) slots — NOT an empty list. On the regive, SetStickers sees an
-        // all-empty list and writes "sticker slot N id 0" to every slot, which invalidates the
-        // client's cached composite so the old decals are actually removed. An empty list would
-        // write nothing and the stale decals would linger.
-        weaponInfo.Stickers.Clear();
-        for (var i = 0; i < 5; i++)
-            weaponInfo.Stickers.Add(new StickerInfo());
-
-        var playerInfo = PlayerInfo.From(player);
-        var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : new[] { player.Team };
-
-        // Defer so the menu has closed and the weapon is redrawn before the regive (see ApplySticker).
-        if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
-        {
-            AddTimer(0.25f, () =>
-            {
-                if (!Utility.IsPlayerValid(player) || (LifeState_t)player.LifeState != LifeState_t.LIFE_ALIVE)
-                    return;
-                var active = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
-                var isKnife = active != null && active.IsValid && active.AttributeManager.Item.ItemDefinitionIndex == weaponDefIndex && (active.DesignerName.Contains("knife") || active.DesignerName.Contains("bayonet"));
-                if (isKnife)
-                    RefreshKnife(player);
-                else if (weaponDefIndex == C4DefIndex)
-                    RefreshC4InPlace(player); // the bomb is never killed+regiven
-                else
-                    RefreshWeapons(player);
-            }, CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
-        }
-
-        if (WeaponSync != null)
-        {
-            _ = Task.Run(async () =>
-            {
-                for (var slot = 0; slot < 5; slot++)
-                    await WeaponSync.SyncStickerToDatabase(playerInfo, weaponDefIndex, slot, null, teamsToCheck);
-            });
-        }
-
-        if (!string.IsNullOrEmpty(Localizer["wp_sticker_cleared_all"]))
-            player.Print(Localizer["wp_sticker_cleared_all"]);
     }
 
     private void OnCommandGen(CCSPlayerController? player, CommandInfo command)
@@ -2161,6 +1911,8 @@ public partial class WeaponPaints
                 OffsetZ = keychain.OffsetZ,
                 Seed = keychain.Pattern,
                 Rotation = keychain.Rotation,
+                Sticker = keychain.StickerId,
+                Highlight = keychain.Highlight,
             };
         }
 
@@ -2212,14 +1964,8 @@ public partial class WeaponPaints
         if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
             RefreshWeapons(player);
 
-        if (WeaponSync != null)
-        {
-            _ = Task.Run(async () =>
-            {
-                await WeaponSync.SyncKnifeToDatabase(playerInfo, className, teamsToCheck);
-                await WeaponSync.SyncWeaponGenToDatabase(playerInfo, item.DefIndex, teamsToCheck);
-            });
-        }
+        QueueDb(playerInfo, "knife", sync => sync.SyncKnifeToDatabase(playerInfo, className, teamsToCheck));
+        QueueWeaponRowWrite(player, item.DefIndex, teamsToCheck);
 
         if (!string.IsNullOrEmpty(Localizer["wp_gen_applied"]))
             player.Print(Localizer["wp_gen_applied", GenDisplayName(item, className)]);
@@ -2260,14 +2006,8 @@ public partial class WeaponPaints
 
         var playerInfo = PlayerInfo.From(player);
 
-        if (WeaponSync != null)
-        {
-            _ = Task.Run(async () =>
-            {
-                await WeaponSync.SyncGloveToDatabase(playerInfo, (ushort)item.DefIndex, teamsToCheck);
-                await WeaponSync.SyncWeaponGenToDatabase(playerInfo, item.DefIndex, teamsToCheck);
-            });
-        }
+        QueueDb(playerInfo, "glove", sync => sync.SyncGloveToDatabase(playerInfo, (ushort)item.DefIndex, teamsToCheck));
+        QueueWeaponRowWrite(player, item.DefIndex, teamsToCheck);
 
         if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
         {
@@ -2314,8 +2054,8 @@ public partial class WeaponPaints
         if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
             RefreshSingleWeapon(player, item.DefIndex);
 
-        if (WeaponSync != null)
-            _ = Task.Run(async () => await WeaponSync.SyncWeaponGenToDatabase(playerInfo, item.DefIndex, teamsToCheck));
+        QueueWeaponRowWrite(player, item.DefIndex, teamsToCheck);
+        RememberPaint(player, item.DefIndex, teamsToCheck);
 
         if (!string.IsNullOrEmpty(Localizer["wp_gen_applied"]))
             player.Print(Localizer["wp_gen_applied", GenDisplayName(item, className)]);

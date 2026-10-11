@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
@@ -31,6 +32,9 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
     {
         Instance = this;
 
+        // Before anything can queue a read: picks up writes the previous instance left running.
+        _dbQueue ??= CreateDbQueue();
+
         if (hotReload)
         {
             OnMapStart(string.Empty);
@@ -43,9 +47,12 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             GPlayersPin.Clear();
             GPlayersNativePin.Clear();
             GPlayersMusic.Clear();
+            GPlayersNativeMusic.Clear();
+            GPlayersMusicOff.Clear();
             GPlayersPet.Clear();
             PetSpawnQueue.Clear();
             GPlayersPendingSeedWearInput.Clear();
+            GPlayersPaintMemory.Clear();
             OriginalPawnModel.Clear();
             _temporaryPlayerWeaponWear.Clear();
             _stickerWearAssignments.Clear();
@@ -74,7 +81,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
                         _ = Task.Run(async () =>
                         {
                             if (WeaponSync != null)
-                                await WeaponSync.GetPlayerData(playerInfo);
+                                await QueueGetPlayerData(playerInfo);
                             _weaponDataReady[playerInfo.Slot] = true;
                         });
 
@@ -90,23 +97,34 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
 
         // Small catalogs that the menu builder (OnAllPluginsLoaded, which runs immediately after
         // Load) iterates at build time — parse these synchronously so the menus are populated.
-        Utility.LoadGlovesFromFile(ModuleDirectory + $"/data/gloves_{Config.SkinsLanguage}.json", Logger);
-        Utility.LoadAgentsFromFile(ModuleDirectory + $"/data/agents_{Config.SkinsLanguage}.json", Logger);
-        Utility.LoadMusicFromFile(ModuleDirectory + $"/data/music_{Config.SkinsLanguage}.json", Logger);
-        Utility.LoadPinsFromFile(ModuleDirectory + $"/data/collectibles_{Config.SkinsLanguage}.json", Logger);
+        // CatalogPath prefers data/cache (the online-merged catalog, see Catalog.cs) when it is newer.
+        Utility.LoadGlovesFromFile(CatalogPath("gloves"), Logger);
+        Utility.LoadAgentsFromFile(CatalogPath("agents"), Logger);
+        Utility.LoadMusicFromFile(CatalogPath("music"), Logger);
+        Utility.LoadPinsFromFile(CatalogPath("collectibles"), Logger);
 
         // Big catalogs (skins ~0.6MB, stickers ~2.1MB = ~93% of catalog bytes) are only read
         // on demand — gun-skin apply, the !skins menu (built lazily per-invoke), and !sticker —
         // never during menu build. Parsing them on the main thread freezes the current sim tick
         // (~200ms "UNEXPECTED LONG FRAME") on a live `css_plugins reload`. Parse off-thread; the
         // readers all tolerate the brief empty window (guns apply on next spawn once ready).
-        Task.Run(() =>
+        var skinsPath = CatalogPath("skins");
+        var stickersPath = CatalogPath("stickers");
+        var keychainsPath = CatalogPath("keychains");
+        _localCatalogTask = Task.Run(() =>
         {
-            Utility.LoadSkinsFromFile(ModuleDirectory + $"/data/skins_{Config.SkinsLanguage}.json", Logger);
-            Utility.LoadStickersFromFile(ModuleDirectory + $"/data/stickers_{Config.SkinsLanguage}.json", Logger);
+            Utility.LoadSkinsFromFile(skinsPath, Logger);
+            Utility.LoadStickersFromFile(stickersPath, Logger);
+            Utility.LoadKeychainsFromFile(keychainsPath, Logger);
         });
 
+        // Network fetch + merge run on the thread pool after the bundled files are in.
+        if (Config.CatalogApiEnabled)
+            StartCatalogRefresh(null);
+
         RegisterListeners();
+        StartStatTrakFlushTimer();
+        StartMusicPinDriftTimer();
 
         if (Config.WebRefreshEnabled)
         {
@@ -146,7 +164,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
                 {
                     if (online.TryGetValue(row.SteamId, out var playerInfo))
                     {
-                        await WeaponSync.GetPlayerData(playerInfo);
+                        await QueueGetPlayerData(playerInfo);
                         _weaponDataReady[playerInfo.Slot] = true;
                         await WeaponSync.DeleteWebRefreshRow(row.SteamId, row.Stamp);
 
@@ -179,6 +197,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
 
     public void OnConfigParsed(WeaponPaintsConfig config)
     {
+        MigrateConfigFile(config);
         Config = config;
 
         // Preferred source of truth: DB credentials on the main WeaponPaints.json
@@ -326,6 +345,64 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         Utility.Config = config;
     }
 
+    // CSSharp's ConfigManager never rewrites an existing config file: new fields only exist in
+    // memory (at their defaults) and never reach the operator's WeaponPaints.json. When the file's
+    // ConfigVersion is behind the class, add the missing keys (class defaults, recursing into
+    // objects present on both sides) and bump ConfigVersion. Existing values, arrays and unknown
+    // keys are never touched, so nothing an operator set (DB credentials included) changes.
+    // No backup copy is kept (the file holds DB credentials); temp file + move, so any failure
+    // leaves the original untouched.
+    private void MigrateConfigFile(WeaponPaintsConfig config)
+    {
+        var currentVersion = new WeaponPaintsConfig().Version;
+        if (config.Version >= currentVersion)
+            return;
+
+        var cssharpDir = Path.GetDirectoryName(Path.GetDirectoryName(ModuleDirectory))!;
+        var path = Path.Combine(cssharpDir, "configs", "plugins", "WeaponPaints", "WeaponPaints.json");
+        if (!File.Exists(path))
+            return;
+
+        try
+        {
+            var text = File.ReadAllText(path);
+            var header = text.Split('\n').TakeWhile(l => l.TrimStart().StartsWith("//")).Select(l => l.TrimEnd('\r')).ToList();
+
+            if (JsonNode.Parse(text, documentOptions: new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true }) is not JsonObject file)
+                return;
+            if (JsonSerializer.SerializeToNode(new WeaponPaintsConfig()) is not JsonObject defaults)
+                return;
+
+            AddMissingConfigKeys(file, defaults);
+            file["ConfigVersion"] = currentVersion;
+
+            header.Add($"// Migrated by WeaponPaints from config version {config.Version} to {currentVersion}");
+            var json = file.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+
+            var temp = path + ".tmp";
+            File.WriteAllText(temp, string.Join("\n", header) + "\n" + json);
+            File.Move(temp, path, overwrite: true);
+
+            Logger.LogInformation("Migrated {Path} from config version {Old} to {New} (new options added with their defaults)", path, config.Version, currentVersion);
+            config.Version = currentVersion;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning("Could not migrate {Path}, leaving it unchanged: {Message}", path, ex.Message);
+        }
+    }
+
+    private static void AddMissingConfigKeys(JsonObject target, JsonObject defaults)
+    {
+        foreach (var (key, value) in defaults)
+        {
+            if (!target.TryGetPropertyValue(key, out var existing))
+                target[key] = value?.DeepClone();
+            else if (existing is JsonObject existingObject && value is JsonObject defaultObject)
+                AddMissingConfigKeys(existingObject, defaultObject);
+        }
+    }
+
     // Unhook native function hooks before plugin unloads / hot-reloads. CSSharp tracks
     // RegisterListener / RegisterEventHandler subscriptions and removes them automatically on
     // unload, but VirtualFunctions.*.Hook(...) is registered against a process-wide static
@@ -334,6 +411,11 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
     public override void Unload(bool hotReload)
     {
         ClearPickupRefreshTimers();
+        ClearWeaponRefreshTimers();
+
+        // StatTrak deltas + queued writes: handed to the next instance on a hot reload, waited for
+        // (bounded) on unload/shutdown.
+        FlushWritesOnUnload(hotReload);
 
         // The chickens are world entities this plugin spawned: remove them so a reload does not leave
         // orphaned, ownerless pets behind. On a server shutdown the map ends first and OnMapEndPets

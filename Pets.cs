@@ -791,7 +791,7 @@ public partial class WeaponPaints
     {
         Config.Additional.CommandPet.ForEach(c =>
         {
-            AddCommand(
+            AddGatedCommand(
                 $"css_{c}",
                 "Pet menu",
                 (player, info) =>
@@ -1130,7 +1130,7 @@ public partial class WeaponPaints
                 Name = pet.Name,
             };
 
-        _ = Task.Run(async () => await WeaponSync.SyncPetToDatabase(playerInfo, snapshot));
+        QueueDb(playerInfo, "pet", sync => sync.SyncPetToDatabase(playerInfo, snapshot));
     }
 
     private void PrintPet(CCSPlayerController player, string key, params object[] args)

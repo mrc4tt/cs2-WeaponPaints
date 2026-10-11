@@ -33,3 +33,7 @@ Thumbs.db
 *.log
 *.sh
 CLAUDE.md
+
+# Backups (may hold credentials)
+*.bak
+*.bak.*

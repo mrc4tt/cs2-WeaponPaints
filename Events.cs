@@ -15,6 +15,9 @@ namespace WeaponPaints
     {
         private bool _mvpPlayed;
 
+        // slot -> spawn counter, so a deferred spawn apply can tell it has been superseded.
+        private readonly Dictionary<int, int> _spawnGeneration = new();
+
         [GameEventHandler]
         public HookResult OnClientFullConnect(EventPlayerConnectFull @event, GameEventInfo info)
         {
@@ -29,7 +32,7 @@ namespace WeaponPaints
             {
                 _ = Task.Run(async () =>
                 {
-                    await WeaponSync.GetPlayerData(playerInfo);
+                    await QueueGetPlayerData(playerInfo);
 
                     // Mark data ready so OnPlayerSpawn's refresh runs (and does so with data, not
                     // empty). If the player hasn't spawned yet, that timer does the first refresh.
@@ -45,6 +48,9 @@ namespace WeaponPaints
                     // hasn't spawned yet, OnPlayerSpawn does the same refresh once they do.
                     Server.NextWorldUpdate(() =>
                     {
+                        if (player != null && player.IsValid)
+                            ScheduleMusicPinReassert(player);
+
                         if (player == null || !player.IsValid || !player.PawnIsAlive)
                             return;
                         if (player.PlayerPawn.Value?.WeaponServices == null)
@@ -79,23 +85,23 @@ namespace WeaponPaints
 
             var playerInfo = PlayerInfo.From(player);
 
+            // Detach this player's weapon state here on the game thread and flush their changed
+            // StatTrak rows from that snapshot. Reading player.Slot / GPlayerWeaponsInfo from a
+            // background task would race a new occupant of the slot (sync their data, then wipe it).
+            GPlayerWeaponsInfo.TryGetValue(playerInfo.Slot, out var weaponsSnapshot);
+            if (Config.Additional.SkinEnabled)
+                GPlayerWeaponsInfo.TryRemove(playerInfo.Slot, out _);
+
             try
             {
-                Task.Run(async () =>
-                {
-                    if (WeaponSync != null)
-                        await WeaponSync.SyncStatTrakToDatabase(playerInfo);
-
-                    if (Config.Additional.SkinEnabled)
-                    {
-                        GPlayerWeaponsInfo.TryRemove(player.Slot, out _);
-                    }
-                });
+                if (weaponsSnapshot != null)
+                    FlushStatTrak(playerInfo.Slot, playerInfo, weaponsSnapshot);
             }
             catch (Exception ex)
             {
                 Logger.LogError($"[OnPlayerDisconnect] Error syncing StatTrak: {ex.Message}");
             }
+            ForgetStatTrakDirty(playerInfo.Slot);
 
             if (Config.Additional.KnifeEnabled)
             {
@@ -113,6 +119,8 @@ namespace WeaponPaints
             if (Config.Additional.MusicEnabled)
             {
                 GPlayersMusic.TryRemove(player.Slot, out _);
+                GPlayersNativeMusic.TryRemove(player.Slot, out _);
+                GPlayersMusicOff.TryRemove(player.Slot, out _);
             }
             if (Config.Additional.PinsEnabled)
             {
@@ -132,6 +140,13 @@ namespace WeaponPaints
                 pickupTimer.Kill();
             _stickerCommandFilters.TryRemove(player.Slot, out _);
             GPlayersPendingSeedWearInput.TryRemove(player.Slot, out _);
+            GPlayersPaintMemory.TryRemove(player.Slot, out _);
+            if (_weaponRefreshPending.Remove(player.Slot, out var weaponRefresh))
+                weaponRefresh.Timer?.Kill();
+            if (_stickerRefreshTimers.Remove(player.Slot, out var stickerRefresh))
+                stickerRefresh.Kill();
+            _musicPinReasserts.Remove(player.Slot);
+            _spawnGeneration.Remove(player.Slot);
             CommandsCooldown.Remove(player.Slot);
             LastCommandTime.Remove(player.Slot);
             _playerWeaponImage.Remove(player.Slot);
@@ -148,6 +163,7 @@ namespace WeaponPaints
         {
             // The timers carry STOP_ON_MAPCHANGE, but the dictionary still has to be emptied.
             ClearPickupRefreshTimers();
+            ClearWeaponRefreshTimers();
 
             if (Config.Additional is { KnifeEnabled: false, SkinEnabled: false, GloveEnabled: false })
                 return;
@@ -175,11 +191,24 @@ namespace WeaponPaints
             // when the pawn's native scene node, body component, and model infrastructure
             // are not yet fully initialized. Applying cosmetics synchronously or even on
             // NextFrame crashes in native SetModel/SetBodygroup calls.
+            //
+            // The timer re-resolves the player by slot and checks SteamID + spawn generation: a
+            // disconnect + reconnect into the slot, or a second spawn inside the 0.15s window (that
+            // spawn runs its own timer), must not apply to the wrong pawn or apply twice.
+            var spawnSlot = player.Slot;
+            var spawnSteamId = player.SteamID;
+            var generation = _spawnGeneration.TryGetValue(spawnSlot, out var previousGeneration) ? previousGeneration + 1 : 1;
+            _spawnGeneration[spawnSlot] = generation;
+            _musicPinReasserts.Remove(spawnSlot);
+
             AddTimer(
                 0.15f,
                 () =>
                 {
-                    if (player == null || !player.IsValid || !player.PawnIsAlive)
+                    if (!_spawnGeneration.TryGetValue(spawnSlot, out var currentGeneration) || currentGeneration != generation)
+                        return;
+                    player = Utilities.GetPlayerFromSlot(spawnSlot);
+                    if (player == null || !player.IsValid || player.SteamID != spawnSteamId || !player.PawnIsAlive)
                         return;
                     if (player.Team is CsTeam.None or CsTeam.Spectator)
                         return;
@@ -229,6 +258,80 @@ namespace WeaponPaints
             );
 
             return HookResult.Continue;
+        }
+
+        // The client's inventory load (GC) can land after our music kit / pin were applied and put
+        // the Steam ones back. Re-assert a few times after connect, then let the drift check below
+        // catch anything later. Each pass is two field writes, only when the value differs.
+        private void ScheduleMusicPinReassert(CCSPlayerController player)
+        {
+            if (!Config.Additional.MusicPinDriftCheck || (!Config.Additional.MusicEnabled && !Config.Additional.PinsEnabled))
+                return;
+
+            var slot = player.Slot;
+            var steamId = player.SteamID;
+            _musicPinReasserts.Remove(slot);
+            foreach (var delay in new[] { 1f, 3f, 7f })
+            {
+                AddTimer(delay, () =>
+                {
+                    var target = Utilities.GetPlayerFromSlot(slot);
+                    if (target is { IsValid: true, IsBot: false } && target.SteamID == steamId)
+                        ReassertMusicAndPin(target);
+                }, TimerFlags.STOP_ON_MAPCHANGE);
+            }
+        }
+
+        private void StartMusicPinDriftTimer()
+        {
+            if (!Config.Additional.MusicPinDriftCheck || (!Config.Additional.MusicEnabled && !Config.Additional.PinsEnabled))
+                return;
+
+            AddTimer(5f, () =>
+            {
+                foreach (var player in Utilities.GetPlayers())
+                {
+                    if (player is { IsValid: true, IsBot: false, IsHLTV: false, Connected: PlayerConnectedState.Connected })
+                        ReassertMusicAndPin(player);
+                }
+            }, TimerFlags.REPEAT);
+        }
+
+        // slot -> consecutive re-asserts that changed something. If the engine keeps reverting the
+        // value, stop after MaxMusicPinReasserts instead of rewriting it every 5s forever; a spawn
+        // or a new connect starts over.
+        private readonly Dictionary<int, int> _musicPinReasserts = new();
+        private const int MaxMusicPinReasserts = 5;
+
+        // Re-applies the chosen kit / pin only when the controller no longer shows it.
+        private void ReassertMusicAndPin(CCSPlayerController player)
+        {
+            if (player.Team is not (CsTeam.Terrorist or CsTeam.CounterTerrorist) || player.InventoryServices == null)
+                return;
+
+            _musicPinReasserts.TryGetValue(player.Slot, out var count);
+            if (count >= MaxMusicPinReasserts)
+                return;
+
+            var changed = false;
+            if (Config.Additional.MusicEnabled
+                && GPlayersMusic.TryGetValue(player.Slot, out var music) && music.TryGetValue(player.Team, out var musicId)
+                && player.MusicKitID != ResolveMusicKitId(player.Slot, musicId))
+            {
+                GivePlayerMusicKit(player);
+                changed = true;
+            }
+
+            if (Config.Additional.PinsEnabled
+                && GPlayersPin.TryGetValue(player.Slot, out var pins) && pins.TryGetValue(player.Team, out var pinId) && pinId != 0
+                && (int)player.InventoryServices.Rank[5] != pinId)
+            {
+                GivePlayerPin(player);
+                changed = true;
+            }
+
+            if (changed)
+                _musicPinReasserts[player.Slot] = count + 1;
         }
 
         private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
@@ -317,31 +420,49 @@ namespace WeaponPaints
 
             var player = @event.Userid;
 
-            if (player == null || !player.IsValid || player.IsBot)
+            if (player == null || !player.IsValid)
                 return HookResult.Continue;
 
-            // Ensure player is on a valid team
-            if (player.Team is CsTeam.None or CsTeam.Spectator)
-                return HookResult.Continue;
+            var musicId = @event.Musickitid;
+            var noMusic = @event.Nomusic;
 
-            // Explicit 0 ("None") falls through too so the event carries no kit instead of a stale one.
-            if (!(GPlayersMusic.TryGetValue(player.Slot, out var musicInfo) && musicInfo.TryGetValue(player.Team, out var musicId)))
-                return HookResult.Continue;
-
-            @event.Musickitid = musicId;
-            @event.Nomusic = 0;
-            info.DontBroadcast = true;
-
-            var newEvent = new EventRoundMvp(true)
+            // Explicit 0 ("None") counts too so the event carries the restored kit instead of a stale one.
+            ushort pickedMusicId = 0;
+            var customKit = !player.IsBot
+                && player.Team is not (CsTeam.None or CsTeam.Spectator)
+                && GPlayersMusic.TryGetValue(player.Slot, out var musicInfo)
+                && musicInfo.TryGetValue(player.Team, out pickedMusicId);
+            if (customKit)
             {
-                Userid = player,
-                Musickitid = musicId,
-                Nomusic = 0,
-            };
+                musicId = ResolveMusicKitId(player.Slot, pickedMusicId);
+                noMusic = 0;
+            }
 
+            var recipients = Utilities.GetPlayers().Where(p => p is { IsValid: true, IsBot: false }).ToList();
+            var anyMuted = recipients.Any(p => GPlayersMusicOff.TryGetValue(p.Slot, out var off) && off);
+
+            if (!customKit && !anyMuted)
+                return HookResult.Continue;
+
+            info.DontBroadcast = true;
             _mvpPlayed = true;
 
-            newEvent.FireEvent(false);
+            // Sent per client so !musicoff players get the MVP banner without the anthem.
+            foreach (var recipient in recipients)
+            {
+                var muted = GPlayersMusicOff.TryGetValue(recipient.Slot, out var off) && off;
+                var newEvent = new EventRoundMvp(true)
+                {
+                    Userid = player,
+                    Reason = @event.Reason,
+                    Value = @event.Value,
+                    Musickitid = musicId,
+                    Nomusic = muted ? 1 : noMusic,
+                };
+                newEvent.FireEventToClient(recipient);
+                newEvent.Free();
+            }
+
             return HookResult.Continue;
         }
 
@@ -529,41 +650,6 @@ namespace WeaponPaints
                 timer.Kill();
 
             _pickupRefreshTimers.Clear();
-        }
-
-        private HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
-        {
-            CCSPlayerController? player = @event.Attacker;
-            CCSPlayerController? victim = @event.Userid;
-
-            if (player is null || !player.IsValid)
-                return HookResult.Continue;
-
-            if (victim == null || !victim.IsValid || victim == player)
-                return HookResult.Continue;
-
-            CBasePlayerWeapon? weapon = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
-
-            if (weapon == null)
-                return HookResult.Continue;
-
-            int weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
-
-            if (!HasChangedPaint(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null)
-                return HookResult.Continue;
-
-            if (!weaponInfo.StatTrak)
-                return HookResult.Continue;
-
-            weaponInfo.StatTrakCount += 1;
-
-            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "kill eater", ViewAsFloat((uint)weaponInfo.StatTrakCount));
-            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "kill eater score type", 0);
-
-            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.AttributeList.Handle, "kill eater", ViewAsFloat((uint)weaponInfo.StatTrakCount));
-            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.AttributeList.Handle, "kill eater score type", 0);
-
-            return HookResult.Continue;
         }
 
         private void RegisterListeners()

@@ -23,8 +23,6 @@ namespace WeaponPaints
         [JsonPropertyName("PinsEnabled")]
         public bool PinsEnabled { get; set; } = true;
 
-        // Chicken pets (CS2 1.41.8.2): the plugin spawns a "chicken" that follows the player,
-        // carrying the pet id, stage, seed and name from wp_player_pets. See Pets.cs.
         [JsonPropertyName("PetsEnabled")]
         public bool PetsEnabled { get; set; } = true;
 
@@ -44,6 +42,9 @@ namespace WeaponPaints
 
         [JsonPropertyName("CommandMusic")]
         public List<string> CommandMusic { get; set; } = ["music"];
+
+        [JsonPropertyName("CommandMusicOff")]
+        public List<string> CommandMusicOff { get; set; } = ["musicoff"];
 
         [JsonPropertyName("CommandPin")]
         public List<string> CommandPin { get; set; } = ["pin", "pins", "coin", "coins"];
@@ -87,6 +88,14 @@ namespace WeaponPaints
         [JsonPropertyName("CommandGloveSeed")]
         public List<string> CommandGloveSeed { get; set; } = ["gseed", "gpattern"];
 
+        // Admin console/chat command: css_wp_refresh <all|steamid64|#userid|name> reloads players'
+        // skins from the database and re-applies them (what !wp does, for someone else).
+        [JsonPropertyName("CommandRefreshAdmin")]
+        public List<string> CommandRefreshAdmin { get; set; } = ["wp_refresh"];
+
+        [JsonPropertyName("RefreshAdminPermission")]
+        public string RefreshAdminPermission { get; set; } = "@css/admin";
+
         [JsonPropertyName("CommandMenu")]
         public List<string> CommandMenu { get; set; } = ["menu"];
 
@@ -108,12 +117,60 @@ namespace WeaponPaints
 
         [JsonPropertyName("ShowSkinImage")]
         public bool ShowSkinImage { get; set; } = true;
+
+        // !nametag <text> on the held weapon ("-" removes it, no argument = type it in chat).
+        [JsonPropertyName("CommandNametag")]
+        public List<string> CommandNametag { get; set; } = ["nametag", "nt"];
+
+        // CS2 caps real name tags at 20 characters; longer ones are cut to this length.
+        [JsonPropertyName("NametagMaxLength")]
+        public int NametagMaxLength { get; set; } = 20;
+
+        // After picking a skin in !skins, open a menu for wear, seed, StatTrak, name tag,
+        // stickers and charm of that weapon (the weapon does not have to be held).
+        [JsonPropertyName("CustomizeMenuEnabled")]
+        public bool CustomizeMenuEnabled { get; set; } = true;
+
+        // !cp copies the skin of the weapon held by the player you are spectating.
+        [JsonPropertyName("CopySkinEnabled")]
+        public bool CopySkinEnabled { get; set; } = true;
+
+        [JsonPropertyName("CommandCopySkin")]
+        public List<string> CommandCopySkin { get; set; } = ["cp", "copyskin"];
+
+        // Commands (names without "css_" / "!", e.g. "knife", "gloves") that require VipPermission.
+        // Empty list = no command is gated.
+        [JsonPropertyName("VipCommands")]
+        public List<string> VipCommands { get; set; } = [];
+
+        [JsonPropertyName("VipPermission")]
+        public string VipPermission { get; set; } = "@css/vip";
+
+        // StatTrak kill counts are written to the database this often (and on disconnect / unload),
+        // so a crash or reload loses at most this many seconds of kills. 0 = only on disconnect/unload.
+        [JsonPropertyName("StatTrakFlushSeconds")]
+        public int StatTrakFlushSeconds { get; set; } = 60;
+
+        // Keep wear inside each skin's real float range (e.g. Asiimov 0.18-1.00). Needs the float
+        // ranges from the online catalog (CatalogApiEnabled); without them only 0.001-1 applies.
+        [JsonPropertyName("ClampWearToSkinRange")]
+        public bool ClampWearToSkinRange { get; set; } = true;
+
+        // Re-assert the chosen music kit / pin a few seconds after connecting and then check every
+        // few seconds whether the game's inventory load overwrote them (cheap field compare).
+        [JsonPropertyName("MusicPinDriftCheck")]
+        public bool MusicPinDriftCheck { get; set; } = true;
+
+        // Remember wear/seed per paint, so switching back to a skin restores its old float and seed
+        // instead of resetting them. Stored in wp_player_paint_memory.
+        [JsonPropertyName("PaintMemoryEnabled")]
+        public bool PaintMemoryEnabled { get; set; } = true;
     }
 
     public class WeaponPaintsConfig : BasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 20;
+        public override int Version { get; set; } = 22;
 
         [JsonPropertyName("DatabaseHost")]
         public string DatabaseHost { get; set; } = "";
@@ -156,6 +213,23 @@ namespace WeaponPaints
 
         [JsonPropertyName("SkinApiURL")]
         public string SkinApiURL { get; set; } = "https://cdn.jsdelivr.net/gh/ByMykel/CSGO-API@main/public/api";
+
+        // Fetch the item catalog from SkinApiURL in the background and add any skins, stickers,
+        // charms, agents, music kits and pins the bundled data/ files don't have yet (plus float
+        // ranges and sticker groups). The bundled files stay the fallback; nothing is removed.
+        [JsonPropertyName("CatalogApiEnabled")]
+        public bool CatalogApiEnabled { get; set; } = true;
+
+        [JsonPropertyName("CatalogApiTimeoutSeconds")]
+        public int CatalogApiTimeoutSeconds { get; set; } = 60;
+
+        // Re-fetch the catalog every N hours while the server runs. 0 = only on plugin load.
+        [JsonPropertyName("CatalogApiRefreshHours")]
+        public int CatalogApiRefreshHours { get; set; } = 0;
+
+        // Permission for css_wp_reloadcatalog (server console always allowed).
+        [JsonPropertyName("CatalogReloadPermission")]
+        public string CatalogReloadPermission { get; set; } = "@css/root";
 
         [JsonPropertyName("Additional")]
         public Additional Additional { get; set; } = new();

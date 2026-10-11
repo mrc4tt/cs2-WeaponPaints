@@ -109,20 +109,23 @@ namespace WeaponPaints
 
             if (Config.Additional.GiveRandomSkin && !isC4 && !HasChangedPaint(player, weaponDefIndex, out _))
             {
-                // Random skins
-                weapon.FallbackPaintKit = GetRandomPaint(weaponDefIndex);
+                // Random skins. One roll for all three writes — rolling per write could put three
+                // different paint kits on the fallback field and the two attribute lists.
+                var randomPaint = GetRandomPaint(weaponDefIndex);
+                var randomWear = RenderWear(weaponDefIndex, randomPaint, 0.01f);
+                weapon.FallbackPaintKit = randomPaint;
                 weapon.FallbackSeed = 0;
-                weapon.FallbackWear = 0.01f;
+                weapon.FallbackWear = randomWear;
 
                 weapon.AttributeManager.Item.NetworkedDynamicAttributes.Attributes.RemoveAll();
-                CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "set item texture prefab", GetRandomPaint(weaponDefIndex));
+                CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "set item texture prefab", randomPaint);
                 CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "set item texture seed", 0);
-                CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "set item texture wear", 0.01f);
+                CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "set item texture wear", randomWear);
 
                 weapon.AttributeManager.Item.AttributeList.Attributes.RemoveAll();
-                CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.AttributeList.Handle, "set item texture prefab", GetRandomPaint(weaponDefIndex));
+                CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.AttributeList.Handle, "set item texture prefab", randomPaint);
                 CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.AttributeList.Handle, "set item texture seed", 0);
-                CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.AttributeList.Handle, "set item texture wear", 0.01f);
+                CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.AttributeList.Handle, "set item texture wear", randomWear);
 
                 fallbackPaintKit = weapon.FallbackPaintKit;
 
@@ -176,7 +179,7 @@ namespace WeaponPaints
 
             weapon.FallbackSeed = weaponInfo is { Paint: 38, Seed: 0 } ? _fadeSeed++ : weaponInfo.Seed;
 
-            weapon.FallbackWear = ClampWear(weaponInfo.Wear);
+            weapon.FallbackWear = RenderWear(weaponDefIndex, weaponInfo.Paint, weaponInfo.Wear);
 
             // After RemoveAll(), the attribute list has no paint-kit entry so the HUD
             // weapon-slot label can't resolve "Weapon | SkinName" and falls back to the
@@ -298,15 +301,18 @@ namespace WeaponPaints
                 if (assignments.TryGetValue((weaponDefIndex, signature), out float existing))
                     return existing;
 
-                // Start one step away from the real wear rather than at it: that also invalidates
+                // Start one step away from the rendered wear rather than at it: that also invalidates
                 // any material the client generated from an older plugin version, which wrote the
-                // unmodified float.
+                // unmodified float. Candidates stay inside the skin's float range, the same range
+                // RenderWear holds the plain (sticker-less) apply to.
+                float baseWear = RenderWear(weaponDefIndex, weaponInfo.Paint, weaponInfo.Wear);
+                var (minWear, maxWear) = RenderWearBounds(weaponDefIndex, weaponInfo.Paint);
                 for (int step = 1; step <= 999; step++)
                 {
                     float delta = step * StickerWearStep;
                     if (
-                        TryClaimStickerWear(owners, weaponDefIndex, weaponInfo.Paint, weaponInfo.Wear + delta, signature, out float claimed)
-                        || TryClaimStickerWear(owners, weaponDefIndex, weaponInfo.Paint, weaponInfo.Wear - delta, signature, out claimed)
+                        TryClaimStickerWear(owners, weaponDefIndex, weaponInfo.Paint, baseWear + delta, minWear, maxWear, signature, out float claimed)
+                        || TryClaimStickerWear(owners, weaponDefIndex, weaponInfo.Paint, baseWear - delta, minWear, maxWear, signature, out claimed)
                     )
                     {
                         assignments[(weaponDefIndex, signature)] = claimed;
@@ -321,26 +327,51 @@ namespace WeaponPaints
                 weaponDefIndex,
                 weaponInfo.Paint
             );
-            return ClampWear(weaponInfo.Wear);
+            return RenderWear(weaponDefIndex, weaponInfo.Paint, weaponInfo.Wear);
         }
 
         // Wear 0 (factory new stored as 0) can leave the paint unrendered on some weapons
-        // since CS2 1.41.8.x; the random-skin path already uses 0.01f. Out-of-range values
-        // get the same floor. Upstream: Nereziel/cs2-WeaponPaints#532.
+        // since CS2 1.41.8.x; the random-skin path already uses 0.01f. Wear <= 0 gets that
+        // floor, wear > 1 is capped at 1. Upstream: Nereziel/cs2-WeaponPaints#532.
         private static float ClampWear(float wear)
-            => wear > 0f && wear <= 1f ? wear : 0.001f;
+	{
+		if (wear <= 0f) return 0.001f;
+		return wear > 1f ? 1f : wear;
+	}
 
+        // [min, max] a weapon's wear is drawn within: the skin's real float range from the online
+        // catalog when ClampWearToSkinRange is on and the range is known, otherwise ClampWear's.
+        internal static (float Min, float Max) RenderWearBounds(int weaponDefIndex, int paint)
+        {
+            if (Instance.Config.Additional.ClampWearToSkinRange
+                && SkinFloatRange.TryGetValue((weaponDefIndex, paint), out var range) && range.Max > range.Min)
+                return (Math.Max(range.Min, 0.001f), Math.Min(range.Max, 1f));
+            return (0.001f, 1f);
+        }
+
+        // The wear actually sent to the client. Applied at render time, so a value stored outside
+        // the skin's range (website, old rows, gen codes) is drawn as the nearest real float; the
+        // stored value itself is left alone.
+        internal static float RenderWear(int weaponDefIndex, int paint, float wear)
+        {
+            var (min, max) = RenderWearBounds(weaponDefIndex, paint);
+            if (!float.IsFinite(wear) || wear <= 0f)
+                wear = 0.001f;
+            return Math.Clamp(wear, min, max);
+        }
         private static bool TryClaimStickerWear(
             Dictionary<(int DefIndex, int Paint, int WearBits), string> owners,
             int weaponDefIndex,
             int paint,
             float candidate,
+            float minWear,
+            float maxWear,
             string signature,
             out float claimed
         )
         {
             claimed = 0f;
-            if (!float.IsFinite(candidate) || candidate < 0.0001f || candidate > 1f)
+            if (!float.IsFinite(candidate) || candidate < minWear || candidate > maxWear)
                 return false;
 
             // Round before hashing the bits — the caller reaches the same value from either
@@ -522,6 +553,11 @@ namespace WeaponPaints
                 // Charm rotation (degrees): initial orientation of the hook; Source 2 physics
                 // then swings the pendant freely.
                 CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 rotation", keyChain.Rotation);
+                // Sticker-slab charms draw this sticker on the slab; highlight charms play this reel.
+                if (keyChain.Sticker != 0)
+                    CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 sticker", ViewAsFloat(keyChain.Sticker));
+                if (keyChain.Highlight != 0)
+                    CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 highlight", ViewAsFloat(keyChain.Highlight));
             }
         }
 
@@ -1075,12 +1111,12 @@ namespace WeaponPaints
                             item.NetworkedDynamicAttributes.Attributes.RemoveAll();
                             CAttributeListSetOrAddAttributeValueByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture prefab", weaponInfo.Paint);
                             CAttributeListSetOrAddAttributeValueByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture seed", weaponInfo.Seed);
-                            CAttributeListSetOrAddAttributeValueByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture wear", ClampWear(weaponInfo.Wear));
+                            CAttributeListSetOrAddAttributeValueByName.Invoke(item.NetworkedDynamicAttributes.Handle, "set item texture wear", RenderWear(gloveId, weaponInfo.Paint, weaponInfo.Wear));
 
                             item.AttributeList.Attributes.RemoveAll();
                             CAttributeListSetOrAddAttributeValueByName.Invoke(item.AttributeList.Handle, "set item texture prefab", weaponInfo.Paint);
                             CAttributeListSetOrAddAttributeValueByName.Invoke(item.AttributeList.Handle, "set item texture seed", weaponInfo.Seed);
-                            CAttributeListSetOrAddAttributeValueByName.Invoke(item.AttributeList.Handle, "set item texture wear", ClampWear(weaponInfo.Wear));
+                            CAttributeListSetOrAddAttributeValueByName.Invoke(item.AttributeList.Handle, "set item texture wear", RenderWear(gloveId, weaponInfo.Paint, weaponInfo.Wear));
 
                             item.Initialized = true;
 
@@ -1295,6 +1331,20 @@ namespace WeaponPaints
             }
         }
 
+        // "Valve, Counter-Strike 2" — the stock kit a player hears with nothing equipped.
+        private const ushort DefaultMusicKitId = 1;
+
+        // "None" (0): the client ignores a switch to kit 0 and keeps playing the last kit,
+        // so restore the player's own kit, or the stock Valve CS2 kit when they have none.
+        internal static ushort ResolveMusicKitId(int slot, ushort musicId)
+        {
+            if (musicId != 0)
+                return musicId;
+            return GPlayersNativeMusic.TryGetValue(slot, out var nativeMusic) && nativeMusic != 0
+                ? nativeMusic
+                : DefaultMusicKitId;
+        }
+
         private static void GivePlayerMusicKit(CCSPlayerController player)
         {
             if (player.IsBot)
@@ -1306,6 +1356,11 @@ namespace WeaponPaints
 
             if (player.InventoryServices == null)
                 return;
+
+            // Snapshot the engine-assigned kit once, before our first override.
+            GPlayersNativeMusic.GetOrAdd(player.Slot, _ => (ushort)player.MusicKitID);
+
+            musicId = ResolveMusicKitId(player.Slot, musicId);
 
             player.MusicKitID = musicId;
             // player.MvpNoMusic = false;
