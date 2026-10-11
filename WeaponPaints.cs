@@ -352,21 +352,46 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
     // keys are never touched, so nothing an operator set (DB credentials included) changes.
     // No backup copy is kept (the file holds DB credentials); temp file + move, so any failure
     // leaves the original untouched.
+    // Older builds wrote a "// Migrated by WeaponPaints ..." line on top of the config. Drop those
+    // lines once; the file is left alone when there are none.
+    private void StripMigrationComments(string path)
+    {
+        try
+        {
+            var lines = File.ReadAllLines(path);
+            var kept = lines.Where(l => !l.TrimStart().StartsWith("// Migrated by WeaponPaints", StringComparison.Ordinal)).ToArray();
+            if (kept.Length == lines.Length)
+                return;
+
+            var temp = path + ".tmp";
+            File.WriteAllLines(temp, kept);
+            File.Move(temp, path, overwrite: true);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning("Could not remove migration comments from {Path}: {Message}", path, ex.Message);
+        }
+    }
+
     private void MigrateConfigFile(WeaponPaintsConfig config)
     {
         var currentVersion = new WeaponPaintsConfig().Version;
-        if (config.Version >= currentVersion)
-            return;
-
         var cssharpDir = Path.GetDirectoryName(Path.GetDirectoryName(ModuleDirectory))!;
         var path = Path.Combine(cssharpDir, "configs", "plugins", "WeaponPaints", "WeaponPaints.json");
         if (!File.Exists(path))
             return;
 
+        if (config.Version >= currentVersion)
+        {
+            StripMigrationComments(path);
+            return;
+        }
+
         try
         {
             var text = File.ReadAllText(path);
-            var header = text.Split('\n').TakeWhile(l => l.TrimStart().StartsWith("//")).Select(l => l.TrimEnd('\r')).ToList();
+            var header = text.Split('\n').TakeWhile(l => l.TrimStart().StartsWith("//")).Select(l => l.TrimEnd('\r'))
+                .Where(l => !l.TrimStart().StartsWith("// Migrated by WeaponPaints", StringComparison.Ordinal)).ToList();
 
             if (JsonNode.Parse(text, documentOptions: new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true }) is not JsonObject file)
                 return;
@@ -376,11 +401,10 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             AddMissingConfigKeys(file, defaults);
             file["ConfigVersion"] = currentVersion;
 
-            header.Add($"// Migrated by WeaponPaints from config version {config.Version} to {currentVersion}");
             var json = file.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
 
             var temp = path + ".tmp";
-            File.WriteAllText(temp, string.Join("\n", header) + "\n" + json);
+            File.WriteAllText(temp, header.Count > 0 ? string.Join("\n", header) + "\n" + json : json);
             File.Move(temp, path, overwrite: true);
 
             Logger.LogInformation("Migrated {Path} from config version {Old} to {New} (new options added with their defaults)", path, config.Version, currentVersion);
