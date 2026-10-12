@@ -9,10 +9,9 @@
     <!-- Read VERSION at build time and embed it as assembly metadata so ModuleVersion
          stays in sync with the file. AssemblyMetadata accepts arbitrary strings (e.g.
          "3.4a"); <Version> would reject it because it must be SemVer.
-         CI passes -p:BuildNumber=<run_number> to append " (Build N)". -->
+         Releases are tagged v<VERSION> by CI, so the version alone identifies a build. -->
     <VersionString>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/VERSION').Trim())</VersionString>
     <ModuleVersionString>$(VersionString)</ModuleVersionString>
-    <ModuleVersionString Condition="'$(BuildNumber)' != ''">$(VersionString) (Build $(BuildNumber))</ModuleVersionString>
   </PropertyGroup>
 
   <ItemGroup>

@@ -17,7 +17,6 @@ on:
       - ".github/**"
 
 env:
-  BUILD_NUMBER: ${{ github.run_number }}
   PROJECT_PATH: "WeaponPaints.csproj"
   PROJECT_NAME: "WeaponPaints"
   OUTPUT_PATH: "./WeaponPaints"
@@ -29,8 +28,9 @@ env:
 jobs:
   build:
     # A "ci:" commit only touches the pipeline, never the plugin: no build, no
-    # release, so the build-N numbering only moves for real changes.
-    if: ${{ !startsWith(github.event.head_commit.message, 'ci:') }}
+    # release. "release:" commits are the version bumps the publish job pushes
+    # itself; that job already built and released them.
+    if: ${{ !startsWith(github.event.head_commit.message, 'ci:') && !startsWith(github.event.head_commit.message, 'release:') }}
     runs-on: ubuntu-latest
     # Auth for the "forgejo" NuGet source (CS2MenuManager) in nuget.config.
     env:
@@ -53,36 +53,73 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build ${{ env.PROJECT_PATH }} -c Release -o ${{ env.OUTPUT_PATH }} -p:BuildNumber=${{ env.BUILD_NUMBER }}
+        run: dotnet build ${{ env.PROJECT_PATH }} -c Release -o ${{ env.OUTPUT_PATH }}
 
+  # Releases are versioned from VERSION (see .forgejo/release_plan.py):
+  #  - bump VERSION and add a "## [x.y.z]" CHANGELOG section -> tag vx.y.z + release
+  #  - an automated "gamedata: <build>" commit -> patch bump (minor if an
+  #    [Unreleased] section has "### Added"), pushed back as "release: vx.y.z",
+  #    then released
+  #  - anything else -> no release
   publish:
-    if: ${{ github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'ci:') }}
+    if: ${{ github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'ci:') && !startsWith(github.event.head_commit.message, 'release:') }}
     runs-on: ubuntu-latest
     needs: build
+    concurrency:
+      group: release
+      cancel-in-progress: false
     # Auth for the "forgejo" NuGet source (CS2MenuManager) in nuget.config.
     env:
       NuGetPackageSourceCredentials_forgejo: "Username=${{ secrets.FORGEJO_USER || 'mikkel' }};Password=${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}"
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # Pushes the gamedata version bump and the tag back.
+          token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Plan release
+        id: plan
+        env:
+          SUBJECT: ${{ github.event.head_commit.message }}
+        run: python3 .forgejo/release_plan.py "$(printf '%s\n' "$SUBJECT" | head -n1)"
+
+      - name: Git identity
+        run: |
+          git config user.name "WeaponPaints CI"
+          git config user.email "ci@git.miksen.me"
+
+      - name: Commit version bump
+        if: steps.plan.outputs.release == 'true' && steps.plan.outputs.bumped == 'true'
+        run: |
+          set -euo pipefail
+          git add VERSION CHANGELOG.md
+          git commit -m "release: v${{ steps.plan.outputs.version }}"
+          git push origin HEAD:main
 
       - name: Install dependencies
+        if: steps.plan.outputs.release == 'true'
         run: |
           apt-get update
           apt-get install -y zip jq curl
 
       - name: Setup .NET
+        if: steps.plan.outputs.release == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
 
       - name: Restore
+        if: steps.plan.outputs.release == 'true'
         run: dotnet restore
 
       - name: Build
-        run: dotnet build ${{ env.PROJECT_PATH }} -c Release -o ${{ env.OUTPUT_PATH }} -p:BuildNumber=${{ env.BUILD_NUMBER }}
+        if: steps.plan.outputs.release == 'true'
+        run: dotnet build ${{ env.PROJECT_PATH }} -c Release -o ${{ env.OUTPUT_PATH }}
 
       - name: Clean CounterStrikeSharp references
+        if: steps.plan.outputs.release == 'true'
         run: |
           rm -f \
             ${{ env.OUTPUT_PATH }}/CounterStrikeSharp.API.dll \
@@ -92,6 +129,7 @@ jobs:
             ${{ env.OUTPUT_PATH }}/CS2MenuManager.dll
 
       - name: Prepare release structure
+        if: steps.plan.outputs.release == 'true'
         run: |
           PLUGIN_DIR="staging/addons/counterstrikesharp/plugins/${{ env.PROJECT_NAME }}"
           mkdir -p "$PLUGIN_DIR"
@@ -106,41 +144,41 @@ jobs:
           fi
 
       - name: Create release zip (via Python)
+        if: steps.plan.outputs.release == 'true'
         run: |
           python3 -c "import shutil; shutil.make_archive('${{ env.PROJECT_NAME }}', 'zip', 'staging')"
           # This creates ${{ env.PROJECT_NAME }}.zip from the contents of the staging folder
 
-      - name: Create Release and Upload Asset
+      - name: Tag and publish release
+        if: steps.plan.outputs.release == 'true'
         env:
           FORGEJO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.plan.outputs.version }}
         run: |
           set -euo pipefail
 
           API="${GITHUB_SERVER_URL}/api/v1/repos/${GITHUB_REPOSITORY}"
-          TAG="build-${BUILD_NUMBER}"
+          TAG="v${VERSION}"
           ZIP="./${PROJECT_NAME}.zip"
 
-          # Create the tag first so the release references an existing tag.
-          # Forgejo returns "Release has no Tag" when it can't create the tag
-          # from target_commitish during release creation.
-          curl -sS -X POST \
-            -H "Authorization: token ${FORGEJO_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d "$(jq -n \
-              --arg tag "$TAG" \
-              --arg target "${GITHUB_SHA}" \
-              '{tag_name:$tag, target:$target}')" \
-            "${API}/tags" >/dev/null || true
+          # Tag the commit that was built (the bump commit when there was one) and
+          # push it before creating the release, so the release references an
+          # existing tag. A tag push does not start this workflow (branches only).
+          git tag -a "$TAG" -m "WeaponPaints ${VERSION}"
+          git push origin "refs/tags/${TAG}"
+
+          BODY="$(cat release-notes.md)
+
+          Extract into game/csgo/ - plugin lands in addons/counterstrikesharp/plugins/${PROJECT_NAME}, gamedata in addons/counterstrikesharp/gamedata/."
 
           RELEASE_RESPONSE=$(curl -sS -X POST \
             -H "Authorization: token ${FORGEJO_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "$(jq -n \
               --arg tag "$TAG" \
-              --arg name "Build ${BUILD_NUMBER}" \
-              --arg body "Extract into game/csgo/ - plugin lands in addons/counterstrikesharp/plugins/${PROJECT_NAME}" \
-              --arg target "${GITHUB_SHA}" \
-              '{tag_name:$tag, name:$name, body:$body, target_commitish:$target}')" \
+              --arg name "WeaponPaints ${VERSION}" \
+              --arg body "$BODY" \
+              '{tag_name:$tag, name:$name, body:$body}')" \
             "${API}/releases")
 
           RELEASE_ID=$(echo "$RELEASE_RESPONSE" | jq -r '.id')

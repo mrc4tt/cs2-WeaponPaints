@@ -3,22 +3,22 @@
 # .forgejo/workflows/release.yml and ignores this directory, GitHub runs only
 # this one.
 #
-# GitHub does not build. Forgejo's run creates a `build-N` tag and a "Build N"
-# release with WeaponPaints.zip; the push mirror carries the tag here, and this
-# workflow republishes that same release - same tag, same name, same zip. So the
-# numbering follows Forgejo (not GitHub's own run_number, which started at 1) and
-# both sites ship byte-identical files.
+# GitHub does not build. Forgejo's run creates a `vX.Y.Z` tag and a
+# "WeaponPaints X.Y.Z" release with WeaponPaints.zip; the push mirror carries the
+# tag here, and this workflow republishes that same release - same tag, same
+# name, same notes, same zip. Both sites ship byte-identical files.
 #
-# Backfill or retry one build: Actions -> Release -> Run workflow, tag build-N.
+# Backfill or retry one release: Actions -> Release -> Run workflow, tag vX.Y.Z.
+# (Older `build-N` tags can be republished the same way.)
 name: Release
 
 on:
   push:
-    tags: ["build-*"]
+    tags: ["v*"]
   workflow_dispatch:
     inputs:
       tag:
-        description: "Forgejo build tag to publish, e.g. build-89"
+        description: "Forgejo release tag to publish, e.g. v4.1.0"
         required: true
 
 permissions:
