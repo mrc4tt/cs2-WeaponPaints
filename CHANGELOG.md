@@ -3,6 +3,12 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [4.1.1] - 2026-10-12
+
+### Changed
+
+- `gamedata/weaponpaints.json` updated for CS2 build 14190 (automated).
+
 ## [4.1.0] - 2026-10-12
 
 ### Added
