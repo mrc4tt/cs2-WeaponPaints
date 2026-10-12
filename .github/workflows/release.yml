@@ -56,8 +56,6 @@ jobs:
           curl -fsSL "$URL" -o "$ASSET"
           jq -r '.name' release.json > name.txt
           jq -r '.body' release.json > body.txt
-          echo "" >> body.txt
-          echo "Same file as $(jq -r '.html_url' release.json)" >> body.txt
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Publish on GitHub
