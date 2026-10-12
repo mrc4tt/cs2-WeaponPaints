@@ -167,9 +167,7 @@ jobs:
           git tag -a "$TAG" -m "WeaponPaints ${VERSION}"
           git push origin "refs/tags/${TAG}"
 
-          BODY="$(cat release-notes.md)
-
-          Extract into game/csgo/ - plugin lands in addons/counterstrikesharp/plugins/${PROJECT_NAME}, gamedata in addons/counterstrikesharp/gamedata/."
+          BODY="$(cat release-notes.md)"
 
           RELEASE_RESPONSE=$(curl -sS -X POST \
             -H "Authorization: token ${FORGEJO_TOKEN}" \
