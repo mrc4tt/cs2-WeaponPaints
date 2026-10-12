@@ -58,8 +58,8 @@ jobs:
   # Releases are versioned from VERSION (see .forgejo/release_plan.py):
   #  - bump VERSION and add a "## [x.y.z]" CHANGELOG section -> tag vx.y.z + release
   #  - an automated "gamedata: <build>" commit -> patch bump (minor if an
-  #    [Unreleased] section has "### Added"), pushed back as "release: vx.y.z",
-  #    then released
+  #    [Unreleased] section has "### Added"), released, then pushed back as
+  #    "release: vx.y.z" (last step - that push cancels this run)
   #  - anything else -> no release
   publish:
     if: ${{ github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'ci:') && !startsWith(github.event.head_commit.message, 'release:') }}
@@ -96,7 +96,9 @@ jobs:
           set -euo pipefail
           git add VERSION CHANGELOG.md
           git commit -m "release: v${{ steps.plan.outputs.version }}"
-          git push origin HEAD:main
+          # Pushed to main only in the last step: Forgejo cancels a running
+          # workflow when a new push lands on the same branch, so pushing here
+          # killed this run before it tagged and released (v4.1.1).
 
       - name: Install dependencies
         if: steps.plan.outputs.release == 'true'
@@ -190,3 +192,10 @@ jobs:
             -H "Authorization: token ${FORGEJO_TOKEN}" \
             -F "attachment=@${ZIP}" \
             "${API}/releases/${RELEASE_ID}/assets?name=${PROJECT_NAME}.zip"
+
+      # Must stay the last step: this push to main makes Forgejo cancel this run.
+      # The tag and the release already exist by now, and the "release:" commit
+      # it pushes skips build and publish.
+      - name: Push version bump
+        if: steps.plan.outputs.release == 'true' && steps.plan.outputs.bumped == 'true'
+        run: git push origin HEAD:main
