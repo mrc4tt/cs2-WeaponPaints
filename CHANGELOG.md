@@ -3,6 +3,14 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [4.1.2] - 2026-10-16
+
+### Fixed
+
+- No more console spam while the database is unreachable: the connect error is logged at most once a minute
+  (with a count of suppressed repeats), the web refresh poll no longer adds its own warning for the same
+  failure, and a "Database connection restored" line is logged once it connects again.
+
 ## [4.1.1] - 2026-10-12
 
 ### Changed
