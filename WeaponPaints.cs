@@ -186,7 +186,9 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             }
             catch (Exception ex)
             {
-                Logger.LogWarning("Web refresh poll failed: {Message}", ex.Message);
+                // Connect failures are already reported (throttled) by Database.GetConnectionAsync.
+                if (!Database.IsReportedConnectFailure(ex))
+                    Logger.LogWarning("Web refresh poll failed: {Message}", ex.Message);
             }
             finally
             {
