@@ -3,6 +3,18 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [4.1.3] - 2026-10-23
+
+### Changed
+
+- Releases are now published on GitHub only (github.com/mrc4tt/cs2-WeaponPaints).
+
+### Fixed
+
+- `weaponpaintssql.json` may now contain comments and trailing commas. A file that still cannot be parsed
+  logs a warning with the parse error instead of failing silently with only the generic
+  "setup Database credentials" message.
+
 ## [4.1.2] - 2026-10-16
 
 ### Fixed
