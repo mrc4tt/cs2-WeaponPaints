@@ -10,8 +10,7 @@ non-empty "## [VERSION]" section in CHANGELOG.md, which becomes the release note
   python3 release.py            build, test, package, tag, push main + tag, gh release
   python3 release.py --dry-run  build, test and package only; prints the zip path
 
-Requires: dotnet 10 SDK, gh (logged in), and credentials for the "forgejo" NuGet
-source in nuget.config (CS2MenuManager).
+Requires: dotnet 10 SDK and gh (logged in). All packages come from nuget.org.
 """
 import os
 import re
