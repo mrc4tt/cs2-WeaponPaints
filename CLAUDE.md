@@ -34,7 +34,7 @@ Releases are versioned, not per-build, and cut locally: `VERSION` (x.y.z) is the
 
 Local dev loop: copy the build output into an existing CS2 server's `addons/counterstrikesharp/plugins/WeaponPaints/` directory and use `css_plugins reload WeaponPaints` in server console. The `Load(bool hotReload)` branch in `WeaponPaints.cs` handles reloading connected players.
 
-Menus are powered by **schwarper's [CS2MenuManager](https://github.com/schwarper/CS2MenuManager)** (NuGet `CS2MenuManager` v1.0.42). The server must have `MenuManagerCore` installed alongside the plugin — `CS2MenuManager.dll` itself is provided by that core plugin and is excluded from the release zip. The legacy NfCore `menu:nfcore` capability and the vendored `3rd_party/MenuManagerApi.dll` are gone — do not reintroduce them.
+Menus are powered by **schwarper's [CS2MenuManager](https://github.com/schwarper/CS2MenuManager)** (NuGet `CS2MenuManager` v1.0.42 from nuget.org — `nuget.config` lists nuget.org only; the package is a compile-time reference and only has to match the API of the server's MenuManagerCore). The server must have `MenuManagerCore` installed alongside the plugin — `CS2MenuManager.dll` itself is provided by that core plugin and is excluded from the release zip. The legacy NfCore `menu:nfcore` capability and the vendored `3rd_party/MenuManagerApi.dll` are gone — do not reintroduce them.
 
 ## Runtime configuration layout
 
