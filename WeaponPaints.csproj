@@ -16,6 +16,13 @@
 
   <ItemGroup>
     <AssemblyMetadata Include="ModuleVersion" Value="$(ModuleVersionString)" />
+    <InternalsVisibleTo Include="WeaponPaints.Tests" />
+  </ItemGroup>
+
+  <!-- The test project lives under the repo root; keep its sources out of the plugin. -->
+  <ItemGroup>
+    <Compile Remove="tests/**" />
+    <None Remove="tests/**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,7 +43,7 @@
        Shipping our own copies makes McMaster's plugin loader race against the runtime's
        and corrupts assembly resolution (manifests as garbled "i__Field, Version=...,
        Culture=ikeSharp.API.Modules.Memory.DynamicFunctions" errors on hot-reload).
-       CI strips these in .forgejo/workflows/release.yml; this target keeps local builds
+       release.py strips these from the release zip; this target keeps local builds
        in sync so dev hot-reloads don't blow up. -->
   <Target Name="StripRuntimeProvidedDlls" AfterTargets="Build">
     <ItemGroup>

@@ -276,45 +276,7 @@ internal class WeaponSynchronization
                     _ => CsTeam.None,
                 };
 
-                string[]? keyChainParts = row.weapon_keychain?.ToString().Split(';');
-
-                KeyChainInfo keyChainInfo = new KeyChainInfo();
-
-                // Format: "id;x;y;z;seed" or (with charm rotation) "id;x;y;z;seed;rotation".
-                if (
-                    keyChainParts != null
-                    && keyChainParts.Length >= 5
-                    && uint.TryParse(keyChainParts[0], out uint keyChainId)
-                    && float.TryParse(keyChainParts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float keyChainOffsetX)
-                    && float.TryParse(keyChainParts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float keyChainOffsetY)
-                    && float.TryParse(keyChainParts[3], NumberStyles.Float, CultureInfo.InvariantCulture, out float keyChainOffsetZ)
-                    && uint.TryParse(keyChainParts[4], out uint keyChainSeed)
-                )
-                {
-                    keyChainInfo.Id = keyChainId;
-                    keyChainInfo.OffsetX = keyChainOffsetX;
-                    keyChainInfo.OffsetY = keyChainOffsetY;
-                    keyChainInfo.OffsetZ = keyChainOffsetZ;
-                    keyChainInfo.Seed = keyChainSeed;
-                    // Optional 6th field: charm rotation in degrees (back-compat with 5-field rows).
-                    if (keyChainParts.Length >= 6
-                        && float.TryParse(keyChainParts[5], NumberStyles.Float, CultureInfo.InvariantCulture, out float keyChainRotation))
-                        keyChainInfo.Rotation = keyChainRotation;
-                    // Optional 7th/8th fields: sticker-slab sticker id and highlight id.
-                    if (keyChainParts.Length >= 7 && uint.TryParse(keyChainParts[6], out uint keyChainSticker))
-                        keyChainInfo.Sticker = keyChainSticker;
-                    if (keyChainParts.Length >= 8 && uint.TryParse(keyChainParts[7], out uint keyChainHighlight))
-                        keyChainInfo.Highlight = keyChainHighlight;
-                }
-                else
-                {
-                    keyChainInfo.Id = 0;
-                    keyChainInfo.OffsetX = 0f;
-                    keyChainInfo.OffsetY = 0f;
-                    keyChainInfo.OffsetZ = 0f;
-                    keyChainInfo.Seed = 0;
-                    keyChainInfo.Rotation = 0f;
-                }
+                KeyChainInfo keyChainInfo = ParseKeychain(row.weapon_keychain?.ToString());
 
                 WeaponInfo weaponInfo = new WeaponInfo
                 {
@@ -335,42 +297,9 @@ internal class WeaponSynchronization
                 bool anySticker = false;
                 for (int i = 0; i <= 4; i++)
                 {
-                    parsedStickers[i] = new StickerInfo();
-
-                    // Access the sticker data dynamically using reflection
-                    string stickerColumn = $"weapon_sticker_{i}";
-                    var stickerData = ((IDictionary<string, object>)row!)[stickerColumn];
-
-                    if (string.IsNullOrEmpty(stickerData?.ToString()))
-                        continue;
-
-                    var parts = stickerData.ToString()!.Split(';');
-
-                    //"id;schema;x;y;wear;scale;rotation"
-                    if (
-                        parts.Length != 7
-                        || !uint.TryParse(parts[0], out uint stickerId)
-                        || !uint.TryParse(parts[1], out uint stickerSchema)
-                        || !float.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float stickerOffsetX)
-                        || !float.TryParse(parts[3], NumberStyles.Float, CultureInfo.InvariantCulture, out float stickerOffsetY)
-                        || !float.TryParse(parts[4], NumberStyles.Float, CultureInfo.InvariantCulture, out float stickerWear)
-                        || !float.TryParse(parts[5], NumberStyles.Float, CultureInfo.InvariantCulture, out float stickerScale)
-                        || !float.TryParse(parts[6], NumberStyles.Float, CultureInfo.InvariantCulture, out float stickerRotation)
-                    )
-                        continue;
-
-                    parsedStickers[i] = new StickerInfo
-                    {
-                        Id = stickerId,
-                        Schema = stickerSchema,
-                        OffsetX = stickerOffsetX,
-                        OffsetY = stickerOffsetY,
-                        Wear = stickerWear,
-                        Scale = stickerScale,
-                        Rotation = stickerRotation,
-                    };
-
-                    if (stickerId != 0)
+                    var stickerData = ((IDictionary<string, object>)row!)[$"weapon_sticker_{i}"];
+                    parsedStickers[i] = ParseSticker(stickerData?.ToString());
+                    if (parsedStickers[i].Id != 0)
                         anySticker = true;
                 }
 
@@ -710,6 +639,72 @@ internal class WeaponSynchronization
     }
 
     internal readonly record struct WeaponRow(CsTeam Team, int DefIndex, WeaponInfo Info);
+
+    // weapon_keychain column: "id;x;y;z;seed", optionally ";rotation" and ";sticker;highlight"
+    // (5-8 fields). Anything unparsable is an empty charm (Id 0).
+    internal static KeyChainInfo ParseKeychain(string? value)
+    {
+        var keyChainInfo = new KeyChainInfo();
+        var parts = value?.Split(';');
+        if (
+            parts == null
+            || parts.Length < 5
+            || !uint.TryParse(parts[0], out uint keyChainId)
+            || !float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float keyChainOffsetX)
+            || !float.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float keyChainOffsetY)
+            || !float.TryParse(parts[3], NumberStyles.Float, CultureInfo.InvariantCulture, out float keyChainOffsetZ)
+            || !uint.TryParse(parts[4], out uint keyChainSeed)
+        )
+            return keyChainInfo;
+
+        keyChainInfo.Id = keyChainId;
+        keyChainInfo.OffsetX = keyChainOffsetX;
+        keyChainInfo.OffsetY = keyChainOffsetY;
+        keyChainInfo.OffsetZ = keyChainOffsetZ;
+        keyChainInfo.Seed = keyChainSeed;
+        // Optional 6th field: charm rotation in degrees (back-compat with 5-field rows).
+        if (parts.Length >= 6
+            && float.TryParse(parts[5], NumberStyles.Float, CultureInfo.InvariantCulture, out float keyChainRotation))
+            keyChainInfo.Rotation = keyChainRotation;
+        // Optional 7th/8th fields: sticker-slab sticker id and highlight id.
+        if (parts.Length >= 7 && uint.TryParse(parts[6], out uint keyChainSticker))
+            keyChainInfo.Sticker = keyChainSticker;
+        if (parts.Length >= 8 && uint.TryParse(parts[7], out uint keyChainHighlight))
+            keyChainInfo.Highlight = keyChainHighlight;
+        return keyChainInfo;
+    }
+
+    // One weapon_sticker_N column: "id;schema;x;y;wear;scale;rotation". Empty or invalid is an empty
+    // slot (Id 0) - never dropped, the caller keeps the list slot-indexed.
+    internal static StickerInfo ParseSticker(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return new StickerInfo();
+
+        var parts = value.Split(';');
+        if (
+            parts.Length != 7
+            || !uint.TryParse(parts[0], out uint stickerId)
+            || !uint.TryParse(parts[1], out uint stickerSchema)
+            || !float.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float stickerOffsetX)
+            || !float.TryParse(parts[3], NumberStyles.Float, CultureInfo.InvariantCulture, out float stickerOffsetY)
+            || !float.TryParse(parts[4], NumberStyles.Float, CultureInfo.InvariantCulture, out float stickerWear)
+            || !float.TryParse(parts[5], NumberStyles.Float, CultureInfo.InvariantCulture, out float stickerScale)
+            || !float.TryParse(parts[6], NumberStyles.Float, CultureInfo.InvariantCulture, out float stickerRotation)
+        )
+            return new StickerInfo();
+
+        return new StickerInfo
+        {
+            Id = stickerId,
+            Schema = stickerSchema,
+            OffsetX = stickerOffsetX,
+            OffsetY = stickerOffsetY,
+            Wear = stickerWear,
+            Scale = stickerScale,
+            Rotation = stickerRotation,
+        };
+    }
 
     internal static string FormatKeychain(KeyChainInfo? keyChain)
     {

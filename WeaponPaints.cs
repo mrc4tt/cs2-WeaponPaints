@@ -235,9 +235,16 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
                 WeaponPaintsSqlConfig? parsed = null;
                 try
                 {
-                    parsed = JsonSerializer.Deserialize<WeaponPaintsSqlConfig>(File.ReadAllText(path));
+                    // Hand-edited file: tolerate comments and trailing commas, the most common typos.
+                    parsed = JsonSerializer.Deserialize<WeaponPaintsSqlConfig>(File.ReadAllText(path),
+                        new JsonSerializerOptions { ReadCommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    // Without this an unparsable file is indistinguishable from an empty one and the
+                    // plugin unloads with only the generic "setup Database credentials" error.
+                    Logger.LogWarning("Could not parse SQL config {Path}, ignoring it: {Message}", path, ex.Message);
+                }
 
                 var filled = parsed is not null && parsed.DatabaseHost.Length > 0 && parsed.DatabaseName.Length > 0 && parsed.DatabaseUser.Length > 0;
 
@@ -435,7 +442,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         }
     }
 
-    private static void AddMissingConfigKeys(JsonObject target, JsonObject defaults)
+    internal static void AddMissingConfigKeys(JsonObject target, JsonObject defaults)
     {
         foreach (var (key, value) in defaults)
         {
