@@ -141,3 +141,8 @@ Set FollowCSGOGuidelines to false in cssharp’s core.jcon config
 The plugin is not loaded or configured with MySQL credentials. Tables are auto-created by the plugin.
 
 ### Use this plugin at your own risk! Using this may lead to a GSLT ban or something else Valve comes up with. [Valve Server guidelines](https://blog.counter-strike.net/index.php/server_guidelines/)
+
+## License
+Licensed under the [GNU General Public License v3.0](LICENSE).
+This is a fork of [Nereziel/cs2-WeaponPaints](https://github.com/Nereziel/cs2-WeaponPaints), which is also GPLv3;
+changes and redistributions must stay under the same license.
