@@ -9,7 +9,7 @@
     <!-- Read VERSION at build time and embed it as assembly metadata so ModuleVersion
          stays in sync with the file. AssemblyMetadata accepts arbitrary strings (e.g.
          "3.4a"); <Version> would reject it because it must be SemVer.
-         Releases are tagged v<VERSION> by CI, so the version alone identifies a build. -->
+         Releases are tagged v<VERSION> by release.sh, so the version alone identifies a build. -->
     <VersionString>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/VERSION').Trim())</VersionString>
     <ModuleVersionString>$(VersionString)</ModuleVersionString>
   </PropertyGroup>
@@ -43,7 +43,7 @@
        Shipping our own copies makes McMaster's plugin loader race against the runtime's
        and corrupts assembly resolution (manifests as garbled "i__Field, Version=...,
        Culture=ikeSharp.API.Modules.Memory.DynamicFunctions" errors on hot-reload).
-       release.py strips these from the release zip; this target keeps local builds
+       release.sh strips these from the release zip; this target keeps local builds
        in sync so dev hot-reloads don't blow up. -->
   <Target Name="StripRuntimeProvidedDlls" AfterTargets="Build">
     <ItemGroup>
