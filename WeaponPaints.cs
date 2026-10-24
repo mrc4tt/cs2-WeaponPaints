@@ -54,6 +54,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             GPlayersPendingSeedWearInput.Clear();
             GPlayersPaintMemory.Clear();
             OriginalPawnModel.Clear();
+            OriginalPawnCharacter.Clear();
             _temporaryPlayerWeaponWear.Clear();
             _stickerWearAssignments.Clear();
             _stickerWearOwners.Clear();

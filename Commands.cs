@@ -1418,7 +1418,11 @@ public partial class WeaponPaints
                     try
                     {
                         if (pawn.IsValid)
+                        {
                             pawn.SetModel(defaultModel);
+                            if (player.IsValid && OriginalPawnCharacter.TryGetValue(player.Slot, out var defaultCharacter))
+                                SetPawnCharacter(player, pawn, defaultCharacter);
+                        }
                     }
                     catch (Exception ex)
                     {

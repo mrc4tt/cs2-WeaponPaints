@@ -156,6 +156,47 @@ public partial class WeaponPaints
     // basename (filename after last '/') -> full catalog model. Heals legacy/web rows
     // that lost their path prefix (e.g. "st6/ctm_st6_variantn" -> "ctm_st6/ctm_st6_variantn").
     internal static Dictionary<string, string> AgentsModelByBasename = new();
+    // Agent model -> item definition index, so the pawn can be told which character it wears and
+    // not only which mesh to draw. Rebuilt with the other agent indexes (Utility.BuildAgents).
+    internal static Dictionary<string, ushort> AgentDefIndexByModel = new();
+
+    // "vo_prefix" from items_game.txt for every agent that ships its own voice bank. The other
+    // agents have none and correctly keep the standard team lines. Keyed by def index.
+    internal static readonly Dictionary<ushort, string> AgentVoicePrefixes = new()
+    {
+        { 4613, "professional_epic" },    // Bloody Darryl The Strapped
+        { 4711, "swat_epic" },            // Cmdr. Mae 'Dead Cold' Jamison
+        { 4712, "swat_fem" },             // 1st Lieutenant Farlow
+        { 4726, "professional_epic" },    // Sir Bloody Miami Darryl
+        { 4727, "professional_fem" },     // Safecracker Voltzmann
+        { 4730, "professional_fem" },     // Getaway Sally
+        { 4733, "professional_epic" },    // Sir Bloody Silent Darryl
+        { 4734, "professional_epic" },    // Sir Bloody Skullhead Darryl
+        { 4735, "professional_epic" },    // Sir Bloody Darryl Royale
+        { 4736, "professional_epic" },    // Sir Bloody Loudmouth Darryl
+        { 4749, "gendarmerie_male" },     // Sous-Lieutenant Medic
+        { 4750, "gendarmerie_male" },     // Chem-Haz Capitaine
+        { 4751, "gendarmerie_fem_epic" }, // Chef d'Escadron Rouchard
+        { 4752, "gendarmerie_male" },     // Aspirant
+        { 4753, "gendarmerie_male" },     // Officer Jacques Beltram
+        { 4756, "swat_fem" },             // Lieutenant 'Tree Hugger' Farlow
+        { 4757, "seal_fem" },             // Cmdr. Davida 'Goggles' Fernandez
+        { 4771, "seal_diver_01" },        // Cmdr. Frank 'Wet Sox' Baroud
+        { 4772, "seal_diver_02" },        // Lieutenant Rex Krikey
+        { 4773, "jungle_male" },          // Elite Trapper Solman
+        { 4774, "jungle_male_epic" },     // Crasswater The Forgotten
+        { 4775, "jungle_male" },          // Arno The Overgrown
+        { 4776, "jungle_male" },          // Col. Mangos Dabisi
+        { 4777, "jungle_fem_epic" },      // Vypa Sista of the Revolution
+        { 4778, "jungle_fem" },           // Trapper Aggressor
+        { 4780, "jungle_male_epic" },     // 'Medium Rare' Crasswater
+        { 4781, "jungle_fem" },           // Trapper
+        { 5108, "leet_epic" },            // The Elite Mr. Muhlik
+        { 5308, "fbihrt_epic" },          // Special Agent Ava
+        { 5400, "ctm_gsg9" },             // 3rd Commando Company
+        { 5404, "seal_epic" },            // Lt. Commander Ricksaw
+        { 5504, "balkan_epic" },          // 'The Doctor' Romanov
+    };
     internal static Dictionary<uint, JObject> StickersById = new();
     internal static List<JObject> KeychainsList = [];
     internal static Dictionary<uint, JObject> KeychainsById = new();
@@ -349,6 +390,12 @@ public partial class WeaponPaints
     // Per-slot cache of CS2's faction/map default pawn model, captured on spawn before any
     // custom agent overrides it. Used to restore immediately when player picks "Agent | Default".
     internal static readonly ConcurrentDictionary<int, string> OriginalPawnModel = new();
+
+    // Same idea for the character fields an agent overrides (def indexes + voice bank), so
+    // "Agent | Default" also gives the default voice back. Captured next to OriginalPawnModel.
+    internal static readonly ConcurrentDictionary<int, AgentCharacter> OriginalPawnCharacter = new();
+
+    internal readonly record struct AgentCharacter(ushort CharacterDefIndex, ushort PawnCharacterDefIndex, string VoPrefix, bool FemaleVoice);
 
     // weapon_c4. CS2 1.41.8.2 made the bomb sticker/charm-capable (four sticker homes on its one hd
     // mesh). Deliberately NOT in WeaponDefindex / WeaponList: those drive the !skins menu, !g and
