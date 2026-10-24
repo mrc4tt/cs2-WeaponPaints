@@ -152,6 +152,7 @@ namespace WeaponPaints
             _playerWeaponImage.Remove(player.Slot);
             PlayersBySteamId.TryRemove(player.SteamID, out _);
             OriginalPawnModel.TryRemove(player.Slot, out _);
+            OriginalPawnCharacter.TryRemove(player.Slot, out _);
             _weaponDataReady.TryRemove(player.Slot, out _);
             _lastWeaponRefresh.TryRemove(player.Slot, out _);
             _refreshInFlight.TryRemove(player.Slot, out _);
@@ -227,6 +228,8 @@ namespace WeaponPaints
                         {
                             OriginalPawnModel[player.Slot] = modelPath;
                         }
+                        OriginalPawnCharacter[player.Slot] = new AgentCharacter(
+                            pawn.CharacterDefIndex, player.PawnCharacterDefIndex, pawn.StrVOPrefix ?? "", pawn.HasFemaleVoice);
                     }
                     catch (Exception ex)
                     {

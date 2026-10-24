@@ -1362,11 +1362,53 @@ namespace WeaponPaints
                         return;
 
                     pawn.SetModel($"agents/models/{model}.vmdl");
+                    ApplyAgentCharacter(player, pawn, model);
                 });
             }
             catch (Exception ex)
             {
                 Instance.Logger.LogWarning("GivePlayerAgent failed: {Message}", ex.Message);
+            }
+        }
+
+        // SetModel only swaps the mesh: the game still thinks the player wears the team's default
+        // character and plays the generic voice. The character def indexes name the agent, and
+        // m_strVOPrefix names its voice bank. Agents without a voice bank keep the team lines.
+        private static void ApplyAgentCharacter(CCSPlayerController player, CCSPlayerPawn pawn, string model)
+        {
+            if (!AgentDefIndexByModel.TryGetValue(model, out var defIndex) || defIndex == 0)
+                return;
+
+            AgentCharacter character;
+            if (AgentVoicePrefixes.TryGetValue(defIndex, out var voPrefix))
+                character = new AgentCharacter(defIndex, defIndex, voPrefix, voPrefix.Contains("fem", StringComparison.OrdinalIgnoreCase));
+            else if (OriginalPawnCharacter.TryGetValue(player.Slot, out var original))
+                // No voice bank of its own: keep the team's default voice (undoes a voiced agent picked earlier).
+                character = original with { CharacterDefIndex = defIndex, PawnCharacterDefIndex = defIndex };
+            else
+                character = new AgentCharacter(defIndex, defIndex, pawn.StrVOPrefix ?? "", pawn.HasFemaleVoice);
+
+            SetPawnCharacter(player, pawn, character);
+        }
+
+        internal static void SetPawnCharacter(CCSPlayerController player, CCSPlayerPawn pawn, AgentCharacter character)
+        {
+            try
+            {
+                pawn.CharacterDefIndex = character.CharacterDefIndex;
+                Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_nCharacterDefIndex");
+                player.PawnCharacterDefIndex = character.PawnCharacterDefIndex;
+                Utilities.SetStateChanged(player, "CCSPlayerController", "m_nPawnCharacterDefIndex");
+
+                // items_game.txt encodes the gender in the prefix ("_fem"), so the flag follows it.
+                pawn.StrVOPrefix = character.VoPrefix;
+                Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_strVOPrefix");
+                pawn.HasFemaleVoice = character.FemaleVoice;
+                Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_bHasFemaleVoice");
+            }
+            catch (Exception ex)
+            {
+                Instance.Logger.LogWarning("Setting agent character {DefIndex} failed: {Message}", character.CharacterDefIndex, ex.Message);
             }
         }
 

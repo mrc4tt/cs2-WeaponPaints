@@ -264,7 +264,22 @@ namespace WeaponPaints
             Dictionary<(string, int), JObject> ByNameTeam,
             Dictionary<int, List<JObject>> ByTeam,
             HashSet<string> ModelSet,
-            Dictionary<string, string> ByBasename);
+            Dictionary<string, string> ByBasename,
+            Dictionary<string, ushort> DefIndexByModel);
+
+        private static readonly System.Text.RegularExpressions.Regex AgentImageDefIndex =
+            new(@"agent-(\d+)\.png", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled);
+
+        // Item definition index of a catalog agent: the "def_index" the online catalog carries, else
+        // the bundled files' preview image name (".../agent-<defindex>.png"). 0 when neither has it.
+        internal static ushort AgentDefIndex(JObject agent)
+        {
+            if (ushort.TryParse(agent["def_index"]?.ToString(), out var defIndex) && defIndex != 0)
+                return defIndex;
+
+            var match = AgentImageDefIndex.Match(agent["image"]?.ToString() ?? "");
+            return match.Success && ushort.TryParse(match.Groups[1].Value, out defIndex) ? defIndex : (ushort)0;
+        }
 
         internal static AgentsCatalog BuildAgents(List<JObject> list)
         {
@@ -272,6 +287,7 @@ namespace WeaponPaints
             var byTeam = new Dictionary<int, List<JObject>>();
             var modelSet = new HashSet<string>();
             var byBasename = new Dictionary<string, string>();
+            var defIndexByModel = new Dictionary<string, ushort>();
 
             foreach (var agent in list)
             {
@@ -291,10 +307,14 @@ namespace WeaponPaints
                     var slash = model.LastIndexOf('/');
                     var basename = slash >= 0 ? model.Substring(slash + 1) : model;
                     byBasename[basename] = model;
+
+                    var defIndex = AgentDefIndex(agent);
+                    if (defIndex != 0)
+                        defIndexByModel[model] = defIndex;
                 }
             }
 
-            return new AgentsCatalog(list, byNameTeam, byTeam, modelSet, byBasename);
+            return new AgentsCatalog(list, byNameTeam, byTeam, modelSet, byBasename, defIndexByModel);
         }
 
         internal static void InstallAgents(AgentsCatalog catalog)
@@ -303,6 +323,7 @@ namespace WeaponPaints
             WeaponPaints.AgentsByTeam = catalog.ByTeam;
             WeaponPaints.AgentsModelSet = catalog.ModelSet;
             WeaponPaints.AgentsModelByBasename = catalog.ByBasename;
+            WeaponPaints.AgentDefIndexByModel = catalog.DefIndexByModel;
             WeaponPaints.AgentsList = catalog.List;
         }
 

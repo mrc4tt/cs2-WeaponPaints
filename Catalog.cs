@@ -544,7 +544,7 @@ internal static class CatalogMerge
             if (team == 0 || !known.Add(model))
                 continue;
 
-            list.Add(new JObject { ["team"] = team, ["image"] = ReadString(item, "image") ?? "", ["model"] = model, ["agent_name"] = name });
+            list.Add(new JObject { ["team"] = team, ["image"] = ReadString(item, "image") ?? "", ["model"] = model, ["agent_name"] = name, ["def_index"] = ReadString(item, "def_index") ?? "" });
             added++;
         }
 
