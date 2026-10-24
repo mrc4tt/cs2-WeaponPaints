@@ -993,7 +993,7 @@ namespace WeaponPaints
                     if (!_gBCommandsAllowed)
                         return;
 
-                    if (player == null || !player.IsValid || !player.PlayerPawn.IsValid)
+                    if (player == null || !player.IsValid || !player.PawnIsAlive || player.PlayerPawn.Value == null)
                         return;
 
                     if (!PlayerHasKnife(player) && hasKnife)
@@ -1011,6 +1011,10 @@ namespace WeaponPaints
                             {
                                 try
                                 {
+                                    // Invalid-entity reads/writes crash natively, past the catch.
+                                    if (!newWeapon.IsValid || !player.IsValid)
+                                        return;
+
                                     newWeapon.Clip1 = ammo.Item1;
                                     newWeapon.ReserveAmmo[0] = ammo.Item2;
 
@@ -1055,6 +1059,12 @@ namespace WeaponPaints
                 // between now and when the timer fires, the pointer becomes stale and reading
                 // its Handle throws AccessViolationException (a Corrupted State Exception that
                 // cannot be caught by try/catch). Re-fetch it inside the callback instead.
+                // Resolve the plugin glove before touching the econ item: wiping first destroyed the
+                // networked attributes of a player's own inventory gloves when they had no plugin
+                // glove — the owner still saw them client side, everyone else saw default hands.
+                if (!TryResolvePluginGlove(player, out _, out _))
+                    return;
+
                 {
                     CEconItemView earlyItem = pawn.EconGloves;
                     if (earlyItem == null || earlyItem.Handle == IntPtr.Zero)
@@ -1083,13 +1093,7 @@ namespace WeaponPaints
                             if (player.Team is CsTeam.None or CsTeam.Spectator)
                                 return;
 
-                            if (!GPlayersGlove.TryGetValue(player.Slot, out var gloveInfo))
-                                return;
-                            if (!gloveInfo.TryGetValue(player.Team, out var gloveId))
-                                return;
-                            if (gloveId == 0)
-                                return;
-                            if (!HasChangedPaint(player, gloveId, out var weaponInfo) || weaponInfo == null)
+                            if (!TryResolvePluginGlove(player, out var gloveId, out var weaponInfo))
                                 return;
 
                             // Re-fetch the pawn and EconGloves fresh — do not use any pointer
@@ -1135,8 +1139,12 @@ namespace WeaponPaints
                             UpdateGloveItemView(item, player.Slot);
                             Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInventoryServices");
 
-                            SetBodygroup(pawn, "first_or_third_person", 0);
-                            AddTimer(0.2f, () => SetBodygroup(pawn, "first_or_third_person", 1), TimerFlags.STOP_ON_MAPCHANGE);
+                            SetBodygroup(timerPawn, "first_or_third_person", 0);
+                            AddTimer(0.2f, () =>
+                            {
+                                if (timerPawn.IsValid)
+                                    SetBodygroup(timerPawn, "first_or_third_person", 1);
+                            }, TimerFlags.STOP_ON_MAPCHANGE);
 
                             RestoreActiveWeaponSlot(player, activeSlotCommand);
                         }
@@ -1152,6 +1160,22 @@ namespace WeaponPaints
             {
                 Logger.LogWarning("GivePlayerGloves failed: {Message}", ex.Message);
             }
+        }
+
+        // The plugin glove (def index + painted WeaponInfo) for the player's current team, or false
+        // when the plugin has nothing to apply and the pawn's own gloves must be left alone.
+        private static bool TryResolvePluginGlove(CCSPlayerController player, out ushort gloveId, out WeaponInfo weaponInfo)
+        {
+            gloveId = 0;
+            weaponInfo = null!;
+
+            if (!GPlayersGlove.TryGetValue(player.Slot, out var gloveInfo) || !gloveInfo.TryGetValue(player.Team, out gloveId) || gloveId == 0)
+                return false;
+            if (!HasChangedPaint(player, gloveId, out var info) || info == null)
+                return false;
+
+            weaponInfo = info;
+            return true;
         }
 
         // First-write-wins snapshot of the player's server-assigned gloves for the current
@@ -1329,7 +1353,15 @@ namespace WeaponPaints
             {
                 Server.NextFrame(() =>
                 {
-                    player.PlayerPawn.Value.SetModel($"agents/models/{model}.vmdl");
+                    // The pawn can be gone a frame later (disconnect, death, team switch).
+                    if (!player.IsValid)
+                        return;
+
+                    var pawn = player.PlayerPawn.Value;
+                    if (pawn == null || !pawn.IsValid)
+                        return;
+
+                    pawn.SetModel($"agents/models/{model}.vmdl");
                 });
             }
             catch (Exception ex)

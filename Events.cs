@@ -338,6 +338,9 @@ namespace WeaponPaints
         private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
         {
             _gBCommandsAllowed = false;
+            // Also reset here: a round that awards no MVP (warmup, mp_restartgame, retake plugins)
+            // otherwise leaves the flag set and every later MVP plays the default kit.
+            _mvpPlayed = false;
             return HookResult.Continue;
         }
 
@@ -660,7 +663,9 @@ namespace WeaponPaints
             RegisterEventHandler<EventPlayerSpawn>(OnPlayerSpawn);
             RegisterEventHandler<EventRoundStart>(OnRoundStart);
             RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
-            RegisterEventHandler<EventRoundMvp>(OnRoundMvp);
+            // Pre: DontBroadcast + the per-client re-fire only replace the event before it leaves;
+            // in Post it has already been broadcast with the inventory kit.
+            RegisterEventHandler<EventRoundMvp>(OnRoundMvp, HookMode.Pre);
             RegisterListener<Listeners.OnEntitySpawned>(OnEntityCreated);
             RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             RegisterEventHandler<EventRoundPrestart>(OnRoundPrestart);
