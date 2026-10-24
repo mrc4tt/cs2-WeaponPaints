@@ -420,4 +420,25 @@ public partial class WeaponPaints
 
     // slot -> the chicken this plugin spawned for that player (by raw entity handle).
     private readonly ConcurrentDictionary<int, ActivePet> _activePets = new();
+
+    // Server tick of each owner's latest player_spawn / player_death. A pet created before the latest
+    // spawn belongs to an earlier life and is replaced at the new pawn; a death newer than the latest
+    // spawn with the owner alive again is a respawn some other plugin did without the event.
+    private readonly ConcurrentDictionary<int, int> _petOwnerSpawnTicks = new();
+    private readonly ConcurrentDictionary<int, int> _petOwnerDeathTicks = new();
+
+    // Every chicken and hat entity (raw handle) created this map, tracked or not. With the targetnames
+    // PetEntityName / PetHatEntityName it tells this plugin's entities from map chickens and game pets.
+    private readonly ConcurrentDictionary<uint, byte> _spawnedPetEntities = new();
+
+    // slot -> the hat prop on that player's pet, and the hat creates tried on the current pet.
+    private readonly ConcurrentDictionary<int, ActivePetHat> _petHats = new();
+    private readonly ConcurrentDictionary<int, (uint PetHandle, string HatId, int Attempts)> _petHatAttempts = new();
+
+    // Set once wp_player_pets.pet_hat is known to exist (Utility.AddMissingColumns).
+    internal static volatile bool PetHatColumnReady;
+
+    // slot -> the emote being written into that player's pet until it starts, and the !petemote cooldown.
+    private readonly ConcurrentDictionary<int, PendingPetEmote> _petEmotes = new();
+    private readonly ConcurrentDictionary<int, DateTime> _petEmoteCooldowns = new();
 }

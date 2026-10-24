@@ -132,6 +132,10 @@ namespace WeaponPaints
             RemovePlayerPet(player.Slot);
             GPlayersPet.TryRemove(player.Slot, out _);
             PetSpawnQueue.TryRemove(player.Slot, out _);
+            _petOwnerSpawnTicks.TryRemove(player.Slot, out _);
+            _petOwnerDeathTicks.TryRemove(player.Slot, out _);
+            _petHatAttempts.TryRemove(player.Slot, out _);
+            ForgetPetEmotes(player.Slot);
 
             _temporaryPlayerWeaponWear.TryRemove(player.Slot, out _);
             _stickerWearAssignments.TryRemove(player.Slot, out _);

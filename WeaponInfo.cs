@@ -74,6 +74,10 @@
 
         // Name tag for the current stage, or null.
         public string? Name { get; set; }
+
+        // pet_hat: the photo booth hat id ("top_hat", "glasses", ...) or null. Kept as stored: an id this
+        // plugin does not know draws no hat but is written back unchanged.
+        public string? Hat { get; set; }
     }
 
     // Snapshot of CEconItemView fields read off pawn.EconGloves before any custom glove
