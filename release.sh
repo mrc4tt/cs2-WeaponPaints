@@ -17,6 +17,8 @@
 #
 # Requires: dotnet 10 SDK, zip, gh (logged in). All packages come from nuget.org.
 set -euo pipefail
+# Never exit silently: say which command stopped the release.
+trap 'echo "release: failed at line $LINENO: $BASH_COMMAND" >&2' ERR
 
 NAME="WeaponPaints"
 PROJECT="WeaponPaints.csproj"
@@ -36,6 +38,30 @@ run() { echo "+ $*"; "$@"; }
 tag_exists() { git rev-parse -q --verify "refs/tags/$1" >/dev/null; }
 
 cd "$(dirname "$(readlink -f "$0")")"
+
+# A release tag on origin can end up on the wrong commit (gh made v4.1.3 itself, on the 4.1.2
+# commit, while the release hung as a draft); git fetch --tags then refuses to clobber the local
+# one. Repair it: when a local v<x.y.z> tag sits on this repo's own "chore: release x.y.z" commit
+# and origin's does not, origin's is the broken one and is overwritten. Anything else is left
+# alone for a human to sort out (git fetch fails below with git's own message).
+sync_release_tags() {
+    local sha ref tag version local_commit remote_commit
+    while read -r sha ref; do
+        [[ $ref == refs/tags/v* && $ref != *'^{}' ]] || continue
+        tag=${ref#refs/tags/}
+        version=${tag#v}
+        tag_exists "$tag" || continue
+        local_commit=$(git rev-parse "$tag^{commit}")
+        remote_commit=$(git ls-remote "$REMOTE" "refs/tags/$tag^{}" | cut -f1)
+        [[ -n $remote_commit ]] || remote_commit=$sha    # lightweight tag on origin
+        [[ $local_commit == "$remote_commit" ]] && continue
+        if [[ $(git log -1 --format=%s "$local_commit") == "chore: release $version" ]] \
+            && [[ $(git log -1 --format=%s "$remote_commit" 2>/dev/null) != "chore: release $version" ]]; then
+            echo "release: $REMOTE's $tag points at ${remote_commit:0:7}, not the $version release commit ${local_commit:0:7} - fixing it"
+            run git push --force "$REMOTE" "refs/tags/$tag"
+        fi
+    done < <(git ls-remote --tags "$REMOTE" 'v*')
+}
 
 dry_run=0
 bump="patch"
@@ -59,7 +85,11 @@ if [[ $dry_run == 0 ]]; then
     [[ $(git rev-parse --abbrev-ref HEAD) == "$BRANCH" ]] || fail "not on $BRANCH"
     [[ -z $(git status --porcelain --untracked-files=no) ]] \
         || fail "working tree has uncommitted changes to tracked files - commit or stash them"
-    run git fetch "$REMOTE" --tags --quiet
+    sync_release_tags
+    # Not --quiet: a tag that still differs from origin's is rejected ("would clobber existing
+    # tag"), and that message is the only hint at what went wrong.
+    run git fetch "$REMOTE" --tags \
+        || fail "git fetch failed - a local tag that differs from $REMOTE's is the usual cause (git fetch $REMOTE --tags shows which)"
     git merge-base --is-ancestor "$REMOTE/$BRANCH" HEAD \
         || fail "$BRANCH is behind $REMOTE/$BRANCH - pull first"
     gh auth status >/dev/null 2>&1 || fail "gh is not logged in (gh auth login)"
