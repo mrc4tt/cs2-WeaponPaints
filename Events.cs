@@ -154,6 +154,7 @@ namespace WeaponPaints
             OriginalPawnModel.TryRemove(player.Slot, out _);
             _weaponDataReady.TryRemove(player.Slot, out _);
             _lastWeaponRefresh.TryRemove(player.Slot, out _);
+            _refreshInFlight.TryRemove(player.Slot, out _);
             Players.Remove(player);
 
             return HookResult.Continue;

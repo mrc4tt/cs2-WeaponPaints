@@ -332,6 +332,13 @@ public partial class WeaponPaints
     // once data is ready, so the first-spawn refresh doesn't run empty and get coalesced away.
     internal readonly ConcurrentDictionary<int, bool> _weaponDataReady = new();
 
+    // !wp whose DB reload hasn't landed yet, per slot (value = SteamID, so a late finish can't
+    // clear the next occupant's entry). Spam is dropped instead of stacking reloads + refreshes.
+    private readonly ConcurrentDictionary<int, ulong> _refreshInFlight = new();
+
+    // (defindex, paint) pairs already warned as missing from the skins catalog — warn once each.
+    private static readonly ConcurrentDictionary<(int DefIndex, int Paint), byte> MissingSkinsWarned = new();
+
     private int _fadeSeed;
 
     internal List<CCSPlayerController> Players = [];
