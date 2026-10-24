@@ -3,6 +3,28 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [4.1.4] - 2026-10-24
+
+### Added
+
+- Add Czech translation, update Turkish strings
+- Play each agent's own voice bank
+- Pet hats, pet emotes and a per-life pet respawn
+
+### Fixed
+
+- Publish the GitHub release if gh leaves it as a draft
+- Refresh spam, pickup enumeration, unplaced charm offset, missing-skin warning
+- Glove wipe on inventory gloves, MVP kit hook, stale-entity guards
+- Repair a misplaced release tag on origin instead of exiting silently
+
+### Changed
+
+- Restore CS2MenuManager from nuget.org instead of the Forgejo feed
+- Add copyright notice to LICENSE and a License section to the README
+- Keep LICENSE recognizable as GPL-3.0 (copyright lines only)
+- Replace release.py with release.sh (auto version bump)
+
 ## [4.1.3] - 2026-10-23
 
 ### Changed
