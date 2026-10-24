@@ -180,5 +180,12 @@ run git tag -a "$tag" -m "$NAME $version"
 run git push --atomic "$REMOTE" "$BRANCH" "refs/tags/$tag"
 run gh release create "$tag" "$zip_path" --verify-tag --latest \
     --title "$NAME $version" --notes-file "$work/release-notes.md"
+# gh creates a release with assets as a draft, uploads, then publishes; if that
+# last step fails the release is left as a draft (v4.1.3). Publish explicitly.
+if [[ $(gh release view "$tag" --json isDraft --jq .isDraft) == true ]]; then
+    run gh release edit "$tag" --draft=false --latest
+fi
+[[ $(gh release view "$tag" --json isDraft --jq .isDraft) == false ]] \
+    || fail "release $tag is still a draft"
 rm -rf "$work"
 echo "released $tag"
