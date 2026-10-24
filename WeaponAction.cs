@@ -152,7 +152,7 @@ namespace WeaponPaints
                 // redundant: UpdateItemView + the FallbackPaintKit/Xuid marks + the native attribute
                 // writes on NetworkedDynamicAttributes already network the visible change.
 
-                isLegacyModel = !SkinsLegacyModelIndex.TryGetValue((weaponDefIndex, fallbackPaintKit), out var legacyApply) || legacyApply;
+                isLegacyModel = IsLegacyModelSkin(weaponDefIndex, fallbackPaintKit);
                 UpdatePlayerWeaponMeshGroupMask(player, weapon, isLegacyModel);
                 return;
             }
@@ -224,7 +224,7 @@ namespace WeaponPaints
             // paint miss the index and resolve legacy, matching the mesh the engine renders.
             // weapon_c4.vmdl has no mesh groups and no legacy mesh: the bomb is always its one hd mesh,
             // which is also the variant StickerAnchors must resolve for its fifth slot.
-            isLegacyModel = !isC4 && (!SkinsLegacyModelIndex.TryGetValue((weaponDefIndex, fallbackPaintKit), out var legacyApply2) || legacyApply2);
+            isLegacyModel = !isC4 && IsLegacyModelSkin(weaponDefIndex, fallbackPaintKit);
 
             if (weaponInfo.KeyChain != null)
                 SetKeychain(player, weapon);
@@ -546,9 +546,16 @@ namespace WeaponPaints
             foreach (var handle in new[] { networked, attributeList })
             {
                 CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 id", ViewAsFloat(keyChain.Id));
-                CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 offset x", keyChain.OffsetX);
-                CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 offset y", keyChain.OffsetY);
-                CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 offset z", keyChain.OffsetZ);
+                // The offset is a model-space point, not a displacement from the charm attachment.
+                // 0;0;0 means "never placed" (in-game picks, column default): inspect links omit the
+                // fields and the engine hangs the charm on the weapon's keychain attachment. Writing
+                // the zeros instead hangs it off the model origin (by the grip on the AK).
+                if (keyChain.OffsetX != 0f || keyChain.OffsetY != 0f || keyChain.OffsetZ != 0f)
+                {
+                    CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 offset x", keyChain.OffsetX);
+                    CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 offset y", keyChain.OffsetY);
+                    CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 offset z", keyChain.OffsetZ);
+                }
                 CAttributeListSetOrAddAttributeValueByName.Invoke(handle, "keychain slot 0 seed", ViewAsFloat(keyChain.Seed));
                 // Charm rotation (degrees): initial orientation of the hook; Source 2 physics
                 // then swings the pendant freely.
@@ -1416,7 +1423,12 @@ namespace WeaponPaints
             if (myWeapons == null)
                 return;
 
-            foreach (var handle in myWeapons)
+            // Snapshot: the GiveNamedItem calls below grow MyWeapons, which must not happen while
+            // enumerating it (the loop would also visit the throwaway USP and the new knife).
+            var handles = myWeapons.ToArray();
+            var swapped = false;
+
+            foreach (var handle in handles)
             {
                 var weapon = handle.Value;
 
@@ -1426,17 +1438,37 @@ namespace WeaponPaints
                 if (weapon.AttributeManager?.Item == null)
                     continue;
 
-                if (myWeapons.Count == 1)
+                if (!swapped && handles.Length == 1)
                 {
+                    swapped = true;
                     var newWeapon = new CBasePlayerWeapon(player.GiveNamedItem(CsItem.USP));
                     weapon.AddEntityIOEvent("Kill", weapon, null, "", 0.01f);
                     player.GiveNamedItem(CsItem.Knife);
                     player.ExecuteClientCommand("slot3");
-                    newWeapon.AddEntityIOEvent("Kill", newWeapon, null, "", 0.01f);
+                    if (newWeapon.IsValid)
+                        newWeapon.AddEntityIOEvent("Kill", newWeapon, null, "", 0.01f);
+                    // The old weapon is being killed — painting it is wasted work.
+                    continue;
                 }
 
                 GivePlayerWeaponSkin(player, weapon);
             }
+        }
+
+        // Mesh variant comes from the catalog's legacy_model. A skin missing from the catalog falls
+        // back to legacy, and a new-model skin drawn on the legacy mesh renders scrambled — happens
+        // when a collection drops and data/ (or the online catalog) is behind. Warn once per skin.
+        private bool IsLegacyModelSkin(int weaponDefIndex, int paintKit)
+        {
+            if (SkinsLegacyModelIndex.TryGetValue((weaponDefIndex, paintKit), out var legacy))
+                return legacy;
+
+            if (paintKit > 0 && MissingSkinsWarned.TryAdd((weaponDefIndex, paintKit), 0))
+                Logger.LogWarning(
+                    "Skin {Paint} (weapon {DefIndex}) is missing from the skins catalog ({Language}), falling back to the legacy model. Update data/ or enable the online catalog, or it may render with scrambled textures.",
+                    paintKit, weaponDefIndex, Config.SkinsLanguage);
+
+            return true;
         }
 
         private void UpdatePlayerEconItemId(CEconItemView econItemView)

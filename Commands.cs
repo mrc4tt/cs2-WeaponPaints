@@ -44,11 +44,22 @@ public partial class WeaponPaints
 
         PlayerInfo playerInfo = PlayerInfo.From(player);
 
+        // A previous !wp is still loading from the database: drop the spam instead of stacking
+        // reloads and refreshes behind it.
+        if (WeaponSync != null && !_refreshInFlight.TryAdd(player.Slot, player.SteamID))
+        {
+            if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
+                player.Print(Localizer["wp_command_cooldown"]);
+            return;
+        }
+
         // Set cooldown immediately
         CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
 
         if (WeaponSync != null)
         {
+            var inFlightKey = new KeyValuePair<int, ulong>(player.Slot, player.SteamID);
+
             // Ensure database data is loaded before refreshing weapons to avoid race conditions
             _ = Task.Run(async () =>
             {
@@ -64,8 +75,9 @@ public partial class WeaponPaints
                         ApplyRefreshedCosmetics(player);
                     });
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Logger.LogWarning("!wp reload failed for {SteamId}: {Message}", playerInfo.SteamId, ex.Message);
                     // Fallback: even if DB fetch fails, still attempt a refresh (without skipping knife)
                     Server.NextFrame(() =>
                     {
@@ -73,6 +85,10 @@ public partial class WeaponPaints
 
                         ApplyRefreshedCosmetics(player);
                     });
+                }
+                finally
+                {
+                    _refreshInFlight.TryRemove(inFlightKey);
                 }
             });
         }
