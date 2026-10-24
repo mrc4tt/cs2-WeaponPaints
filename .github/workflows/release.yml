@@ -1,0 +1,101 @@
+# Builds, tests and publishes a release from a version tag (vX.Y.Z).
+#
+# This workflow is disabled on mrc4tt/cs2-WeaponPaints, where releases are built
+# and published from a local machine. It is kept for forks: enable Actions in your
+# fork, set VERSION and a "## [X.Y.Z]" section in CHANGELOG.md, then push tag vX.Y.Z.
+#
+# Retry or backfill one release: Actions -> Release -> Run workflow, tag vX.Y.Z.
+name: Release
+
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to build and publish, e.g. v4.1.4"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  NAME: WeaponPaints
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: Tag matches VERSION
+        id: version
+        run: |
+          VERSION=$(tr -d '[:space:]' < VERSION)
+          if [ "$TAG" != "v$VERSION" ]; then
+            echo "::error::tag $TAG does not match VERSION $VERSION"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0"
+
+      - name: Build and test
+        run: |
+          dotnet restore
+          dotnet build WeaponPaints.csproj -c Release -o build
+          dotnet test tests/WeaponPaints.Tests -c Release
+
+      - name: Package
+        run: |
+          set -euo pipefail
+          # Provided by the CSSharp runtime / MenuManagerCore; must never ship.
+          for dll in CounterStrikeSharp.API.dll McMaster.NETCore.Plugins.dll \
+                     Microsoft.DotNet.PlatformAbstractions.dll Microsoft.Extensions.DependencyModel.dll \
+                     CS2MenuManager.dll; do
+            rm -f "build/$dll"
+          done
+          # gamedata ships to addons/counterstrikesharp/gamedata/, never inside the plugin folder.
+          rm -rf build/gamedata
+          mkdir -p staging/addons/counterstrikesharp/plugins
+          cp -r build "staging/addons/counterstrikesharp/plugins/$NAME"
+          [ -d gamedata ] && cp -r gamedata staging/addons/counterstrikesharp/gamedata
+          (cd staging && zip -qr "../$NAME.zip" addons)
+
+      - name: Release notes
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          awk -v v="$VERSION" '
+            index($0, "## [" v "]") == 1 { on = 1; next }
+            on && /^## \[/ { exit }
+            on { print }
+          ' CHANGELOG.md | sed -e '/./,$!d' > notes.md
+          [ -s notes.md ] || echo "See [CHANGELOG.md](CHANGELOG.md)." > notes.md
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$NAME.zip" --clobber
+          else
+            gh release create "$TAG" "$NAME.zip" --verify-tag --latest \
+              --title "$NAME $VERSION" --notes-file notes.md
+          fi
+          # gh can leave a release with assets as a draft; never keep it that way.
+          gh release edit "$TAG" --draft=false
