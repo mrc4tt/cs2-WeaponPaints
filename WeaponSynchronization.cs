@@ -423,7 +423,9 @@ internal class WeaponSynchronization
             if (!_config.Additional.PetsEnabled || player == null || string.IsNullOrEmpty(player.SteamId))
                 return;
 
-            const string query = "SELECT `pet_id`, `pet_stage`, `pet_variant`, `pet_seed`, `pet_name` FROM `wp_player_pets` WHERE `steamid` = @steamid";
+            // Every column, not a list: pet_hat is added to existing tables at load (Utility.AddMissingColumns),
+            // and a table without it yet must still load the pet - a named missing column fails the query.
+            const string query = "SELECT * FROM `wp_player_pets` WHERE `steamid` = @steamid";
             var row = await connection.QueryFirstOrDefaultAsync(query, new { steamid = player.SteamId }) as IDictionary<string, object>;
 
             static object? Column(IDictionary<string, object> source, string name) =>
@@ -442,6 +444,7 @@ internal class WeaponSynchronization
                     Variant = Column(row, "pet_variant") is { } variant ? Convert.ToInt32(variant, CultureInfo.InvariantCulture) : null,
                     Seed = Column(row, "pet_seed") is { } seed ? Convert.ToUInt32(seed, CultureInfo.InvariantCulture) : 0u,
                     Name = Column(row, "pet_name") is { } name ? Convert.ToString(name, CultureInfo.InvariantCulture) : null,
+                    Hat = Column(row, "pet_hat") is { } hat ? Convert.ToString(hat, CultureInfo.InvariantCulture)?.Trim() : null,
                 };
             }
 
@@ -482,8 +485,21 @@ internal class WeaponSynchronization
                     `pet_seed` = @pet_seed,
                     `pet_name` = @pet_name";
 
+            // With the hat only once pet_hat is known to exist: an upsert naming a missing column fails whole.
+            const string queryWithHat =
+                @"
+                INSERT INTO `wp_player_pets` (`steamid`, `pet_id`, `pet_stage`, `pet_variant`, `pet_seed`, `pet_name`, `pet_hat`)
+                VALUES (@steamid, @pet_id, @pet_stage, @pet_variant, @pet_seed, @pet_name, @pet_hat)
+                ON DUPLICATE KEY UPDATE
+                    `pet_id` = @pet_id,
+                    `pet_stage` = @pet_stage,
+                    `pet_variant` = @pet_variant,
+                    `pet_seed` = @pet_seed,
+                    `pet_name` = @pet_name,
+                    `pet_hat` = @pet_hat";
+
             await connection.ExecuteAsync(
-                query,
+                WeaponPaints.PetHatColumnReady ? queryWithHat : query,
                 new
                 {
                     steamid = player.SteamId,
@@ -492,6 +508,7 @@ internal class WeaponSynchronization
                     pet_variant = pet.Variant,
                     pet_seed = pet.Seed,
                     pet_name = string.IsNullOrEmpty(pet.Name) ? null : pet.Name,
+                    pet_hat = string.IsNullOrWhiteSpace(pet.Hat) ? null : pet.Hat,
                 }
             );
         }

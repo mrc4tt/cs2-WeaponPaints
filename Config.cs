@@ -31,6 +31,19 @@ namespace WeaponPaints
         [JsonPropertyName("PetPermission")]
         public string PetPermission { get; set; } = "";
 
+        // !pethat: one of the ten photo booth hats on the pet's head (wp_player_pets.pet_hat). See PetHats.cs.
+        [JsonPropertyName("PetHatsEnabled")]
+        public bool PetHatsEnabled { get; set; } = true;
+
+        // !petemote: asks the pet for a move the game's chicken plays in a match (trick, squat, sleep,
+        // feed, shoulder, panic, idle). The game picks the variant. See PetEmotes.cs.
+        [JsonPropertyName("PetEmotesEnabled")]
+        public bool PetEmotesEnabled { get; set; } = true;
+
+        // Seconds a player waits between two !petemote requests.
+        [JsonPropertyName("PetEmoteCooldownSeconds")]
+        public int PetEmoteCooldownSeconds { get; set; } = 10;
+
         [JsonPropertyName("CommandWpEnabled")]
         public bool CommandWpEnabled { get; set; } = true;
 
@@ -54,6 +67,12 @@ namespace WeaponPaints
 
         [JsonPropertyName("CommandPet")]
         public List<string> CommandPet { get; set; } = ["pet"];
+
+        [JsonPropertyName("CommandPetHat")]
+        public List<string> CommandPetHat { get; set; } = ["pethat"];
+
+        [JsonPropertyName("CommandPetEmote")]
+        public List<string> CommandPetEmote { get; set; } = ["petemote"];
 
         [JsonPropertyName("CommandAgent")]
         public List<string> CommandAgent { get; set; } = ["agents"];
@@ -170,7 +189,7 @@ namespace WeaponPaints
     public class WeaponPaintsConfig : BasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 23;
+        public override int Version { get; set; } = 24;
 
         // Keys of removed features (the AstraSkins port). MigrateConfigFile deletes them from
         // Additional or the root of an existing WeaponPaints.json.
