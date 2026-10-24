@@ -34,7 +34,8 @@ RUNTIME_DLLS=(
 )
 
 fail() { echo "release: $*" >&2; exit 1; }
-run() { echo "+ $*"; "$@"; }
+# Echoed shell-quoted, so a printed command can be copied and re-run as is.
+run() { echo "+ ${*@Q}"; "$@"; }
 tag_exists() { git rev-parse -q --verify "refs/tags/$1" >/dev/null; }
 
 cd "$(dirname "$(readlink -f "$0")")"
@@ -208,8 +209,12 @@ committed=1
 printf '%s\n' "$notes" > "$work/release-notes.md"
 run git tag -a "$tag" -m "$NAME $version"
 run git push --atomic "$REMOTE" "$BRANCH" "refs/tags/$tag"
+# The tag is pushed by now: if this fails, re-running the printed command (the zip and notes stay
+# in $work) finishes the release.
 run gh release create "$tag" "$zip_path" --verify-tag --latest \
-    --title "$NAME $version" --notes-file "$work/release-notes.md"
+    --title "$NAME $version" --notes-file "$work/release-notes.md" \
+    || fail "gh release create failed after $tag was pushed - re-run the gh command above to finish"
+
 # gh creates a release with assets as a draft, uploads, then publishes; if that
 # last step fails the release is left as a draft (v4.1.3). Publish explicitly.
 if [[ $(gh release view "$tag" --json isDraft --jq .isDraft) == true ]]; then
