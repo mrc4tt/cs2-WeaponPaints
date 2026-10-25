@@ -503,5 +503,10 @@
         "id": "103",
         "name": "ミュージックキット | ShockOne, Voices",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/music_kit-103.png"
+    },
+    {
+        "id": "104",
+        "name": "ミュージックキット | Starjunk 95, Industrial Sunset Memories",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/music_kit-104.png"
     }
 ]

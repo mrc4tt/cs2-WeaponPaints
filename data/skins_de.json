@@ -1677,7 +1677,7 @@
         "paint": "542",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/weapon_bizon-542.png",
         "paint_name": "PP-Bizon | Urteil von Anubis",
-        "legacy_model": false
+        "legacy_model": true
     },
     {
         "weapon_defindex": 26,

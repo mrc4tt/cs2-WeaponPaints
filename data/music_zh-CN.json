@@ -503,5 +503,10 @@
         "id": "103",
         "name": "音乐盒 | ShockOne, 声流",
         "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/music_kit-103.png"
+    },
+    {
+        "id": "104",
+        "name": "音乐盒 | Starjunk 95，工业忆夕",
+        "image": "https://git.miksen.me/mikkel/weaponpaints-img/media/branch/main/img/skins/music_kit-104.png"
     }
 ]
