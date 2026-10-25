@@ -95,7 +95,7 @@ jobs:
             gh release upload "$TAG" "$NAME.zip" --clobber
           else
             gh release create "$TAG" "$NAME.zip" --verify-tag --latest \
-              --title "$NAME $VERSION" --notes-file notes.md
+              --title "$VERSION" --notes-file notes.md
           fi
           # gh can leave a release with assets as a draft; never keep it that way.
           gh release edit "$TAG" --draft=false
