@@ -24,7 +24,7 @@ Unfinished, unoptimized and not fully functional ugly demo weapon paints plugin 
 ## ⚙️ Requirements
 **Ensure all the following dependencies are installed before proceeding**
 - [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
-- [CS2MenuManager by schwarper (forked)](https://git.miksen.me/mikkel/CS2MenuManager/releases)
+- [CS2MenuManager by schwarper (forked)](https://github.com/mrc4tt/CS2MenuManager/releases)
 - MySQL database
 
 ## CS2 Server
@@ -141,6 +141,18 @@ Set FollowCSGOGuidelines to false in cssharp’s core.jcon config
 The plugin is not loaded or configured with MySQL credentials. Tables are auto-created by the plugin.
 
 ### Use this plugin at your own risk! Using this may lead to a GSLT ban or something else Valve comes up with. [Valve Server guidelines](https://blog.counter-strike.net/index.php/server_guidelines/)
+
+## Support
+
+Need help, found a bug, or have a feature idea? Join the Discord support server:
+
+[![Discord](https://img.shields.io/badge/Discord-Join%20the%20server-5865F2?logo=discord&logoColor=white)](https://discord.gg/zuQN3U2ZEh)
+
+- **Questions and setup help:** ask in the support channels on Discord.
+- **Bug reports:** open a [GitHub issue](https://github.com/mrc4tt/cs2-WeaponPaints/issues) with your server log, plugin version and steps to reproduce. Discord is fine for a quick check first.
+- **Feature requests:** post them on Discord or open an [issue](https://github.com/mrc4tt/cs2-WeaponPaints/issues).
+
+Please do not send support requests by direct message. Asking in the public channels means others can help and find the answer later.
 
 ## License
 Licensed under the [GNU General Public License v3.0](LICENSE).
