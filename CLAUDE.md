@@ -1,140 +1,104 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+CS2 server plugin (C#, `net10.0`, CounterStrikeSharp.API 1.0.369, no `MinimumApiVersion`): weapon paints, knives, gloves, agents, pins, MVP music, stickers, keychains, pets — persisted in MySQL, applied each spawn. Loaded by CSSharp inside a CS2 dedicated server.
 
-## Critical rules (violating these crashes the server or breaks live loads)
+## Critical rules (break these → server crash / broken live loads)
 
-These are the highest-severity invariants. Each is expanded in the section named in parentheses.
+1. **No heavy work on main thread** in `Load` / events / listeners (`Load` runs on the sim thread; `css_plugins reload` freezes the tick → `UNEXPECTED LONG FRAME DETECTED`). Big catalogs `skins_*.json` (~0.6MB) and `stickers_*.json` (~2.1MB) parse off-thread via `Task.Run`; only small ones the `OnAllPluginsLoaded` menu builder iterates (gloves/agents/music/pins) parse sync. Keep that split; add no sync file/DB/native work to `Load`.
+2. **Marshal to main thread** (`Server.NextFrame` / `Server.NextWorldUpdate`) before touching `CCSPlayerController`/pawns/weapons from `Task.Run`/DB callbacks — off-thread access crashes natively.
+3. **`OnPlayerSpawn` cosmetics use `AddTimer(0.15f, ...)` on purpose** — on spawn or `NextFrame` crashes native `SetModel`/`SetBodygroup` (scene nodes not ready). Don't simplify.
+4. **Clear every `player.Slot`-keyed state in `OnPlayerDisconnect`.** Currently: all `GPlayers*` (incl. `GPlayersPet`/`PetSpawnQueue` + spawned chicken), `OriginalPawnModel`, `OriginalPawnCharacter`, `_temporaryPlayerWeaponWear`, `CommandsCooldown`, `PlayersBySteamId`, `GPlayersPaintMemory`, `_weaponRefreshPending`, `_spawnGeneration`, `_refreshInFlight`, slot's StatTrak dirty rows. Add new ones there.
+5. **`Stickers` is slot-indexed** (`Stickers[i]` == slot i, 0-4, padded to 5). Never `Add` unaligned; empty slot = `StickerInfo` with `Id == 0`.
+6. **Bump `WeaponPaintsConfig.Version` (currently `24`) on any `Config.cs` change.** CSSharp `ConfigManager.Load` never migrates existing files; the plugin's `MigrateConfigFile` (`WeaponPaints.cs`, first call in `OnConfigParsed`) does a JSON node merge when stored `ConfigVersion` is older: inserts missing keys at defaults (recursive), never replaces values/arrays/unknown keys, temp-file swap, deletes only `WeaponPaintsConfig.ObsoleteKeys`, writes **no** `.bak` (file holds DB creds).
+7. **`gamedata/weaponpaints.json` ships to `addons/counterstrikesharp/gamedata/`**, never the plugin folder; runtime DLLs are deleted from the release. Missing sig → plugin refuses to load.
+8. **`PlayerInfo.From(player)` only** (no inline `new PlayerInfo{}`; no `IpAddress` field). Chat via `.Print()` (prepends localized `wp_prefix`), not `PrintToChat`.
 
-1. **Never do heavy work on the main thread inside `Load` / event handlers / listeners.** `Load(bool hotReload)` runs on the game's main simulation thread, so a live `css_plugins reload` freezes the current tick for the whole duration (a big synchronous JSON parse or DB call shows up in-console as `UNEXPECTED LONG FRAME DETECTED ... Server Simulation`). The large `data/` catalogs — `skins_*.json` (~0.6MB) and `stickers_*.json` (~2.1MB) — are parsed off-thread via `Task.Run` because nothing reads them during menu build; only the small catalogs the `OnAllPluginsLoaded` menu builder iterates (gloves/agents/music/pins) are parsed synchronously. Keep that split — do not move the big parses back onto the main thread, and don't add new synchronous file/DB/native work to `Load`. (see **Threading and lifetime rules**)
-2. **Marshal back to the main thread before touching entities from any `Task.Run`/DB callback** — `Server.NextFrame` / `Server.NextWorldUpdate`. Reads/writes on `CCSPlayerController`, pawns, or weapons off-thread crash natively. (see **Threading and lifetime rules**)
-3. **`OnPlayerSpawn` cosmetics are deferred with `AddTimer(0.15f, ...)` on purpose** — applying on spawn or on `NextFrame` crashes in native `SetModel`/`SetBodygroup` (pawn scene nodes not initialized). Don't "simplify". (see **Threading and lifetime rules**)
-4. **Clear every `player.Slot`-keyed state in `OnPlayerDisconnect`.** New per-player dictionaries must be added to that block or they leak across the slot's next occupant. (see **Threading and lifetime rules**)
-5. **`Stickers` is slot-indexed (`Stickers[i]` == sticker slot i).** Never `Add` without keeping the list 5-slot-aligned; empty slot = `StickerInfo` with `Id == 0`. (see **Stickers and keychains**)
-6. **Bump `WeaponPaintsConfig.Version` on any `Config.cs` change** so the plugin's own `MigrateConfigFile` rewrites existing user configs. CSSharp's `ConfigManager.Load` does NOT migrate — it only generates a config when absent and otherwise deserializes without touching the file, so new fields would never reach an operator's on-disk `WeaponPaints.json`. `MigrateConfigFile` (in `WeaponPaints.cs`, called from `OnConfigParsed`) re-serializes when the stored `ConfigVersion` is behind, preserving operator values. (see **Runtime configuration layout** / **Conventions**)
-7. **`gamedata/weaponpaints.json` ships to `addons/counterstrikesharp/gamedata/`, never inside the plugin folder**, and the runtime-provided DLLs (`CounterStrikeSharp.API.dll`, `CS2MenuManager.dll`, etc.) must be deleted from the release. Without the gamedata sig the plugin refuses to load. (see **Build and deploy**)
-8. **Build `PlayerInfo` via `PlayerInfo.From(player)` only; use `.Print()` (not `PrintToChat`) for chat.** (see **Code layout**)
-
-## What this project is
-
-A CS2 server plugin (C#, .NET 10) built on [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) that lets players pick weapon paints, knives, gloves, agents, pins, MVP music, stickers, and keychains — persisted in MySQL and applied each spawn. Not a standalone program; it is loaded by the CSSharp runtime inside a CS2 dedicated server.
-
-Targets `net10.0` and `CounterStrikeSharp.API` 1.0.369 (see `WeaponPaints.csproj`). There is no `MinimumApiVersion` attribute on the plugin class.
-
-## Build and deploy
+## Build / test / release
 
 ```bash
 dotnet restore
 dotnet build WeaponPaints.csproj -c Release -o ./WeaponPaints
+dotnet test tests/WeaponPaints.Tests
 ```
 
-Unit tests for the pure parsers/merges (`ParseKeychain`/`ParseSticker`/`FormatKeychain`, `AddMissingConfigKeys`, `InspectItemPreview.TryParse`, `GenCodeResolver`) live in `tests/WeaponPaints.Tests` (xunit, `InternalsVisibleTo`; excluded from the plugin compile via `Compile Remove="tests/**"`). Run `dotnet test tests/WeaponPaints.Tests`. Keep new parsing logic in `internal static` helpers so it stays testable. `release.sh` (run locally — there is no CI) runs those tests, replicates the build above and packages a release zip: plugin files land in `staging/addons/counterstrikesharp/plugins/WeaponPaints/`, and top-level `gamedata/weaponpaints.json` is copied to `addons/counterstrikesharp/gamedata/` (must not live inside the plugin folder). `release.sh` explicitly deletes `CounterStrikeSharp.API.dll`, `McMaster.NETCore.Plugins.dll`, `Microsoft.DotNet.PlatformAbstractions.dll`, `Microsoft.Extensions.DependencyModel.dll`, and `CS2MenuManager.dll` from the output before zipping — these are provided by the CSSharp runtime / MenuManagerCore and must not ship with the plugin.
+- Tests (xunit, `InternalsVisibleTo`, excluded via `Compile Remove="tests/**"`) cover `ParseKeychain`/`ParseSticker`/`FormatKeychain`, `AddMissingConfigKeys`, `InspectItemPreview.TryParse`, `GenCodeResolver`. Put new parsing in `internal static` helpers.
+- `./release.sh` (local, bash; dotnet 10 SDK, `zip`, `gh`; clean up-to-date `main`): tests → build → stage plugin in `staging/addons/counterstrikesharp/plugins/WeaponPaints/`, gamedata to `addons/counterstrikesharp/gamedata/` → deletes `CounterStrikeSharp.API.dll`, `McMaster.NETCore.Plugins.dll`, `Microsoft.DotNet.PlatformAbstractions.dll`, `Microsoft.Extensions.DependencyModel.dll`, `CS2MenuManager.dll` → `WeaponPaints.zip` → commit `chore: release x.y.z` (VERSION + CHANGELOG), tag `v<VERSION>`, atomic push `main`+tag to `origin` (github.com/mrc4tt/cs2-WeaponPaints), `gh` release.
+- `VERSION` (x.y.z) is the single source: no arg = patch bump, `minor|major`, explicit `4.2.0`, or an untagged hand-bumped VERSION released as-is. `--dry-run` = build/test/package only (restores VERSION/CHANGELOG).
+- Notes = `## [x.y.z]` in `CHANGELOG.md`; if missing, generated from commit subjects since last tag (`feat:` → Added, `fix:` → Fixed, else Changed) → write meaningful conventional commits. No `[Unreleased]` section.
+- Portable managed IL (no RuntimeIdentifier) → one zip for all server OSes.
+- Dev loop: copy output into a server's `plugins/WeaponPaints/`, `css_plugins reload WeaponPaints`; `Load(bool hotReload)` re-handles connected players.
+- Menus: schwarper's **CS2MenuManager** (NuGet v1.0.42, nuget.org only; compile-time ref matching server's **MenuManagerCore**, which must be installed and provides the DLL). Legacy NfCore `menu:nfcore` / `3rd_party/MenuManagerApi.dll` are gone — don't reintroduce.
 
-Releases are versioned, not per-build, and cut locally with `./release.sh` (bash; needs dotnet 10 SDK, `zip`, `gh` logged in) on a clean, up-to-date `main`. `VERSION` (x.y.z) is the single source and the script sets it: `./release.sh` bumps patch, `./release.sh minor|major` bumps those, `./release.sh 4.2.0` uses an explicit version, and a `VERSION` that is not tagged yet (bumped by hand) is released as-is. Release notes are the `## [x.y.z]` section of `CHANGELOG.md`; when it is missing the script generates it from the commit subjects since the last tag (`feat:` → Added, `fix:` → Fixed, rest → Changed), so write meaningful conventional commit subjects. It builds, tests, packages `WeaponPaints.zip`, commits `chore: release x.y.z` (VERSION + CHANGELOG), tags `v<VERSION>`, pushes `main` + the tag atomically to `origin` (github.com/mrc4tt/cs2-WeaponPaints) and creates the GitHub release with `gh`. `./release.sh --dry-run` only builds, tests and packages (VERSION/CHANGELOG are restored afterwards). There is no `[Unreleased]` section and no CI / GitHub Actions workflow. The build is portable managed IL (no RuntimeIdentifier), so building on any Linux/Windows box gives a zip that runs on every CSSharp server OS — no steamrt container needed.
+## Runtime config (two files, split for security)
 
-Local dev loop: copy the build output into an existing CS2 server's `addons/counterstrikesharp/plugins/WeaponPaints/` directory and use `css_plugins reload WeaponPaints` in server console. The `Load(bool hotReload)` branch in `WeaponPaints.cs` handles reloading connected players.
+Both in `addons/counterstrikesharp/configs/plugins/WeaponPaints/`:
+- `WeaponPaints.json` — behavior (`WeaponPaintsConfig`, `Config.cs`), generated by `IPluginConfig<T>` only when absent; migrated per rule 6.
+- `weaponpaintssql.json` — DB creds only (`WeaponPaintsSqlConfig`). `OnConfigParsed` also accepts `WeaponPaintsSQL.json` or legacy `WeaponPaints.json`, picks whichever has filled creds; if none, writes a stub and `Unload(false)` (first run always fails until filled).
 
-Menus are powered by **schwarper's [CS2MenuManager](https://github.com/schwarper/CS2MenuManager)** (NuGet `CS2MenuManager` v1.0.42 from nuget.org — `nuget.config` lists nuget.org only; the package is a compile-time reference and only has to match the API of the server's MenuManagerCore). The server must have `MenuManagerCore` installed alongside the plugin — `CS2MenuManager.dll` itself is provided by that core plugin and is excluded from the release zip. The legacy NfCore `menu:nfcore` capability and the vendored `3rd_party/MenuManagerApi.dll` are gone — do not reintroduce them.
+`WeaponPaintsConfig.Database*` fields exist but are unused (creds come only from `SqlConfig`) — don't wire up without a migration plan. `Config.MenuType` is deprecated/unread (kept so old configs parse); default menu style lives in MenuManagerCore.
 
-## Runtime configuration layout
-
-The plugin reads **two** JSON configs, split for security reasons:
-
-- `addons/counterstrikesharp/configs/plugins/WeaponPaints/WeaponPaints.json` — behavior config (`WeaponPaintsConfig` in `Config.cs`, generated by CSSharp via `IPluginConfig<T>` only on first run when the file is absent). Bump `WeaponPaintsConfig.Version` (currently `24`) whenever you change this class. Migration is done by the plugin itself: `MigrateConfigFile` in `WeaponPaints.cs` (first call in `OnConfigParsed`) does a JSON node merge when the stored `ConfigVersion` is older than the class version — it only inserts missing keys at their defaults (recursing into objects), never replaces a value, array or unknown key and swaps via temp file. The only keys it deletes are the ones listed in `WeaponPaintsConfig.ObsoleteKeys` (features that were removed). It deliberately writes **no** `.bak` copy (the file holds DB credentials). CSSharp does NOT do this — its `ConfigManager.Load` leaves existing files untouched.
-- `addons/counterstrikesharp/configs/plugins/WeaponPaints/weaponpaintssql.json` — DB credentials only (`WeaponPaintsSqlConfig` in `WeaponPaintsSqlConfig.cs`). `OnConfigParsed` also accepts `WeaponPaintsSQL.json` or a legacy `WeaponPaints.json` in the same directory; it picks whichever has filled credentials. If none exists, it creates `weaponpaintssql.json` as a stub and calls `Unload(false)` — so first run always fails until the operator fills it in.
-
-`WeaponPaintsConfig` also declares `DatabaseHost/Port/User/Password/Name` fields, but the runtime still reads DB credentials exclusively from `SqlConfig`. Those fields are currently unused — don't wire them up without a plan for migrating existing deployments off the split-file layout.
-
-MySQL tables (`wp_player_skins`, `wp_player_knife`, `wp_player_gloves`, `wp_player_agents`, `wp_player_music`, `wp_player_pins`, `wp_player_refresh`, `wp_player_pets`, `wp_player_paint_memory`) are auto-created by `Utility.CheckDatabaseTables()` on load. Don't ship manual migration SQL; extend that method instead — a column added to an existing table goes in `Utility.AddedColumns` (`AddMissingColumns`, information_schema check + `ALTER`), and its readers must tolerate it missing (e.g. `wp_player_pets.pet_hat`: `SELECT *`, and the upsert names it only once `PetHatColumnReady`). `wp_player_skins` also carries the per-weapon sticker/keychain columns: `weapon_sticker_0`..`weapon_sticker_4` (each `id;schema;x;y;wear;scale;rotation`) and `weapon_keychain` (`id;x;y;z;seed`, optionally `;rotation` and `;sticker;highlight` — readers must accept 5–8 fields). A sticker/keychain row may exist with `weapon_paint_id = 0` (sticker without a skin) — readers must not filter those out.
+**DB**: tables `wp_player_skins`, `_knife`, `_gloves`, `_agents`, `_music`, `_pins`, `_refresh`, `_pets`, `_paint_memory` auto-created by `Utility.CheckDatabaseTables()` — extend it, never ship migration SQL. New column on existing table → `Utility.AddedColumns` (`AddMissingColumns`: information_schema check + `ALTER`); readers must tolerate it missing (e.g. `wp_player_pets.pet_hat`: `SELECT *`, upsert names it only once `PetHatColumnReady`). `wp_player_skins` has `weapon_sticker_0..4` (`id;schema;x;y;wear;scale;rotation`) and `weapon_keychain` (`id;x;y;z;seed`, optional `;rotation`, `;sticker;highlight` → accept 5–8 fields). Rows with `weapon_paint_id = 0` (sticker/keychain without skin) are valid — don't filter.
 
 ## Code layout
 
-The plugin is a single `partial class WeaponPaints : BasePlugin` split across files by concern. When adding functionality, match the existing file; don't introduce a new class unless the concern is genuinely new.
+Single `partial class WeaponPaints : BasePlugin` split by concern; extend the matching file, new class only for a genuinely new concern.
 
-- `WeaponPaints.cs` — lifecycle: `Load`, `OnConfigParsed`, `OnAllPluginsLoaded`. Sets up DB, loads skin/glove/agent/music/pin JSON from `data/`, registers listeners and commands.
-- `Variables.cs` — **all** shared static state lives here (see below for detail).
-- `Events.cs` — CSSharp event handlers (`OnClientFullConnect`, `OnPlayerSpawn`, `OnPlayerDisconnect`, round/MVP hooks, `OnGiveNamedItemPost`, `OnEntityCreated`) and `RegisterListeners()`.
-- `Commands.cs` — chat/console commands and `RegisterCommands()`; also contains the menu setup (`SetupKnifeMenu` etc.) built on schwarper's CS2MenuManager (`CS2MenuManager.API.{Class,Interface,Menu}`). `Utility.CreateMenu` returns an `IMenu`; menus are populated with `AddItem(...)` and shown with `Display(player, 0)`.
-- `WeaponAction.cs` / `WeaponAction_RefreshKnife.cs` — actually applying skins, knife swaps, gloves, agents, pins, music, stickers, keychains to in-world entities. See **Stickers and keychains** below.
-- `WeaponSynchronization.cs` — all DB reads/writes via Dapper; populates the `GPlayers*` dictionaries on connect. DB reads use `async`/`await` and log warnings via the injected `Logger` on failure — don't swallow exceptions silently. Write methods take **snapshots** (`PaintRow`, `WeaponRow`, `StatTrakRow`, ...) instead of reading `GPlayerWeaponsInfo` off-thread.
-- `DbWriteQueue.cs` / `DbWrites.cs` — every DB write goes through the per-SteamID ordered, coalescing queue: call `QueueDb(playerInfo, key, sync => ...)`, `QueueWeaponRowWrite(player, defIndex)` (full row of one weapon) or `QueuePaintsWrite(player)` **on the game thread**; they snapshot state there. Reloads use `QueueGetPlayerData` so they run behind pending writes. Don't add new `Task.Run(() => WeaponSync.Sync...)` calls. On unload pending writes are flushed (hot reload hands them to the next instance via `AppDomain` data `WeaponPaints.PendingWrites`).
-- `StatTrak.cs` — kill crediting (by `player_death`'s weapon, not the held one) and dirty-row flush every `StatTrakFlushSeconds` / disconnect / unload.
-- `Customize.cs` — per-weapon wear/seed/StatTrak/name tag/charm apply (works on any defindex, not only the held weapon), the customize menu opened after a skin pick, `!nametag`, `!cp`, the `VipCommands` gate (`AddGatedCommand` — use it instead of `AddCommand` for player commands) and `ScheduleWeaponRefresh` (debounced, slot+SteamID re-checked).
-- `StickerBrowser.cs` — `!sticker` slot menu, browse (tournament → kind → effect, capsules, search via chat prompt, all slots), `ApplyStickerToSlots`, `StickerBrowseIndex` (built off-thread with the sticker catalog).
-- Wear sent to the client always goes through `RenderWear(defIndex, paint, wear)` (`WeaponAction.cs`): skin float range (`SkinFloatRange`, when `ClampWearToSkinRange`) else 0.001–1. Stored values are left alone. The sticker re-render wear search stays inside the same bounds.
-- `css_wp_refresh <all|steamid64|#userid|name>` (`OnCommandRefreshAdmin`, `RefreshAdminPermission`, console always allowed) = `!wp` for other players.
-- `Catalog.cs` — online ByMykel catalog (`CatalogApiEnabled`, `SkinApiURL`): additive merge off-thread, game thread only swaps references, result cached in `data/cache/` which `CatalogPath` prefers over an older bundled file. `css_wp_reloadcatalog` re-runs it.
-- `Utility.cs` — DB table creation, skin/gloves/agents/music/pins JSON loaders, `CreateMenu` wrapper that returns a `PlayerMenu`. `PlayerMenu.Display(player, ...)` consults `MenuTypeManager.GetPlayerMenuType(player)` so each player sees the menu style they picked via MenuManagerCore's settings menu, falling back to MenuManagerCore's server-default. **`Config.MenuType` is deprecated and no longer read** — leave it in the class so old user configs still parse, but configure the default in MenuManagerCore. The `Load*FromFile` methods are also responsible for rebuilding the lookup indexes described below.
-- `PlayerInfo.cs` — lightweight DTO carrying player identity across thread boundaries. **Always construct via `PlayerInfo.From(CCSPlayerController)`**; do not inline-build new `PlayerInfo { ... }` objects (the factory is the single source of truth for which fields come off the controller, and it's safe to call on the main thread before handing the struct to a background task).
-- `Pets.cs` — chicken pets (`!pet`, spawning/upkeep of the plugin's own `chicken` entities, the pet item). Its per-slot state (`GPlayersPet`, `PetSpawnQueue`, `_activePets`) lives in `Variables.cs`; the chickens are removed in `Unload` and `OnPlayerDisconnect`. Every owner life gets a new pet (`_petOwnerSpawnTicks`, retry queue via `ProcessQueuedPet`); every chicken/hat is named (`PetEntityName`/`PetHatEntityName`) and `SweepStrayPets` kills untracked ones. `PetHats.cs` (`!pethat`, photo booth hat prop parented to the chicken) and `PetEmotes.cs` (`!petemote`, writes `m_desiredActivity` through the schema as int — not the CSSharp enum property, renamed in 1.0.375) extend it.
-- `PlayerExtensions.cs` — `.Print()` prepends the localized `wp_prefix` to chat messages; use it instead of `PrintToChat`.
+- `WeaponPaints.cs` — `Load`, `OnConfigParsed`, `OnAllPluginsLoaded`; DB setup, catalog load, register listeners/commands.
+- `Variables.cs` — **all** shared static state.
+- `Events.cs` — event handlers (`OnClientFullConnect`, `OnPlayerSpawn`, `OnPlayerDisconnect`, round/MVP, `OnGiveNamedItemPost`, `OnEntityCreated`), `RegisterListeners()`.
+- `Commands.cs` — commands, `RegisterCommands()`, menu setup (`SetupKnifeMenu` …) via `CS2MenuManager.API.{Class,Interface,Menu}`: `Utility.CreateMenu` → `IMenu`, `AddItem(...)`, `Display(player, 0)`.
+- `WeaponAction.cs` / `WeaponAction_RefreshKnife.cs` — applying skins/knife/gloves/agents/pins/music/stickers/keychains to entities. All client wear goes through `RenderWear(defIndex, paint, wear)`: skin float range (`SkinFloatRange`, when `ClampWearToSkinRange`) else 0.001–1; stored values untouched; sticker re-render wear search stays in the same bounds.
+- `WeaponSynchronization.cs` — Dapper DB reads (`async`/`QueryAsync`, awaited in sequence, log warnings via `Logger` — no sync Dapper, no silent swallow); write methods take snapshots (`PaintRow`, `WeaponRow`, `StatTrakRow` …), never read `GPlayerWeaponsInfo` off-thread.
+- `DbWriteQueue.cs` / `DbWrites.cs` — every write via per-SteamID ordered coalescing queue, called **on game thread** (snapshots there): `QueueDb(playerInfo, key, sync => ...)`, `QueueWeaponRowWrite(player, defIndex)`, `QueuePaintsWrite(player)`. Reloads use `QueueGetPlayerData` (runs behind pending writes). No new `Task.Run(() => WeaponSync.Sync...)`. Unload flushes; hot reload hands pending writes on via `AppDomain` data `WeaponPaints.PendingWrites`.
+- `StatTrak.cs` — credits kills by `player_death`'s weapon (not held one); flushes dirty rows every `StatTrakFlushSeconds` / disconnect / unload.
+- `Customize.cs` — per-weapon wear/seed/StatTrak/name tag/charm (any defindex), post-pick customize menu, `!nametag`, `!cp`, `VipCommands` gate (`AddGatedCommand` — use instead of `AddCommand` for player commands), `ScheduleWeaponRefresh` (debounced, slot+SteamID re-checked).
+- `StickerBrowser.cs` — `!sticker` slot menu, browse (tournament → kind → effect, capsules, chat search, all slots), `ApplyStickerToSlots`, `StickerBrowseIndex` (built off-thread with sticker catalog).
+- `Catalog.cs` — online ByMykel catalog (`CatalogApiEnabled`, `SkinApiURL`): additive merge off-thread, game thread only swaps refs, cached in `data/cache/` (`CatalogPath` prefers it over older bundled file). `css_wp_reloadcatalog` reruns.
+- `css_wp_refresh <all|steamid64|#userid|name>` (`OnCommandRefreshAdmin`, `RefreshAdminPermission`, console always allowed) = `!wp` for others.
+- `Utility.cs` — table creation, catalog loaders, `CreateMenu` → `PlayerMenu` (`Display` uses `MenuTypeManager.GetPlayerMenuType(player)`, falls back to MenuManagerCore default).
+- `PlayerInfo.cs` — identity DTO across threads (rule 8; safe to build on main thread then hand off).
+- `Pets.cs` — chicken pets (`!pet`), state in `Variables.cs` (`GPlayersPet`, `PetSpawnQueue`, `_activePets`), removed in `Unload`/`OnPlayerDisconnect`. New pet every owner life (`_petOwnerSpawnTicks`, retry `ProcessQueuedPet`); entities named `PetEntityName`/`PetHatEntityName`, `SweepStrayPets` kills untracked. `PetHats.cs` (`!pethat`, photo-booth hat parented to chicken), `PetEmotes.cs` (`!petemote`, writes `m_desiredActivity` via schema as int — not the CSSharp enum property, renamed in 1.0.375).
+- `PlayerExtensions.cs` — `.Print()`.
 
-`data/*.json` holds per-language skin/glove/agent/music/collectibles/sticker/keychain catalogs (key by `Config.SkinsLanguage`, default `en`); `data/cache/` (created at runtime) holds the online-merged versions. Catalog loaders are `Utility.Build*` (pure, any thread) + `Utility.Install*` (reference swap) — never mutate an installed list. `lang/*.json` holds UI translations consumed through `IStringLocalizer`. `gamedata/weaponpaints.json` provides the native signatures for `CAttributeList::SetOrAddAttributeValueByName` and `UpdateItemView` — without them, the plugin refuses to load.
+Data: `data/*.json` per-language catalogs (key `Config.SkinsLanguage`, default `en`; large — grep, don't read whole), `data/cache/` runtime merged copies. Loaders = `Utility.Build*` (pure, any thread) + `Utility.Install*` (ref swap) — never mutate an installed list. `lang/*.json` → `IStringLocalizer`.
 
 ## Shared state (`Variables.cs`)
 
-Per-player cosmetic state (keyed by `player.Slot`):
+Per slot: `GPlayersKnife`/`GPlayersGlove`/`GPlayersMusic`/`GPlayersPin` (slot × `CsTeam` `ConcurrentDictionary`); `GPlayersAgent` (`(string? CT, string? T)`); `GPlayerWeaponsInfo` (slot × team × defindex → `WeaponInfo`). Gloves live in `GPlayerWeaponsInfo` by glove defindex (same `wp_player_skins` table) so Paint/Seed/Wear use the normal path; `GivePlayerGloves` reads `Seed/Wear`. `!gfloat`/`!gseed` resolve the glove from `GPlayersGlove` (never the held weapon), update `WeaponInfo`, refresh via `GivePlayerGloves`. Float/seed on a real Steam-inventory glove is unsupported (paint id can't be read back from `CEconItemView`).
 
-- `GPlayersKnife`, `GPlayersGlove`, `GPlayersMusic`, `GPlayersPin` — per-slot × per-`CsTeam` `ConcurrentDictionary`s.
-- `GPlayersAgent` — per-slot `(string? CT, string? T)` tuple.
-- `GPlayerWeaponsInfo` — per-slot × per-team × per-weapon-defindex `WeaponInfo`. Gloves live here too, keyed by the glove def index (same table `wp_player_skins`), so a glove's `Paint/Seed/Wear` persist and apply through the normal weapon-paint path — `GivePlayerGloves` reads `weaponInfo.Seed/.Wear` when it writes the econ attributes. The `!gfloat`/`!gseed` commands (glove counterparts of the held-weapon `!float`/`!seed`) resolve the current glove from `GPlayersGlove` — gloves are never the held active weapon — then update this `WeaponInfo` and refresh via `GivePlayerGloves`. Setting glove float/seed on a *real Steam-inventory* glove the plugin didn't apply is not supported: the existing paint id can't be read back off `CEconItemView`, so it can't be re-applied/persisted without wiping the skin.
-- `OriginalPawnModel` — per-slot cache of CS2's default faction/map pawn model, captured in `OnPlayerSpawn` **before** any custom agent overrides it. Used to restore immediately when the player picks "Agent | Default" without a kill+respawn.
+`OriginalPawnModel[slot]`: default faction model captured in `OnPlayerSpawn` from `pawn.CBodyComponent?.SceneNode?.GetSkeletonInstance()?.ModelState.ModelName` **before** agent override; used to restore "Agent | Default" without respawn.
 
-Static catalogs loaded from `data/*.json`:
+Catalogs: `SkinsList`, `PinsList`, `GlovesList`, `AgentsList`, `MusicList` + O(1) indexes rebuilt in the matching loader (never mutate lists without rebuilding): `SkinsByWeaponName`, `SkinsLegacyModelIndex[(defindex, paint)]`, `GlovesByPaintName`, `AgentsByNameAndTeam[(name, team)]`, `AgentsByTeam`, `AgentsModelSet`. `WeaponDefindex` (int → class) + reverse `WeaponDefindexByName` (use `TryGetValue`, not `FirstOrDefault` scans); `WeaponList` (class → display).
 
-- Raw lists: `SkinsList`, `PinsList`, `GlovesList`, `AgentsList`, `MusicList`.
-- **Lookup indexes** (O(1) reads, rebuilt inside the matching `Utility.Load*FromFile` method whenever the list is reloaded — *do not* mutate the lists directly without rebuilding):
-  - `SkinsByWeaponName : Dictionary<string, List<JObject>>`
-  - `SkinsLegacyModelIndex : Dictionary<(int defindex, int paint), bool>`
-  - `GlovesByPaintName : Dictionary<string, JObject>`
-  - `AgentsByNameAndTeam : Dictionary<(string name, int team), JObject>`
-  - `AgentsByTeam : Dictionary<int, List<JObject>>`
-  - `AgentsModelSet : HashSet<string>`
-- `WeaponDefindex` (int → class name) and its reverse `WeaponDefindexByName` (class name → int); `WeaponList` (class name → display name). Use `WeaponDefindexByName.TryGetValue(...)` instead of `WeaponDefindex.FirstOrDefault(kv => kv.Value == name)`.
+Also: `WeaponSync`, `Database`, `_localizer`, `CAttributeList_SetOrAddAttributeValueByName` fn ptr (no shared `MenuApi`). `PlayersBySteamId` (`ConcurrentDictionary<ulong, CCSPlayerController>`, for `OnEntityCreated`) — keep in sync with `Players` in every connect/disconnect/hot-reload path.
 
-Other static infrastructure: `WeaponSync`, `Database`, `_localizer`, and the `CAttributeList_SetOrAddAttributeValueByName` memory function pointer loaded from `gamedata/weaponpaints.json`. (CS2MenuManager menus are constructed on demand inside `Utility.CreateMenu` — there is no shared `MenuApi` singleton.)
+## Stickers / keychains
 
-Performance cache: `PlayersBySteamId` is a `ConcurrentDictionary<ulong, CCSPlayerController>` to avoid O(n) scans inside `OnEntityCreated` — keep it in sync with `Players` in every connect/disconnect/hot-reload path.
+`WeaponInfo.Stickers` (`List<StickerInfo>`) + `WeaponInfo.KeyChain` (`KeyChainInfo`), applied by `SetStickers`/`SetKeychain` (`WeaponAction.cs`) through `CAttributeListSetOrAddAttributeValueByName` on `NetworkedDynamicAttributes`.
 
-## Stickers and keychains
+- Slot-indexed (rule 5): `SetStickers` writes `"sticker slot {i} id/wear/scale/rotation"` by absolute index; DB loader pads to 5; `ApplySticker` pads then assigns `Stickers[slot]`; `id 0` clears a slot.
+- **Native anchors only — never write `"sticker slot N offset x/y"` or `"schema"`.** Engine places at model's built-in per-slot anchor. `OffsetX/Y`/`Schema` still parsed/persisted for DB compat, not applied.
+- **No skin required.** `HasChangedPaint` rejects paint 0; sticker/keychain paths use `TryGetWeaponInfo`. No custom paint → `GivePlayerWeaponSkin` calls `ApplyStickersAndKeychainOnly` (no `RemoveAll()`, keeps Steam/default skin).
+- **Re-render needs wear change.** `IncrementWearForWeaponWithStickers` / `ResolveStickerWear` give each distinct layout its own wear (CS2 caches materials per (model, paint, wear)). Don't replace with toggle/monotonic increment.
+- **C4 (defindex 49, `C4DefIndex`) is NOT in `WeaponDefindex`/`WeaponList`.** Always paint 0 (sticker-without-skin path), never kill+regive — live changes via `RefreshC4InPlace`. Single hd mesh: `isLegacyModel` forced false, skipped by `UpdatePlayerWeaponMeshGroupMask`. `StickerAnchors.For` uses `C4DefIndex`.
 
-Stored on `WeaponInfo.Stickers` (`List<StickerInfo>`, defined in `WeaponInfo.cs`) and `WeaponInfo.KeyChain` (`KeyChainInfo`). Applied by `SetStickers` / `SetKeychain` in `WeaponAction.cs`, which write engine attributes via `CAttributeListSetOrAddAttributeValueByName` onto the weapon's `NetworkedDynamicAttributes`.
+## Threading details
 
-Rules that are easy to break:
+- `OnClientFullConnect` runs `GetPlayerData` in background; on reconnect race (spawned before DB returned) it kills+regives the knife so `OnGiveNamedItemPost` + `OnEntityCreated` both fire (dual event makes skin stick). Respect comments in `Events.cs`.
+- `GivePlayerWeaponSkin` captures `HasChangedKnife` into a local — background `GetPlayerData` may `TryRemove` the slot between check and indexer read.
 
-- **`Stickers` is slot-indexed: `Stickers[i]` IS sticker slot `i` (0-4).** `SetStickers` writes `"sticker slot {i} id/wear/scale/rotation"` by absolute index. The DB loader pads to a fixed 5-element list so an empty/invalid middle column can't shift later stickers into earlier slots, and `ApplySticker` pads-then-assigns `Stickers[slot]`. Never `Add` a sticker without keeping the list slot-aligned. An empty slot is a `StickerInfo` with `Id == 0`, which `SetStickers` writes as `id 0` to clear that slot.
-- **Native anchor positions only — do NOT write `"sticker slot N offset x/y"` or `"schema"`.** Leaving offsets unset makes the engine place each sticker at the weapon model's built-in per-slot anchor (the "original" position). The old web-derived 2D→3D offsets were approximate and bunched stickers onto one spot; that path was removed. `OffsetX/Y`/`Schema` are still parsed and persisted for DB compatibility but are not applied.
-- **Sticker/keychain without a skin works.** `HasChangedPaint` rejects paint-0 entries; the sticker/keychain paths use `TryGetWeaponInfo` (paint-independent) instead. When a weapon has stickers/keychain but no custom paint, `GivePlayerWeaponSkin` calls `ApplyStickersAndKeychainOnly`, which applies just those attributes without `RemoveAll()` so a Steam-inventory/default skin stays intact. The `!sticker` command and `ApplySticker` no longer require an existing skin.
-- **Stickers only re-render when wear changes.** `IncrementWearForWeaponWithStickers` / `ResolveStickerWear` give every distinct sticker layout its own wear value (never reused across layouts), because CS2 caches generated materials per (model, paint, wear) — a two-value jitter made edits reuse stale composites. Don't replace it with a toggle or a monotonic increment.
+## Signatures / gamedata
 
-**The C4 (defindex 49, `C4DefIndex`) is deliberately NOT in `WeaponDefindex`/`WeaponList`.** Its rows are always paint 0 and ride the sticker-without-skin path. It must never be killed+regiven (`RefreshWeapons` only regives rifle/pistol gear slots anyway) — live changes go through `RefreshC4InPlace`. It has one hd mesh: `isLegacyModel` is forced false and `UpdatePlayerWeaponMeshGroupMask` skips it. `StickerAnchors.For` names it via `C4DefIndex`.
+`gamedata/weaponpaints.json` auto-generated from CS2_VibeSignatures (`gamedata: <build>` commits). Required (`RequiredGamedataKeys`): `CAttributeList::SetOrAddAttributeValueByName`, `UpdateItemView`; the rest (loadout hook, inventory offsets, `DropWeapon` index) ship unused — see `docs/loadout-gamedata-notes.md`.
 
-## Threading and lifetime rules — read before editing
-
-CSSharp events and listeners fire on the game's main thread. Database work runs on the thread pool via `Task.Run`, so code in `WeaponSynchronization` and in the `_ = Task.Run(async () => ...)` blocks must marshal back before touching entities:
-
-- Use `Server.NextFrame(() => ...)` or `Server.NextWorldUpdate(() => ...)` before calling anything on `CCSPlayerController`, pawns, or weapons from a background task.
-- `OnPlayerSpawn` intentionally defers cosmetic application with `AddTimer(0.15f, ...)` — applying synchronously or on `NextFrame` crashes in native `SetModel`/`SetBodygroup` because pawn scene nodes aren't initialized yet. Don't "simplify" this.
-- `OnPlayerSpawn` also captures `OriginalPawnModel[player.Slot]` from `pawn.CBodyComponent?.SceneNode?.GetSkeletonInstance()?.ModelState.ModelName` *before* the agent override runs. Do this read while the pawn is still on its default model — later reads just return whatever custom agent has been applied.
-- `OnClientFullConnect` kicks off `GetPlayerData` on a background task and then, on reconnect races where the player already spawned before the DB call returned, kills and regives the knife so `OnGiveNamedItemPost` + `OnEntityCreated` both fire (the dual-event mechanism is what makes the skin stick). The comments in `Events.cs` explain the exact race — respect them.
-- `GivePlayerWeaponSkin` captures `HasChangedKnife` output into a local variable because the background `GetPlayerData` can `TryRemove` the slot between the check and a direct indexer read.
-- Player state keyed by `player.Slot` must be cleared in `OnPlayerDisconnect` (it already does this for every `GPlayers*` dictionary incl. `GPlayersPet`/`PetSpawnQueue` and the spawned chicken, `OriginalPawnModel`, `OriginalPawnCharacter`, `_temporaryPlayerWeaponWear`, `CommandsCooldown`, `PlayersBySteamId`, `GPlayersPaintMemory`, `_weaponRefreshPending`, `_spawnGeneration`, `_refreshInFlight` and the slot's StatTrak dirty rows — add to that block if you introduce a new one).
-- Prefer `async`/`await` with `QueryAsync` over blocking `Query` inside DB helpers. The `GetPlayerData` helpers are now `async Task` and `await`ed in sequence; don't reintroduce sync Dapper calls.
-
-## Signatures and gamedata sourcing
-
-`gamedata/weaponpaints.json` is auto-generated from CS2_VibeSignatures (`gamedata: <build>` commits). The plugin only requires two of its entries (`RequiredGamedataKeys`: `CAttributeList::SetOrAddAttributeValueByName`, `UpdateItemView`); the rest (loadout hook, inventory offsets, `DropWeapon` index) ship but are not used yet — notes in `docs/loadout-gamedata-notes.md`. `rosetta-cs2.json` at the repo root is a bulk CS2 symbol/signature catalogue (build 24537688) used to look up candidates for anything new. Rules learned the hard way:
-
-- **A unique byte-pattern match is not an identification.** A pattern can match exactly one address and still sit on the wrong function. Decompile and confirm the body does what the name claims before writing an entry — and never hand an address to anyone until you have.
-- **Never trust a rosetta entry's signature and its vtable/prototype metadata to describe the same function.** They are joined by name, and the join is not always right. Real case: `CCSPlayer_WeaponServices::DropWeapon` reports `vtable: 29` with a verified 4-arg prototype, but its byte signature resolves to a *different, non-virtual* `DropWeapon(this, weapon, bool)` — the player-pressed-G handler that prints `#SFUI_Notice_YouDroppedWeapon`. The index was right; the signature pointed somewhere else entirely.
-- **Verify a vtable index by walking RTTI, not by trusting metadata.** On Linux: find the Itanium mangled name string (e.g. `24CCSPlayer_WeaponServices`), xref it to the typeinfo, xref that to the vtable, then slot N is at `vtable + 0x10 + N*8`. On Windows: find the RTTI type descriptor, its `CompleteObjectLocator`, then the vftable whose `[-1]` points at that COL.
-- **Raw C++ members are not in any schema dump.** Offsets like `CCSPlayerInventory::m_pSOCache` or `CGCClientSharedObjectCache::m_Owner` are plain struct fields, so rosetta lists them under `unresolved` and no schema dumper will have them. They have to come out of IDA and be re-checked every CS2 update.
-- Confirm every offset on *both* `libserver.so` and `server.dll` separately. They have agreed so far, but that is an observation, not a rule.
+- Unique byte-pattern match ≠ identification: decompile and confirm the body before writing an entry or sharing an address.
+- In symbol catalogues a signature and its vtable/prototype metadata are joined by name and can disagree (e.g. `CCSPlayer_WeaponServices::DropWeapon`: `vtable: 29` correct, but sig hits non-virtual `DropWeapon(this, weapon, bool)` G-handler printing `#SFUI_Notice_YouDroppedWeapon`).
+- Verify vtable indexes via RTTI. Linux: mangled name (`24CCSPlayer_WeaponServices`) → typeinfo → vtable, slot N at `vtable + 0x10 + N*8`. Windows: type descriptor → `CompleteObjectLocator` → vftable whose `[-1]` is that COL.
+- Raw C++ members (`CCSPlayerInventory::m_pSOCache`, `CGCClientSharedObjectCache::m_Owner`) aren't in schema dumps — IDA, recheck every update.
+- Confirm each offset on both `libserver.so` and `server.dll`.
 
 ## Conventions
 
-- Configs: bump `WeaponPaintsConfig.Version` when changing `Config.cs` so the plugin's `MigrateConfigFile` (not CSSharp) rewrites existing user configs with the new fields.
-- Formatting: C# files use 4-space indentation, braces on new lines, file-scoped namespace where already present (mixed — match the file).
-- Logging: use the injected `Logger` (`Microsoft.Extensions.Logging`) for anything user-visible in server console, not `Console.WriteLine`. `Utility.Log` exists but is only used for dev prints. Don't swallow `catch (Exception) { }` — log at least a warning with the exception message.
-- Build `PlayerInfo` via `PlayerInfo.From(player)` only; there is no `IpAddress` field anymore.
-- `Patches/` was removed; the old platform-specific memory patches are gone in favor of the single `CAttributeList_SetOrAddAttributeValueByName` signature. Don't resurrect the pattern.
+- 4-space indent, braces on new lines, file-scoped namespace where present (match file).
+- Log via injected `Logger`, not `Console.WriteLine` (`Utility.Log` = dev prints only). No empty `catch (Exception) { }` — log at least a warning.
+- `Patches/` (platform memory patches) removed — don't resurrect.

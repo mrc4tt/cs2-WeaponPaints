@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./bin/**)",
+      "Read(./obj/**)",
+      "Read(./WeaponPaints/**)",
+      "Read(./staging/**)",
+      "Read(./tests/**/bin/**)",
+      "Read(./tests/**/obj/**)",
+      "Read(./data/cache/**)"
+    ]
+  }
+}
