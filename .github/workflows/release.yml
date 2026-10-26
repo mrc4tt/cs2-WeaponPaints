@@ -1,15 +1,13 @@
-# Builds, tests and publishes a release from a version tag (vX.Y.Z).
+# Builds, tests and publishes the release of an existing version tag (vX.Y.Z).
 #
-# This workflow is disabled on mrc4tt/cs2-WeaponPaints, where releases are built
-# and published from a local machine. It is kept for forks: enable Actions in your
-# fork, set VERSION and a "## [X.Y.Z]" section in CHANGELOG.md, then push tag vX.Y.Z.
-#
-# Retry or backfill one release: Actions -> Release -> Run workflow, tag vX.Y.Z.
+# Manual only. Releases of mrc4tt/cs2-WeaponPaints are built, tagged and published
+# by the build server (cs2-build-system build-all.sh), so a tag push must not start
+# a second release here. Kept for forks and as a fallback: set VERSION and a
+# "## [X.Y.Z]" section in CHANGELOG.md, push tag vX.Y.Z, then
+# Actions -> Release -> Run workflow, tag vX.Y.Z.
 name: Release
 
 on:
-  push:
-    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
   workflow_dispatch:
     inputs:
       tag:
