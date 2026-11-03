@@ -7,6 +7,7 @@ using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
+using CS2MenuManager.API.Class;
 using Microsoft.Extensions.Logging;
 
 namespace WeaponPaints
@@ -663,6 +664,39 @@ namespace WeaponPaints
             _pickupRefreshTimers.Clear();
         }
 
+        // Every menu handler resolves the team when the item is clicked (TeamsFor / player.Team), so a
+        // menu opened as T and clicked after a switch to CT wrote the pick to the CT loadout. Close our
+        // menu and drop pending chat input on a team change; the player reopens it for the new team.
+        private HookResult OnPlayerTeamCloseMenu(EventPlayerTeam @event, GameEventInfo info)
+        {
+            var player = @event.Userid;
+            if (player == null || !player.IsValid || player.IsBot || @event.Disconnect || @event.Team == @event.Oldteam)
+                return HookResult.Continue;
+
+            var slot = player.Slot;
+            GPlayersPendingSeedWearInput.TryRemove(slot, out _);
+
+            Server.NextFrame(() =>
+            {
+                var current = Utilities.GetPlayerFromSlot(slot);
+                if (current is not { IsValid: true, IsBot: false })
+                    return;
+
+                try
+                {
+                    var active = MenuManager.GetActiveMenu(current);
+                    if (active?.Menu?.Plugin == this)
+                        MenuManager.CloseActiveMenu(current);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, "Failed to close menu for slot {Slot} after team change", slot);
+                }
+            });
+
+            return HookResult.Continue;
+        }
+
         private void RegisterListeners()
         {
             RegisterListener<Listeners.OnMapStart>(OnMapStart);
@@ -677,6 +711,7 @@ namespace WeaponPaints
             RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             RegisterEventHandler<EventRoundPrestart>(OnRoundPrestart);
             RegisterEventHandler<EventBombPlanted>(OnBombPlanted);
+            RegisterEventHandler<EventPlayerTeam>(OnPlayerTeamCloseMenu);
 
             RegisterPetListeners();
 

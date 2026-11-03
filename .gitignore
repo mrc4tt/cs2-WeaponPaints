@@ -1,6 +1,7 @@
 # Build output
 bin/
 obj/
+/WeaponPaints/
 
 # IDE / editor
 .vs/
