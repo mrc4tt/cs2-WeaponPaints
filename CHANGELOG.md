@@ -3,6 +3,23 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [4.1.5] - 2026-11-03
+
+### Fixed
+
+- Serve skin images from img.miksen.me
+- Close WeaponPaints menu on team change
+- Bump MySqlConnector to 2.6.2 (GHSA-473q-m89c-ghf8)
+
+### Changed
+
+- Add a release workflow for forks
+- Release title is the bare version
+- Add Discord support server to README
+- Small JSON/data update
+- Compact CLAUDE.md, add Claude Code read-deny settings
+- Release workflow is manual only, releases come from the build server
+
 ## [4.1.4] - 2026-10-24
 
 ### Added
