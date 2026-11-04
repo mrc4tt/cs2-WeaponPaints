@@ -17,6 +17,9 @@ namespace WeaponPaints
         private DateTime _lastConnectErrorLogged;
         private int _suppressedConnectErrors;
 
+        // Raised (on the thread that reconnected) when a connect succeeds after a reported failure.
+        public event Action? ConnectionRestored;
+
         // Expose connection string for synchronous access from ThreadPool if needed
         public string ConnectionString => dbConnectionString;
 
@@ -74,6 +77,15 @@ namespace WeaponPaints
             }
 
             WeaponPaints.Instance.Logger.LogInformation("Database connection restored");
+
+            try
+            {
+                ConnectionRestored?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                WeaponPaints.Instance.Logger.LogWarning("ConnectionRestored handler failed: {Message}", ex.Message);
+            }
         }
     }
 }

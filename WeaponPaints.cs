@@ -360,6 +360,8 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         Database = new Database(builder.ConnectionString);
         WeaponSync = new WeaponSynchronization(Database, Config);
 
+        // Off-thread, never throws. A DB that is down at boot gets its tables when it comes back.
+        Database.ConnectionRestored += () => _ = Utility.CheckDatabaseTables();
         _ = Utility.CheckDatabaseTables();
         _localizer = Localizer;
 

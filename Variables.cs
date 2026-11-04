@@ -438,6 +438,12 @@ public partial class WeaponPaints
     // Set once wp_player_pets.pet_hat is known to exist (Utility.AddMissingColumns).
     internal static volatile bool PetHatColumnReady;
 
+    // Set once Utility.CheckDatabaseTables has created/checked every table. While false, the check is
+    // retried each time the database connection comes back (Database.ConnectionRestored), so a server
+    // that boots with the DB down still gets its tables and added columns. 1 = a check is running.
+    internal static volatile bool DatabaseTablesReady;
+    internal static int DatabaseTableCheckRunning;
+
     // slot -> the emote being written into that player's pet until it starts, and the !petemote cooldown.
     private readonly ConcurrentDictionary<int, PendingPetEmote> _petEmotes = new();
     private readonly ConcurrentDictionary<int, DateTime> _petEmoteCooldowns = new();

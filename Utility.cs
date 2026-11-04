@@ -13,21 +13,43 @@ namespace WeaponPaints
     {
         internal static WeaponPaintsConfig? Config { get; set; }
 
+        // Fire-and-forget from OnConfigParsed and Database.ConnectionRestored: never throws, logs instead.
+        // One check at a time; a no-op once the tables are ready.
         internal static async Task CheckDatabaseTables()
         {
-            if (WeaponPaints.Database is null)
+            if (WeaponPaints.Database is null || WeaponPaints.DatabaseTablesReady)
+                return;
+            if (Interlocked.Exchange(ref WeaponPaints.DatabaseTableCheckRunning, 1) == 1)
                 return;
 
             try
             {
-                await using var connection = await WeaponPaints.Database.GetConnectionAsync();
-                await using var transaction = await connection.BeginTransactionAsync();
+                await CreateDatabaseTables(WeaponPaints.Database);
+                WeaponPaints.DatabaseTablesReady = true;
+            }
+            catch (Exception ex)
+            {
+                // A connect failure was already logged by Database (rate limited); the check reruns when
+                // the connection is restored.
+                if (!Database.IsReportedConnectFailure(ex))
+                    WeaponPaints.Instance.Logger.LogWarning("Could not create/check the database tables ({Message}) - retrying when the database connection is restored", ex.Message);
+            }
+            finally
+            {
+                Volatile.Write(ref WeaponPaints.DatabaseTableCheckRunning, 0);
+            }
+        }
 
-                try
-                {
-                    string[] createTableQueries =
-                    [
-                        @"
+        private static async Task CreateDatabaseTables(Database database)
+        {
+            await using var connection = await database.GetConnectionAsync();
+            await using var transaction = await connection.BeginTransactionAsync();
+
+            try
+            {
+                string[] createTableQueries =
+                [
+                    @"
 					    CREATE TABLE IF NOT EXISTS `wp_player_skins` (
 					        `steamid` varchar(18) NOT NULL,
 					        `weapon_team` int(1) NOT NULL,
@@ -46,56 +68,56 @@ namespace WeaponPaints
 					        `weapon_keychain` VARCHAR(128) NOT NULL DEFAULT '0;0;0;0;0' COMMENT 'id;x;y;z;seed',
 					        UNIQUE (`steamid`, `weapon_team`, `weapon_defindex`) -- Add unique constraint here
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
-                        @"
+                    @"
 					    CREATE TABLE IF NOT EXISTS `wp_player_knife` (
 					        `steamid` varchar(18) NOT NULL,
 					        `weapon_team` int(1) NOT NULL,
 					        `knife` varchar(64) NOT NULL,
 					        UNIQUE (`steamid`, `weapon_team`) -- Unique constraint
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
-                        @"
+                    @"
 					    CREATE TABLE IF NOT EXISTS `wp_player_gloves` (
 					        `steamid` varchar(18) NOT NULL,
 					        `weapon_team` int(1) NOT NULL,
 					        `weapon_defindex` int(11) NOT NULL,
 					        UNIQUE (`steamid`, `weapon_team`) -- Unique constraint
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
-                        @"
+                    @"
 					    CREATE TABLE IF NOT EXISTS `wp_player_agents` (
 					        `steamid` varchar(18) NOT NULL,
 					        `agent_ct` varchar(64) DEFAULT NULL,
 					        `agent_t` varchar(64) DEFAULT NULL,
 					        UNIQUE (`steamid`) -- Unique constraint
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
-                        @"
+                    @"
 					    CREATE TABLE IF NOT EXISTS `wp_player_music` (
 					        `steamid` varchar(64) NOT NULL,
 					        `weapon_team` int(1) NOT NULL,
 					        `music_id` int(11) NOT NULL,
 					        UNIQUE (`steamid`, `weapon_team`) -- Unique constraint
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
-                        @"
+                    @"
 					    CREATE TABLE IF NOT EXISTS `wp_player_music_settings` (
 					        `steamid` varchar(64) NOT NULL PRIMARY KEY,
 					        `music_off` tinyint(1) NOT NULL DEFAULT 0
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
-                        @"
+                    @"
 					    CREATE TABLE IF NOT EXISTS `wp_player_pins` (
 					        `steamid` varchar(64) NOT NULL,
 					        `weapon_team` int(1) NOT NULL,
 					        `id` int(11) NOT NULL,
 					        UNIQUE (`steamid`, `weapon_team`) -- Unique constraint
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
-                        @"
+                    @"
 					    CREATE TABLE IF NOT EXISTS `wp_player_refresh` (
 					        `steamid` VARCHAR(32) NOT NULL PRIMARY KEY,
 					        `stamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
-                        // One pet per player, like agents: the pet item is "noteam" in items_game. Column
-                        // names and types match SkinHubgg/WeaponPaints' wp_player_pets (and the SkinHub site's
-                        // formatPetRow/parsePetRow), so a site written for that schema works unchanged here.
-                        // A new table only - no existing table is touched.
-                        @"
+                    // One pet per player, like agents: the pet item is "noteam" in items_game. Column
+                    // names and types match SkinHubgg/WeaponPaints' wp_player_pets (and the SkinHub site's
+                    // formatPetRow/parsePetRow), so a site written for that schema works unchanged here.
+                    // A new table only - no existing table is touched.
+                    @"
 					    CREATE TABLE IF NOT EXISTS `wp_player_pets` (
 					        `steamid` varchar(18) NOT NULL PRIMARY KEY,
 					        `pet_id` int NOT NULL COMMENT 'pet_definitions id: 1 egg, 2 chick, 3 catalana, 4 silkie, 5 polish',
@@ -105,9 +127,9 @@ namespace WeaponPaints
 					        `pet_name` varchar(32) NULL DEFAULT NULL COMMENT 'name tag for the current stage',
 					        `pet_hat` varchar(32) NULL DEFAULT NULL COMMENT 'photo booth hat id; NULL = no hat'
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
-                        // Remembered wear/seed per paint (PaintMemoryEnabled): picking a skin again restores
-                        // its old float and seed. A new table only - wp_player_skins is not touched.
-                        @"
+                    // Remembered wear/seed per paint (PaintMemoryEnabled): picking a skin again restores
+                    // its old float and seed. A new table only - wp_player_skins is not touched.
+                    @"
 					    CREATE TABLE IF NOT EXISTS `wp_player_paint_memory` (
 					        `steamid` varchar(18) NOT NULL,
 					        `weapon_team` int(1) NOT NULL,
@@ -117,27 +139,30 @@ namespace WeaponPaints
 					        `weapon_seed` int(16) NOT NULL DEFAULT 0,
 					        PRIMARY KEY (`steamid`, `weapon_team`, `weapon_defindex`, `weapon_paint_id`)
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
-                    ];
+                ];
 
-                    foreach (var query in createTableQueries)
-                    {
-                        await connection.ExecuteAsync(query, transaction: transaction);
-                    }
-
-                    await transaction.CommitAsync();
-                }
-                catch (Exception)
+                foreach (var query in createTableQueries)
                 {
-                    await transaction.RollbackAsync();
-                    throw new Exception("[WeaponPaints] Unable to create tables!");
+                    await connection.ExecuteAsync(query, transaction: transaction);
                 }
 
-                await AddMissingColumns(connection);
+                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
-                throw new Exception("[WeaponPaints] Unknown MySQL exception! " + ex.Message);
+                try
+                {
+                    await transaction.RollbackAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    WeaponPaints.Instance.Logger.LogWarning("Rollback after a failed table create failed: {Message}", rollbackEx.Message);
+                }
+
+                throw new InvalidOperationException("Unable to create tables: " + ex.Message, ex);
             }
+
+            await AddMissingColumns(connection);
         }
 
         // Columns added after their table first shipped: CREATE TABLE IF NOT EXISTS leaves an existing
