@@ -189,7 +189,7 @@ namespace WeaponPaints
     public class WeaponPaintsConfig : BasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 25;
+        public override int Version { get; set; } = 26;
 
         // Keys of removed features (the AstraSkins port; MenuType since v25, menu style now comes
         // from MenuManagerCore). MigrateConfigFile deletes them from Additional or the root of an
@@ -221,6 +221,12 @@ namespace WeaponPaints
         // back-pressure ThreadPool tasks. Lower on small servers (<24 slots) if memory matters.
         [JsonPropertyName("DatabaseMaxPoolSize")]
         public int DatabaseMaxPoolSize { get; set; } = 32;
+
+        // MySqlConnector SslMode: None, Preferred, Required, VerifyCA, VerifyFull. Preferred = TLS when
+        // the server offers it, plain otherwise (no certificate check). Always read from this file,
+        // whichever file holds the credentials. Unknown value -> Preferred, with a warning.
+        [JsonPropertyName("DatabaseSslMode")]
+        public string DatabaseSslMode { get; set; } = "Preferred";
 
         [JsonPropertyName("SkinsLanguage")]
         public string SkinsLanguage { get; set; } = "en";

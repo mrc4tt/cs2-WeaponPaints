@@ -13,6 +13,26 @@ namespace WeaponPaints
     {
         internal static WeaponPaintsConfig? Config { get; set; }
 
+        // Config.DatabaseSslMode -> MySqlSslMode, one enum name, case-insensitive. Not Enum.TryParse: it
+        // also takes integers and comma lists ("Preferred,None"). Empty or unknown -> Preferred,
+        // valid = false for unknown.
+        internal static MySqlConnector.MySqlSslMode ParseSslMode(string? value, out bool valid)
+        {
+            valid = true;
+            if (string.IsNullOrWhiteSpace(value))
+                return MySqlConnector.MySqlSslMode.Preferred;
+
+            var name = value.Trim();
+            foreach (var mode in Enum.GetValues<MySqlConnector.MySqlSslMode>())
+            {
+                if (string.Equals(mode.ToString(), name, StringComparison.OrdinalIgnoreCase))
+                    return mode;
+            }
+
+            valid = false;
+            return MySqlConnector.MySqlSslMode.Preferred;
+        }
+
         // Fire-and-forget from OnConfigParsed and Database.ConnectionRestored: never throws, logs instead.
         // One check at a time; a no-op once the tables are ready.
         internal static async Task CheckDatabaseTables()

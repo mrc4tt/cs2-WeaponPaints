@@ -344,6 +344,10 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             return;
         }
 
+        var sslMode = Utility.ParseSslMode(config.DatabaseSslMode, out var sslModeValid);
+        if (!sslModeValid)
+            Logger.LogWarning("Unknown DatabaseSslMode \"{Value}\" (None/Preferred/Required/VerifyCA/VerifyFull) - using Preferred", config.DatabaseSslMode);
+
         var builder = new MySqlConnectionStringBuilder
         {
             Server = SqlConfig.DatabaseHost,
@@ -353,7 +357,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
             Port = (uint)SqlConfig.DatabasePort,
             Pooling = true,
             MaximumPoolSize = (uint)Math.Max(4, config.DatabaseMaxPoolSize),
-            SslMode = MySqlSslMode.None,
+            SslMode = sslMode,
             AllowPublicKeyRetrieval = true,
         };
 

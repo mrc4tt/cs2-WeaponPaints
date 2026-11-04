@@ -8,8 +8,8 @@ Setup: fresh `WeaponPaints.zip` → server, `gamedata/weaponpaints.json` in
 item below should run without a `WeaponPaints` warning/exception.
 
 ## Config / startup
-- [ ] Old `WeaponPaints.json` (v24, still has `MenuType`) migrates to v25: `MenuType` gone, every other
-      value kept, DB creds kept, no `.bak` written, log line `Migrated ... from config version 24 to 25`.
+- [ ] Old `WeaponPaints.json` (v23/v24, still has `MenuType`) migrates to v26: `MenuType` gone, `DatabaseSslMode: "Preferred"` added, every other
+      value kept, DB creds kept, no `.bak` written, log line `Migrated ... from config version 2x to 26`.
 - [ ] Creds only in `WeaponPaints.json` (`DatabaseHost`/...) → log `Using SQL config: WeaponPaints.json`.
 - [ ] `css_plugins reload WeaponPaints` with players connected: no `UNEXPECTED LONG FRAME DETECTED`,
       skins stay applied, a change made just before the reload is in the DB afterwards.
