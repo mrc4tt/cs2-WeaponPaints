@@ -189,15 +189,16 @@ namespace WeaponPaints
     public class WeaponPaintsConfig : BasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 24;
+        public override int Version { get; set; } = 25;
 
-        // Keys of removed features (the AstraSkins port). MigrateConfigFile deletes them from
-        // Additional or the root of an existing WeaponPaints.json.
+        // Keys of removed features (the AstraSkins port; MenuType since v25, menu style now comes
+        // from MenuManagerCore). MigrateConfigFile deletes them from Additional or the root of an
+        // existing WeaponPaints.json.
         internal static readonly string[] ObsoleteKeys =
         [
             "TeamPreviewEnabled", "AgentVoiceEnabled", "ApplyCosmeticsOnBotTakeover", "MusicKitMvpCounter",
             "PrecacheAgentModels", "MaxNameTagLength", "BlockedNameTagWords", "CommandSearch",
-            "CommandReset", "CommandResetPlayer", "AdminResetPermission",
+            "CommandReset", "CommandResetPlayer", "AdminResetPermission", "MenuType",
         ];
 
         [JsonPropertyName("DatabaseHost")]
@@ -261,12 +262,5 @@ namespace WeaponPaints
 
         [JsonPropertyName("Additional")]
         public Additional Additional { get; set; } = new();
-
-        // DEPRECATED — kept only so existing user configs don't error out. The plugin now uses
-        // CS2MenuManager's PlayerMenu, which defers to each player's choice from MenuManagerCore's
-        // settings menu (and MenuManagerCore's own server-default when the player hasn't picked one).
-        // Configure the server default in MenuManagerCore's config, not here.
-        [JsonPropertyName("MenuType")]
-        public string MenuType { get; set; } = "chat";
     }
 }

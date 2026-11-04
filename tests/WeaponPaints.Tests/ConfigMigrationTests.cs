@@ -55,4 +55,21 @@ public class ConfigMigrationTests
         file["ConfigVersion"] = -1;
         Assert.NotEqual(-1, (int)defaults["ConfigVersion"]!);
     }
+
+    [Fact]
+    public void ObsoleteKeysNeverIncludeLiveSettings()
+    {
+        // The migration deletes ObsoleteKeys from operators' files. Database* are the preferred
+        // credential source in OnConfigParsed: obsoleting them would wipe servers' DB logins.
+        var defaults = JsonSerializer.SerializeToNode(new WeaponPaintsConfig())!.AsObject();
+        var additional = defaults["Additional"]!.AsObject();
+        foreach (var key in WeaponPaintsConfig.ObsoleteKeys)
+        {
+            Assert.False(defaults.ContainsKey(key), $"{key} is obsolete but still a config property");
+            Assert.False(additional.ContainsKey(key), $"{key} is obsolete but still an Additional property");
+        }
+
+        foreach (var live in new[] { "DatabaseHost", "DatabasePort", "DatabaseUser", "DatabasePassword", "DatabaseName", "DatabaseMaxPoolSize" })
+            Assert.DoesNotContain(live, WeaponPaintsConfig.ObsoleteKeys);
+    }
 }
