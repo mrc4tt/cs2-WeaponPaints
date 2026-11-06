@@ -16,6 +16,25 @@ namespace WeaponPaints
         // Config.DatabaseSslMode -> MySqlSslMode, one enum name, case-insensitive. Not Enum.TryParse: it
         // also takes integers and comma lists ("Preferred,None"). Empty or unknown -> Preferred,
         // valid = false for unknown.
+        // Releases before the fork (and local builds, which used to copy gamedata/ into the output)
+        // left gamedata/weaponpaints.json inside the plugin folder. Nothing reads that copy: the
+        // plugin and CounterStrikeSharp read addons/counterstrikesharp/gamedata/weaponpaints.json.
+        // A stale one only showed up as broken signatures in CounterStrikeSharp's gamedata status.
+        // Deleted once the real file exists (so a server that never got it still sees the upload
+        // hint), along with the folder when that leaves it empty. Returns the deleted path or null.
+        internal static string? RemoveStalePluginFolderGamedata(string moduleDirectory, string gamedataPath)
+        {
+            var stale = Path.GetFullPath(Path.Combine(moduleDirectory, "gamedata", "weaponpaints.json"));
+            if (stale == Path.GetFullPath(gamedataPath) || !File.Exists(stale) || !File.Exists(gamedataPath))
+                return null;
+
+            File.Delete(stale);
+            var folder = Path.GetDirectoryName(stale)!;
+            if (!Directory.EnumerateFileSystemEntries(folder).Any())
+                Directory.Delete(folder);
+            return stale;
+        }
+
         internal static MySqlConnector.MySqlSslMode ParseSslMode(string? value, out bool valid)
         {
             valid = true;

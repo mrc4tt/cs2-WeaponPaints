@@ -36,7 +36,8 @@
   <ItemGroup>
     <None Update="lang\**\*.*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <None Update="data\**\*.*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-    <None Update="gamedata\*.*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <!-- gamedata/ is not copied into the output: it ships to addons/counterstrikesharp/gamedata/
+         (release.yml / release.sh), and a copy in the plugin folder is read by nothing. -->
   </ItemGroup>
 
   <!-- These DLLs are provided by the CSSharp runtime and MenuManagerCore at load time.

@@ -3,6 +3,13 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [4.1.6] - 2026-11-06
+
+### Fixed
+
+- Delete the stale `plugins/WeaponPaints/gamedata/weaponpaints.json` left by older releases once `addons/counterstrikesharp/gamedata/weaponpaints.json` exists. Nothing read it, and CounterStrikeSharp's gamedata status reported its outdated signature as broken.
+- Local builds no longer copy `gamedata/` into the plugin output.
+
 ## [4.1.5] - 2026-11-03
 
 ### Fixed

@@ -268,6 +268,15 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         }
 
         var gamedataPath = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(ModuleDirectory))!, "gamedata", "weaponpaints.json");
+        try
+        {
+            if (Utility.RemoveStalePluginFolderGamedata(ModuleDirectory, gamedataPath) is { } stale)
+                Logger.LogInformation("Removed the stale gamedata copy {Stale}; {GamedataPath} is the one in use", stale, gamedataPath);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning("Could not remove the stale gamedata copy in the plugin folder: {Error}", ex.Message);
+        }
         if (!File.Exists(gamedataPath))
         {
             Logger.LogError("You need to upload \"weaponpaints.json\" to the gamedata directory: {GamedataPath}", gamedataPath);
