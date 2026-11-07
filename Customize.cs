@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.Text;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
@@ -235,6 +236,31 @@ public partial class WeaponPaints
     }
 
     // ---- name tag -------------------------------------------------------------------------------
+
+    // CEconItemView.m_szCustomName is char[161]. CSSharp's setter throws past 161 UTF-8 bytes (aborting the
+    // whole skin apply) and at exactly 161 writes the terminator one byte past the buffer. NametagMaxLength
+    // counts chars, and web / inspect-link name tags are not limited at all, so fit the networked copy to
+    // 160 bytes on a code point boundary. The stored name is left as is.
+    internal const int ItemNameMaxBytes = 160;
+
+    internal static string FitItemName(string? name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return string.Empty;
+        if (Encoding.UTF8.GetByteCount(name) <= ItemNameMaxBytes)
+            return name;
+
+        var result = new StringBuilder();
+        var bytes = 0;
+        foreach (var rune in name.EnumerateRunes())
+        {
+            if (bytes + rune.Utf8SequenceLength > ItemNameMaxBytes)
+                break;
+            result.Append(rune.ToString());
+            bytes += rune.Utf8SequenceLength;
+        }
+        return result.ToString();
+    }
 
     internal string SanitizeNametag(string? raw)
     {

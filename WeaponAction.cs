@@ -174,7 +174,7 @@ namespace WeaponPaints
             // CSSharp >=1.0.369 SetStringBytes no longer null-tolerant: Encoding.UTF8.GetBytes(null)
             // throws and aborts the whole apply (no paint/knife). Only set when we have a nametag.
             if (!string.IsNullOrEmpty(weaponInfo.Nametag))
-                weapon.AttributeManager.Item.CustomName = weaponInfo.Nametag;
+                weapon.AttributeManager.Item.CustomName = FitItemName(weaponInfo.Nametag);
             weapon.FallbackPaintKit = weaponInfo.Paint;
 
             weapon.FallbackSeed = weaponInfo is { Paint: 38, Seed: 0 } ? _fadeSeed++ : weaponInfo.Seed;
