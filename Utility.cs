@@ -13,9 +13,6 @@ namespace WeaponPaints
     {
         internal static WeaponPaintsConfig? Config { get; set; }
 
-        // Config.DatabaseSslMode -> MySqlSslMode, one enum name, case-insensitive. Not Enum.TryParse: it
-        // also takes integers and comma lists ("Preferred,None"). Empty or unknown -> Preferred,
-        // valid = false for unknown.
         // Releases before the fork (and local builds, which used to copy gamedata/ into the output)
         // left gamedata/weaponpaints.json inside the plugin folder. Nothing reads that copy: the
         // plugin and CounterStrikeSharp read addons/counterstrikesharp/gamedata/weaponpaints.json.
@@ -35,6 +32,9 @@ namespace WeaponPaints
             return stale;
         }
 
+        // Config.DatabaseSslMode -> MySqlSslMode, one enum name, case-insensitive. Not Enum.TryParse: it
+        // also takes integers and comma lists ("Preferred,None"). Empty or unknown -> Preferred,
+        // valid = false for unknown.
         internal static MySqlConnector.MySqlSslMode ParseSslMode(string? value, out bool valid)
         {
             valid = true;
