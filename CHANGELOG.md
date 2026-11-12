@@ -3,9 +3,16 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [4.1.6] - 2026-11-06
+## [4.1.6] - 2026-11-12
+
+### Added
+
+- `DatabaseSslMode` in `WeaponPaints.json` (`None`/`Preferred`/`Required`/`VerifyCA`/`VerifyFull`, default `Preferred`; config v26, added to existing files automatically). The connection used to be hard-coded to `SslMode=None`, so servers with `require_secure_transport=ON` refused it ("Connections using insecure transport are prohibited").
 
 ### Fixed
+
+- Database table check no longer throws when the database is down at boot ("A task failed and nobody awaited it"); tables and new columns are created once the connection comes back.
+- Name tags are capped at 160 UTF-8 bytes, so long or non-ASCII names no longer overflow the networked field.
 
 - Delete the stale `plugins/WeaponPaints/gamedata/weaponpaints.json` left by older releases once `addons/counterstrikesharp/gamedata/weaponpaints.json` exists. Nothing read it, and CounterStrikeSharp's gamedata status reported its outdated signature as broken.
 - Local builds no longer copy `gamedata/` into the plugin output.
