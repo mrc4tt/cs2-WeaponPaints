@@ -3,6 +3,12 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [4.1.7] - 2026-11-15
+
+### Fixed
+
+- "Gloves | Default" and "Agent | Default" not restoring the default look
+
 ## [4.1.6] - 2026-11-12
 
 ### Added
