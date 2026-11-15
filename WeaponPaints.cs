@@ -88,6 +88,8 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
 
                         PlayersBySteamId[player.SteamID] = player;
                     }
+
+                    RestoreAgentDefaultsAfterHotReload();
                 }
                 catch (Exception ex)
                 {
@@ -474,6 +476,72 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
     // unload, but VirtualFunctions.*.Hook(...) is registered against a process-wide static
     // function pointer — without an explicit Unhook, every hot-reload stacks another hook
     // and OnGiveNamedItemPost fires N times per weapon-give, leaking closures.
+    // The default (map/team) agent model + character captured at spawn cannot be re-read after a
+    // hot reload: the pawn may already wear a plugin agent. Hand them to the next instance through
+    // AppDomain data, keyed by SteamID and built from BCL types only (plugin types belong to the
+    // old load context and would not cast in the new one).
+    private const string AgentDefaultsKey = "WeaponPaints.AgentDefaults";
+    private const string PluginAppliedAgentKey = "WeaponPaints.PluginAppliedAgent";
+
+    private void HandOffAgentDefaultsForHotReload()
+    {
+        try
+        {
+            var handoff = new Dictionary<ulong, (string Model, ushort CharDef, ushort CtrlCharDef, string VoPrefix, bool Female, bool HasCharacter)>();
+            foreach (var player in Utilities.GetPlayers())
+            {
+                if (!player.IsValid || player.IsBot || !OriginalPawnModel.TryGetValue(player.Slot, out var model))
+                    continue;
+                var hasCharacter = OriginalPawnCharacter.TryGetValue(player.Slot, out var character);
+                handoff[player.SteamID] = (model, character.CharacterDefIndex, character.PawnCharacterDefIndex,
+                    character.VoPrefix ?? "", character.FemaleVoice, hasCharacter);
+            }
+            AppDomain.CurrentDomain.SetData(AgentDefaultsKey, handoff);
+
+            // Which agent the plugin put on each pawn: the pawn keeps it after the reload, and the
+            // next spawn capture must not mistake it for the default.
+            var applied = new Dictionary<ulong, string>();
+            foreach (var player in Utilities.GetPlayers())
+            {
+                if (player.IsValid && !player.IsBot && PluginAppliedAgent.TryGetValue(player.Slot, out var entry))
+                    applied[player.SteamID] = entry;
+            }
+            AppDomain.CurrentDomain.SetData(PluginAppliedAgentKey, applied);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning("Agent default hand-off failed: {Message}", ex.Message);
+        }
+    }
+
+    private void RestoreAgentDefaultsAfterHotReload()
+    {
+        if (AppDomain.CurrentDomain.GetData(PluginAppliedAgentKey) is Dictionary<ulong, string> applied)
+        {
+            foreach (var player in Utilities.GetPlayers())
+            {
+                if (player.IsValid && !player.IsBot && applied.TryGetValue(player.SteamID, out var model))
+                    PluginAppliedAgent[player.Slot] = model;
+            }
+        }
+        AppDomain.CurrentDomain.SetData(PluginAppliedAgentKey, null);
+
+        var handoff = AppDomain.CurrentDomain.GetData(AgentDefaultsKey)
+            as Dictionary<ulong, (string Model, ushort CharDef, ushort CtrlCharDef, string VoPrefix, bool Female, bool HasCharacter)>;
+        AppDomain.CurrentDomain.SetData(AgentDefaultsKey, null);
+        if (handoff == null)
+            return;
+
+        foreach (var player in Utilities.GetPlayers())
+        {
+            if (!player.IsValid || player.IsBot || !handoff.TryGetValue(player.SteamID, out var entry))
+                continue;
+            OriginalPawnModel[player.Slot] = entry.Model;
+            if (entry.HasCharacter)
+                OriginalPawnCharacter[player.Slot] = new AgentCharacter(entry.CharDef, entry.CtrlCharDef, entry.VoPrefix, entry.Female);
+        }
+    }
+
     public override void Unload(bool hotReload)
     {
         ClearPickupRefreshTimers();
@@ -482,6 +550,9 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         // StatTrak deltas + queued writes: handed to the next instance on a hot reload, waited for
         // (bounded) on unload/shutdown.
         FlushWritesOnUnload(hotReload);
+
+        if (hotReload)
+            HandOffAgentDefaultsForHotReload();
 
         // The chickens are world entities this plugin spawned: remove them so a reload does not leave
         // orphaned, ownerless pets behind. On a server shutdown the map ends first and OnMapEndPets

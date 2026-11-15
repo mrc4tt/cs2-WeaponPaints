@@ -395,6 +395,15 @@ public partial class WeaponPaints
     // "Agent | Default" also gives the default voice back. Captured next to OriginalPawnModel.
     internal static readonly ConcurrentDictionary<int, AgentCharacter> OriginalPawnCharacter = new();
 
+    // Model path the plugin itself last put on the slot's pawn. The pawn keeps
+    // its model across respawns, so a spawn capture must skip exactly this one. A path check is not
+    // enough: CS2 serves every agent, the stock defaults included, from "agents/models/...".
+    internal static readonly ConcurrentDictionary<int, string> PluginAppliedAgent = new();
+
+    internal static bool IsPluginAppliedAgent(int slot, string? modelPath) =>
+        modelPath != null && PluginAppliedAgent.TryGetValue(slot, out var applied) &&
+        string.Equals(applied, modelPath, StringComparison.OrdinalIgnoreCase);
+
     internal readonly record struct AgentCharacter(ushort CharacterDefIndex, ushort PawnCharacterDefIndex, string VoPrefix, bool FemaleVoice);
 
     // weapon_c4. CS2 1.41.8.2 made the bomb sticker/charm-capable (four sticker homes on its one hd

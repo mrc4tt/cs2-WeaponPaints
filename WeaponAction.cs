@@ -1063,7 +1063,16 @@ namespace WeaponPaints
                 // networked attributes of a player's own inventory gloves when they had no plugin
                 // glove — the owner still saw them client side, everyone else saw default hands.
                 if (!TryResolvePluginGlove(player, out _, out _))
+                {
+                    // No plugin glove ("Gloves | Default"). The pawn survives the respawn with the
+                    // agent's own hands still hidden from an earlier custom glove, which leaves empty
+                    // sleeves. Show them again, but only when the pawn has no econ glove at all, so
+                    // inventory gloves keep the hands hidden.
+                    var ownItem = pawn.EconGloves;
+                    if (ownItem != null && ownItem.Handle != IntPtr.Zero && ownItem.ItemDefinitionIndex == 0)
+                        ShowAgentDefaultHands(pawn);
                     return;
+                }
 
                 {
                     CEconItemView earlyItem = pawn.EconGloves;
@@ -1194,6 +1203,11 @@ namespace WeaponPaints
             if (item == null || item.Handle == IntPtr.Zero)
                 return;
 
+            // The pawn can already wear a plugin glove here (applied at spawn from the DB, kept
+            // across respawns). That is not the native glove; don't lock it in as one.
+            if (IsPluginGlove(item.ItemDefinitionIndex, item.AccountID))
+                return;
+
             snapshotsByTeam[player.Team] = new NativeGloveSnapshot
             {
                 ItemDefinitionIndex = item.ItemDefinitionIndex,
@@ -1210,6 +1224,11 @@ namespace WeaponPaints
             };
         }
 
+        // Inventory gloves carry the owner's AccountID; gloves the plugin writes never set it.
+        // A glove item with a def index but no account is therefore one the plugin applied.
+        private static bool IsPluginGlove(ushort itemDefinitionIndex, uint accountId) =>
+            itemDefinitionIndex != 0 && accountId == 0;
+
         private void RestorePlayerDefaultGloves(CCSPlayerController player)
         {
             if (!Utility.IsPlayerValid(player) || player.PlayerPawn.Value == null)
@@ -1223,7 +1242,11 @@ namespace WeaponPaints
             item.NetworkedDynamicAttributes.Attributes.RemoveAll();
             item.AttributeList.Attributes.RemoveAll();
 
-            if (GPlayersNativeGlove.TryGetValue(player.Slot, out var snapshotsByTeam) && snapshotsByTeam.TryGetValue(player.Team, out var snapshot))
+            // A snapshot of a plugin glove (taken before the guard in CacheCurrentNativeGloveSnapshot
+            // existed) would restore a paintless glove: invisible hands. Treat it as no snapshot.
+            if (GPlayersNativeGlove.TryGetValue(player.Slot, out var snapshotsByTeam) &&
+                snapshotsByTeam.TryGetValue(player.Team, out var snapshot) &&
+                !IsPluginGlove(snapshot.ItemDefinitionIndex, snapshot.AccountID))
             {
                 item.ItemDefinitionIndex = snapshot.ItemDefinitionIndex;
                 item.EntityQuality = snapshot.EntityQuality;
@@ -1251,6 +1274,41 @@ namespace WeaponPaints
 
             Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInventoryServices");
             TouchGloveState(pawn);
+
+            // Only when no econ glove remains: an inventory glove restored from the snapshot keeps
+            // the hands hidden.
+            if (item.ItemDefinitionIndex == 0)
+                ShowAgentDefaultHands(pawn);
+        }
+
+        // Agent models hide their built-in hands through the "default_gloves" bodygroup while an
+        // econ glove is worn, and nothing shows them again when the glove is removed mid-life or the
+        // pawn respawns without one: empty sleeves. The "SetBodygroup" input does not change this
+        // group (verified live), so write the mesh group mask directly. Every agent model checked
+        // (Source2Viewer, CS2 1.41.9.7) lists default_gloves first: bit 0 = visible, bit 1 = hidden.
+        private void ShowAgentDefaultHands(CCSPlayerPawn pawn)
+        {
+            ApplyDefaultHandsMask(pawn);
+            // The model refresh from TouchGloveState can re-publish the old mask; apply once more.
+            AddTimer(0.3f, () => ApplyDefaultHandsMask(pawn), TimerFlags.STOP_ON_MAPCHANGE);
+        }
+
+        private static void ApplyDefaultHandsMask(CCSPlayerPawn pawn)
+        {
+            if (!pawn.IsValid || pawn.EconGloves.ItemDefinitionIndex != 0)
+                return;
+
+            var state = pawn.CBodyComponent?.SceneNode?.GetSkeletonInstance()?.ModelState;
+            if (state == null)
+                return;
+
+            const ulong handsVisible = 0x1, handsHidden = 0x2;
+            var mask = state.MeshGroupMask;
+            if ((mask & handsHidden) == 0)
+                return;
+
+            state.MeshGroupMask = (mask & ~handsHidden) | handsVisible;
+            Utilities.SetStateChanged(pawn, "CBaseEntity", "m_CBodyComponent");
         }
 
         // Nudges the engine to re-render gloves without a full respawn: bumps
@@ -1361,8 +1419,21 @@ namespace WeaponPaints
                     if (pawn == null || !pawn.IsValid)
                         return;
 
-                    pawn.SetModel($"agents/models/{model}.vmdl");
+                    // Last chance to learn the map default: the pawn still wears a non-plugin model
+                    // right before the first override (covers players whose spawn capture missed it).
+                    var currentModel = pawn.CBodyComponent?.SceneNode?.GetSkeletonInstance()?.ModelState.ModelName.ToString();
+                    if (!string.IsNullOrEmpty(currentModel) && currentModel.Contains('/') && currentModel.EndsWith(".vmdl") &&
+                        !IsPluginAppliedAgent(player.Slot, currentModel))
+                    {
+                        OriginalPawnModel[player.Slot] = currentModel;
+                        OriginalPawnCharacter[player.Slot] = new AgentCharacter(
+                            pawn.CharacterDefIndex, player.PawnCharacterDefIndex, pawn.StrVOPrefix ?? "", pawn.HasFemaleVoice);
+                    }
+
+                    var appliedModel = $"agents/models/{model}.vmdl";
+                    pawn.SetModel(appliedModel);
                     ApplyAgentCharacter(player, pawn, model);
+                    PluginAppliedAgent[player.Slot] = appliedModel;
                 });
             }
             catch (Exception ex)

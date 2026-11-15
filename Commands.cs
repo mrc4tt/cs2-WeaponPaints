@@ -1408,10 +1408,10 @@ public partial class WeaponPaints
             }
             else if (player.PawnIsAlive && player.PlayerPawn.Value != null && OriginalPawnModel.TryGetValue(player.Slot, out var defaultModel))
             {
-                // Player selected "Agent | Default" while alive — restore the map/team's
-                // default model captured on this player's last spawn. If the cache is empty
-                // (plugin hot-reloaded mid-round, or model path wasn't readable), we fall
-                // through silently and the change applies on the next natural respawn.
+                // Player selected "Agent | Default" while alive: restore the model the player wore
+                // before the plugin overrode it (their inventory agent or the map's CS2 default),
+                // as captured on spawn. No hardcoded fallback: default agents differ per map, and a
+                // model the map did not load renders as an error model.
                 var pawn = player.PlayerPawn.Value;
                 Server.NextFrame(() =>
                 {
@@ -1420,6 +1420,7 @@ public partial class WeaponPaints
                         if (pawn.IsValid)
                         {
                             pawn.SetModel(defaultModel);
+                            PluginAppliedAgent.TryRemove(player.Slot, out _);
                             if (player.IsValid && OriginalPawnCharacter.TryGetValue(player.Slot, out var defaultCharacter))
                                 SetPawnCharacter(player, pawn, defaultCharacter);
                         }

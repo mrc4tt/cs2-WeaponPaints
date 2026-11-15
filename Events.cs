@@ -158,6 +158,7 @@ namespace WeaponPaints
             PlayersBySteamId.TryRemove(player.SteamID, out _);
             OriginalPawnModel.TryRemove(player.Slot, out _);
             OriginalPawnCharacter.TryRemove(player.Slot, out _);
+            PluginAppliedAgent.TryRemove(player.Slot, out _);
             _weaponDataReady.TryRemove(player.Slot, out _);
             _lastWeaponRefresh.TryRemove(player.Slot, out _);
             _refreshInFlight.TryRemove(player.Slot, out _);
@@ -229,12 +230,19 @@ namespace WeaponPaints
                     try
                     {
                         var modelPath = pawn.CBodyComponent?.SceneNode?.GetSkeletonInstance()?.ModelState.ModelName.ToString();
-                        if (!string.IsNullOrEmpty(modelPath) && modelPath.Contains('/') && modelPath.EndsWith(".vmdl"))
+                        // The pawn is reused across rounds and can still wear the agent the plugin put
+                        // on it earlier. That is not the default, so keep the previous capture instead
+                        // of overwriting it with the custom agent.
+                        var isPluginAgentModel = IsPluginAppliedAgent(player.Slot, modelPath);
+                        if (!string.IsNullOrEmpty(modelPath) && modelPath.Contains('/') && modelPath.EndsWith(".vmdl") && !isPluginAgentModel)
                         {
                             OriginalPawnModel[player.Slot] = modelPath;
                         }
-                        OriginalPawnCharacter[player.Slot] = new AgentCharacter(
-                            pawn.CharacterDefIndex, player.PawnCharacterDefIndex, pawn.StrVOPrefix ?? "", pawn.HasFemaleVoice);
+                        if (!isPluginAgentModel)
+                        {
+                            OriginalPawnCharacter[player.Slot] = new AgentCharacter(
+                                pawn.CharacterDefIndex, player.PawnCharacterDefIndex, pawn.StrVOPrefix ?? "", pawn.HasFemaleVoice);
+                        }
                     }
                     catch (Exception ex)
                     {
