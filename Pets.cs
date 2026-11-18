@@ -325,8 +325,14 @@ public partial class WeaponPaints
         _petOwnerSpawnTicks[slot] = Server.TickCount;
         PetSpawnQueue[slot] = 0;
 
-        AddTimer(0.15f, () => ProcessQueuedPet(slot), TimerFlags.STOP_ON_MAPCHANGE);
-        AddTimer(PetSpawnRetrySeconds, () => ProcessQueuedPet(slot), TimerFlags.STOP_ON_MAPCHANGE);
+        // The two quick tries are only for an owner with a pet to bring out (or one still out to take
+        // away). Everyone else stays queued and is settled by PetThink within a second, which saves two
+        // timers on every spawn of every player without a pet.
+        if (GPlayersPet.ContainsKey(slot) || _activePets.ContainsKey(slot))
+        {
+            AddTimer(0.15f, () => ProcessQueuedPet(slot), TimerFlags.STOP_ON_MAPCHANGE);
+            AddTimer(PetSpawnRetrySeconds, () => ProcessQueuedPet(slot), TimerFlags.STOP_ON_MAPCHANGE);
+        }
 
         return HookResult.Continue;
     }
